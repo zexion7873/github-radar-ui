@@ -1,4 +1,5 @@
 import "server-only";
+import { unstable_cache } from "next/cache";
 import {
   resolveDataSourceId,
   queryAll,
@@ -40,15 +41,28 @@ export type Result<T> = { ok: true; rows: T[] } | { ok: false; error: string };
 
 type Sort = { property: string; direction: "ascending" | "descending" };
 
+// The routines write these tables weekly/daily, so caching reads for a few
+// minutes costs nothing in freshness and turns every navigation from a
+// 0.3-0.9s Notion round-trip into an instant cache hit. Only successful reads
+// are cached — a thrown Notion error propagates out and is never stored.
+const REVALIDATE_SECONDS = 600;
+
 async function load<T>(
   uuid: string,
   sorts: Sort[],
   map: (page: NotionPage) => T,
 ): Promise<Result<T>> {
+  const read = unstable_cache(
+    async () => {
+      const dataSourceId = await resolveDataSourceId(uuid);
+      const pages = await queryAll(dataSourceId, { sorts });
+      return pages.map(map);
+    },
+    ["notion-table", uuid],
+    { revalidate: REVALIDATE_SECONDS, tags: ["notion"] },
+  );
   try {
-    const dataSourceId = await resolveDataSourceId(uuid);
-    const pages = await queryAll(dataSourceId, { sorts });
-    return { ok: true, rows: pages.map(map) };
+    return { ok: true, rows: await read() };
   } catch (e) {
     const error =
       e instanceof NotionError ? e.message : "Unexpected error reading Notion";
