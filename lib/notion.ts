@@ -1,0 +1,119 @@
+import "server-only";
+import { NOTION_VERSION } from "./config";
+
+const BASE = "https://api.notion.com/v1";
+
+export class NotionError extends Error {}
+
+type RichText = { plain_text: string };
+export type NProp = {
+  title?: RichText[];
+  rich_text?: RichText[];
+  number?: number | null;
+  select?: { name: string } | null;
+  multi_select?: { name: string }[];
+  date?: { start: string | null } | null;
+  url?: string | null;
+};
+export type NotionPage = { id: string; properties: Record<string, NProp> };
+
+function token(): string {
+  const t = process.env.NOTION_TOKEN;
+  if (!t) throw new NotionError("NOTION_TOKEN is not set");
+  return t;
+}
+
+async function notionFetch<T>(
+  path: string,
+  init?: RequestInit,
+  attempt = 0,
+): Promise<T> {
+  const res = await fetch(`${BASE}${path}`, {
+    ...init,
+    headers: {
+      Authorization: `Bearer ${token()}`,
+      "Notion-Version": NOTION_VERSION,
+      "Content-Type": "application/json",
+      ...init?.headers,
+    },
+    cache: "no-store",
+  });
+
+  if (res.status === 429 && attempt < 3) {
+    const retry = Number(res.headers.get("Retry-After") ?? 1);
+    await new Promise((r) => setTimeout(r, retry * 1000));
+    return notionFetch<T>(path, init, attempt + 1);
+  }
+
+  const json: unknown = await res.json();
+  if (!res.ok) {
+    const message = (json as { message?: string }).message;
+    throw new NotionError(message ?? `Notion API error ${res.status}`);
+  }
+  return json as T;
+}
+
+// A `collection://<uuid>` handle may already be a data_source_id, or a database id
+// that holds one. Try it as a data source; on failure resolve via the database.
+const dataSourceCache = new Map<string, string>();
+
+export async function resolveDataSourceId(uuid: string): Promise<string> {
+  const cached = dataSourceCache.get(uuid);
+  if (cached) return cached;
+
+  try {
+    await notionFetch<unknown>(`/data_sources/${uuid}`, { method: "GET" });
+    dataSourceCache.set(uuid, uuid);
+    return uuid;
+  } catch {
+    const db = await notionFetch<{ data_sources?: { id: string }[] }>(
+      `/databases/${uuid}`,
+      { method: "GET" },
+    );
+    const id = db.data_sources?.[0]?.id;
+    if (!id) throw new NotionError(`No data source found for ${uuid}`);
+    dataSourceCache.set(uuid, id);
+    return id;
+  }
+}
+
+type QueryResponse = {
+  results: NotionPage[];
+  has_more: boolean;
+  next_cursor: string | null;
+};
+
+export async function queryAll(
+  dataSourceId: string,
+  body: Record<string, unknown>,
+): Promise<NotionPage[]> {
+  const rows: NotionPage[] = [];
+  let cursor: string | undefined;
+  do {
+    const page = await notionFetch<QueryResponse>(
+      `/data_sources/${dataSourceId}/query`,
+      {
+        method: "POST",
+        body: JSON.stringify({ ...body, page_size: 100, start_cursor: cursor }),
+      },
+    );
+    rows.push(...page.results);
+    cursor = page.has_more ? (page.next_cursor ?? undefined) : undefined;
+  } while (cursor);
+  return rows;
+}
+
+// Property extractors — each guards the empty-cell shape its type returns.
+const runs = (rt?: RichText[]) => (rt ?? []).map((t) => t.plain_text).join("");
+export const text = (p: Record<string, NProp>, k: string): string =>
+  runs(p[k]?.title ?? p[k]?.rich_text);
+export const num = (p: Record<string, NProp>, k: string): number | null =>
+  p[k]?.number ?? null;
+export const sel = (p: Record<string, NProp>, k: string): string | null =>
+  p[k]?.select?.name ?? null;
+export const multi = (p: Record<string, NProp>, k: string): string[] =>
+  (p[k]?.multi_select ?? []).map((o) => o.name);
+export const dateStart = (p: Record<string, NProp>, k: string): string | null =>
+  p[k]?.date?.start ?? null;
+export const urlProp = (p: Record<string, NProp>, k: string): string | null =>
+  p[k]?.url ?? null;

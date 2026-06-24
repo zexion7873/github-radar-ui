@@ -1,36 +1,47 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# GitHub Radar
 
-## Getting Started
+A single-user, mobile-friendly dashboard over the three GitHub-focused Claude Code
+routines in [`ai-assistant`](../ai-assistant). It reads their Notion archive tables
+directly and renders them as a browsable, filterable web UI:
 
-First, run the development server:
+| Page | Source table | Shows |
+|---|---|---|
+| `/` | Trending Archive | Weekly trending AI repos, filterable by category, with 🆕 / 🔁 weeks-on-chart |
+| `/loot/claude` | Loot Ledger (Claude Code) | Loot grouped by status (new / adopted / skipped) |
+| `/loot/copilot` | Loot Ledger (Copilot) | Same, for the Copilot target |
 
-```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
-```
+This is **phase 1: read-only.** Writing a loot item's status back to Notion from the
+UI is deferred to phase 2.
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+## Stack
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+- Next.js 16 (App Router) + Tailwind CSS 4, deployed on Vercel
+- Reads Notion via the REST API with a server-side internal integration token
+  (`POST /v1/data_sources/{id}/query`), never the browser
+- No auth code — access is gated by Vercel's built-in password protection
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+## Setup
 
-## Learn More
+1. **Create a Notion integration.** Go to
+   <https://www.notion.so/profile/integrations> → New integration → Internal →
+   capability **Read content**. Copy the secret (starts with `ntn_`).
+2. **Share the three databases into it.** Open each in Notion → `•••` →
+   Connections → add the integration: Trending Archive, Loot Ledger (Claude Code),
+   Loot Ledger (Copilot). Unshared tables return 404.
+3. **Add the token.** Paste it into `.env.local`:
+   ```
+   NOTION_TOKEN=ntn_xxx
+   ```
+4. **Run it.**
+   ```bash
+   npm run dev
+   ```
+   Open <http://localhost:3000>.
 
-To learn more about Next.js, take a look at the following resources:
+The three data-source UUIDs are in [`lib/config.ts`](lib/config.ts).
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+## Deploy
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
-
-## Deploy on Vercel
-
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
-
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+Push to a Git remote, import the repo at <https://vercel.com/new>, set the
+`NOTION_TOKEN` environment variable, and deploy. Then enable **Vercel password
+protection** (Project → Settings → Deployment Protection) so only you can read it.
