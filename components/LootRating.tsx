@@ -3,10 +3,10 @@
 import { useEffect, useRef, useState } from "react";
 import { setLootRecommendation } from "@/app/loot/actions";
 
-// Five star buttons; clicking the current rating clears it (0 → null in Notion).
-// Taps update the display instantly and are debounced: only the last tap in a
-// burst writes to Notion, so rapid re-rating never lags on the per-write refetch
-// and concurrent writes can't race.
+// 1-5 star control: clicking a star sets that rating (idempotent — re-tapping the
+// same star keeps it, so rapid taps don't accidentally clear it); the ✕ clears it
+// (→ null). Taps update the display instantly and debounce the Notion write, so
+// rapid re-rating doesn't lag and only the last tap in a burst persists.
 export default function LootRating({
   pageId,
   value,
@@ -19,14 +19,12 @@ export default function LootRating({
   const timer = useRef<ReturnType<typeof setTimeout> | null>(null);
   const dirty = useRef(false);
 
-  // Adopt the server value when it changes (write resolved / reload), unless the
-  // user has an unsaved tap in flight — then keep their pending choice.
+  // Adopt the server value when it changes, unless the user has an unsaved tap.
   useEffect(() => {
     if (!dirty.current) setDisplay(value ?? 0);
   }, [value]);
 
-  function rate(n: number) {
-    const next = n === display ? 0 : n;
+  function rate(next: number) {
     setDisplay(next);
     setFailed(false);
     dirty.current = true;
@@ -65,6 +63,16 @@ export default function LootRating({
           </span>
         </button>
       ))}
+      {display > 0 && (
+        <button
+          type="button"
+          onClick={() => rate(0)}
+          aria-label="清除評分"
+          className="ml-1 rounded p-1.5 text-sm text-zinc-400 transition-colors hover:text-zinc-600 focus-visible:ring-2 focus-visible:ring-zinc-400 focus-visible:outline-none dark:hover:text-zinc-300 dark:focus-visible:ring-zinc-500"
+        >
+          ✕
+        </button>
+      )}
       {failed && <span className="ml-1 text-xs text-red-500">更新失敗</span>}
     </div>
   );
