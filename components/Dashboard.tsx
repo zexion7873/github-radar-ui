@@ -14,7 +14,9 @@ function SectionHeader({
 }) {
   return (
     <div className="mb-2 flex items-center justify-between">
-      <h2 className="text-sm font-semibold text-zinc-500">{title}</h2>
+      <h2 className="text-base font-semibold text-zinc-900 dark:text-zinc-100">
+        {title}
+      </h2>
       {href && (
         <Link
           href={href}

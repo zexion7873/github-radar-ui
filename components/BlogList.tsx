@@ -30,9 +30,9 @@ export default function BlogList({ rows }: { rows: BlogRow[] }) {
         if (group.length === 0) return null;
         return (
           <section key={type}>
-            <h2 className="mb-3 text-sm font-semibold text-zinc-500">
+            <h2 className="mb-3 text-base font-semibold text-zinc-900 dark:text-zinc-100">
               {label}
-              <span className="ml-2 font-normal text-zinc-400">
+              <span className="ml-2 text-sm font-normal text-zinc-400">
                 {group.length}
               </span>
             </h2>

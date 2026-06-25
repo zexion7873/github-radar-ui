@@ -33,13 +33,19 @@ export default async function RootLayout({
         <script dangerouslySetInnerHTML={{ __html: themeScript }} />
       </head>
       <body className="min-h-full bg-zinc-50 text-zinc-900 dark:bg-black dark:text-zinc-100">
+        <a
+          href="#main"
+          className="sr-only focus:not-sr-only focus:absolute focus:top-4 focus:left-4 focus:z-50 focus:rounded-lg focus:bg-zinc-900 focus:px-3 focus:py-2 focus:text-sm focus:text-white dark:focus:bg-white dark:focus:text-black"
+        >
+          跳到主要內容
+        </a>
         <div className="mx-auto w-full max-w-5xl px-4 py-6">
           <header className="mb-6 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
             <h1 className="text-lg font-semibold">📡 GitHub Radar</h1>
-            <div className="flex items-center gap-1">
+            <div className="flex min-w-0 items-center gap-1">
               <Nav />
               <ThemeToggle />
-              <form action={logout}>
+              <form action={logout} className="shrink-0">
                 <button
                   type="submit"
                   className="rounded-full px-3 py-1.5 text-sm font-medium text-zinc-500 transition-colors hover:bg-zinc-100 hover:text-zinc-900 dark:text-zinc-400 dark:hover:bg-zinc-800 dark:hover:text-zinc-100"
@@ -49,7 +55,7 @@ export default async function RootLayout({
               </form>
             </div>
           </header>
-          <main>{children}</main>
+          <main id="main">{children}</main>
         </div>
       </body>
     </html>

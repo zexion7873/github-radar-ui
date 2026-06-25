@@ -32,6 +32,15 @@ export function Badge({
   );
 }
 
+// Loot status enum → display label. The raw enum (new/adopted/skipped) stays the
+// stored/state value; translate only at render so the Chinese UI never shows the
+// schema. Shared by LootBoard (chips + group header) and LootStatusControl.
+export const STATUS_LABEL: Record<string, string> = {
+  new: "待處理",
+  adopted: "已採用",
+  skipped: "已略過",
+};
+
 // Trending/Blog category → badge tone, shared by the trending list and the
 // dashboard so a category wears the same colour everywhere.
 export const CATEGORY_TONE: Record<string, Tone> = {

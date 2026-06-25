@@ -1,7 +1,7 @@
 "use client";
 import { useMemo, useState, type ReactNode } from "react";
 import type { LootRow } from "@/lib/data";
-import { Badge, cardInteractive, formatWeek } from "./ui";
+import { Badge, cardInteractive, formatWeek, STATUS_LABEL } from "./ui";
 import LootStatusControl from "./LootStatusControl";
 import LootRating from "./LootRating";
 
@@ -86,11 +86,15 @@ export default function LootBoard({ rows }: { rows: LootRow[] }) {
           </Chip>
           {STATUS_ORDER.map((s) => (
             <Chip key={s} on={status === s} onClick={() => setStatus(s)}>
-              {s}
+              {STATUS_LABEL[s] ?? s}
             </Chip>
           ))}
         </div>
       </div>
+
+      <p className="text-xs text-zinc-500">
+        顯示 {filtered.length} / {rows.length}
+      </p>
 
       {noResults ? (
         <p className="py-12 text-center text-sm text-zinc-400">
@@ -99,9 +103,13 @@ export default function LootBoard({ rows }: { rows: LootRow[] }) {
       ) : (
         keys.map((key) => (
           <section key={key}>
-            <h2 className="mb-2 flex items-center gap-2 text-sm font-semibold text-zinc-500">
-              <Badge tone={STATUS_TONE[key] ?? "gray"}>{key}</Badge>
-              <span>{groups.get(key)!.length}</span>
+            <h2 className="mb-3 flex items-center gap-2 text-base font-semibold text-zinc-900 dark:text-zinc-100">
+              <Badge tone={STATUS_TONE[key] ?? "gray"}>
+                {STATUS_LABEL[key] ?? key}
+              </Badge>
+              <span className="text-sm font-normal text-zinc-400">
+                {groups.get(key)!.length}
+              </span>
             </h2>
             <div className="grid gap-3 sm:grid-cols-2">
               {groups

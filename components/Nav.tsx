@@ -13,13 +13,14 @@ const links = [
 export default function Nav() {
   const pathname = usePathname();
   return (
-    <nav className="flex gap-1 overflow-x-auto">
+    <nav aria-label="主要導覽" className="flex min-w-0 flex-1 gap-1 overflow-x-auto">
       {links.map((l) => {
         const active = pathname === l.href;
         return (
           <Link
             key={l.href}
             href={l.href}
+            aria-current={active ? "page" : undefined}
             className={`whitespace-nowrap rounded-full px-3.5 py-1.5 text-sm font-medium transition-colors ${
               active
                 ? "bg-zinc-900 text-white dark:bg-white dark:text-black"

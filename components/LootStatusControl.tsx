@@ -2,6 +2,7 @@
 
 import { useOptimistic, useState, useTransition } from "react";
 import { setLootStatus } from "@/app/loot/actions";
+import { STATUS_LABEL } from "./ui";
 
 const STATUSES = ["new", "adopted", "skipped"] as const;
 
@@ -51,7 +52,7 @@ export default function LootStatusControl({
                 : "text-zinc-400 hover:bg-zinc-100 dark:text-zinc-500 dark:hover:bg-zinc-800"
             }`}
           >
-            {s}
+            {STATUS_LABEL[s] ?? s}
           </button>
         ))}
       </div>

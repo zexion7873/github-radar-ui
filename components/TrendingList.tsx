@@ -58,7 +58,7 @@ export default function TrendingList({ rows }: { rows: TrendingRow[] }) {
         {categories.length > 0 && (
           <div className="flex flex-wrap gap-2">
             <Chip on={active === null} onClick={() => setActive(null)}>
-              All
+              全部
             </Chip>
             {categories.map((c) => (
               <Chip key={c} on={active === c} onClick={() => setActive(c)}>
@@ -68,6 +68,10 @@ export default function TrendingList({ rows }: { rows: TrendingRow[] }) {
           </div>
         )}
       </div>
+
+      <p className="mb-3 text-xs text-zinc-500">
+        顯示 {shown.length} / {rows.length}
+      </p>
 
       <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
         {shown.map((r) => (
