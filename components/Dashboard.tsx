@@ -116,6 +116,11 @@ export default function Dashboard({
                     {r.description}
                   </p>
                 )}
+                {r.comment && (
+                  <p className="line-clamp-2 border-l-2 border-zinc-200 pl-2 text-xs leading-relaxed text-zinc-500 italic dark:border-zinc-700 dark:text-zinc-400">
+                    {r.comment}
+                  </p>
+                )}
               </a>
             ))}
           </div>
@@ -146,9 +151,14 @@ export default function Dashboard({
                   </span>
                   {b.source && <Badge tone="blue">{b.source}</Badge>}
                 </div>
-                {b.summary && (
+                {(b.brief || b.summary) && (
                   <p className="line-clamp-2 text-xs leading-relaxed text-zinc-600 dark:text-zinc-400">
-                    {b.summary}
+                    {b.brief || b.summary}
+                  </p>
+                )}
+                {b.comment && (
+                  <p className="line-clamp-2 border-l-2 border-zinc-200 pl-2 text-xs leading-relaxed text-zinc-500 italic dark:border-zinc-700 dark:text-zinc-400">
+                    {b.comment}
                   </p>
                 )}
               </a>
