@@ -45,7 +45,7 @@ export default function LootStatusControl({
                 }
               })
             }
-            className={`flex-1 rounded-md px-2 py-1 text-xs font-medium transition focus-visible:ring-2 focus-visible:ring-zinc-400 focus-visible:outline-none disabled:cursor-default dark:focus-visible:ring-zinc-500 ${
+            className={`flex-1 rounded-md px-3 py-2 text-sm font-medium transition focus-visible:ring-2 focus-visible:ring-zinc-400 focus-visible:outline-none disabled:cursor-default dark:focus-visible:ring-zinc-500 ${
               s === optimistic
                 ? ACTIVE[s]
                 : "text-zinc-400 hover:bg-zinc-100 dark:text-zinc-500 dark:hover:bg-zinc-800"
