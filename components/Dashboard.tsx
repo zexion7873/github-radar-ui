@@ -1,5 +1,5 @@
 import Link from "next/link";
-import type { TrendingRow, LootRow } from "@/lib/data";
+import type { TrendingRow, LootRow, BlogRow } from "@/lib/data";
 import { LOOT_TARGETS, type LootTarget } from "@/lib/config";
 import { Badge, cardInteractive } from "./ui";
 
@@ -64,13 +64,17 @@ function LootSummaryCard({
 export default function Dashboard({
   trending,
   loot,
+  blog,
 }: {
   trending: TrendingRow[];
   loot: Record<LootTarget, LootRow[] | null>;
+  blog: BlogRow[] | null;
 }) {
   const topTrending = [...trending]
     .sort((a, b) => (b.starsPerWeek ?? 0) - (a.starsPerWeek ?? 0))
     .slice(0, 5);
+  // Already Published-desc from fetchBlog; just take the freshest few.
+  const topBlog = (blog ?? []).slice(0, 3);
 
   return (
     <div className="flex flex-col gap-6">
@@ -90,17 +94,59 @@ export default function Dashboard({
                 href={r.link ?? "#"}
                 target="_blank"
                 rel="noopener noreferrer"
-                className={`flex items-center justify-between gap-3 p-3 ${cardInteractive}`}
+                className={`flex flex-col gap-1 p-3 ${cardInteractive}`}
               >
-                <span className="truncate font-medium text-blue-600 dark:text-blue-400">
-                  {r.repo}
-                </span>
-                <span className="flex shrink-0 items-center gap-2 text-xs text-zinc-500">
-                  {r.starsPerWeek != null && (
-                    <span>⭐ {r.starsPerWeek.toLocaleString()}</span>
-                  )}
-                  {r.language && <Badge>{r.language}</Badge>}
-                </span>
+                <div className="flex items-center justify-between gap-3">
+                  <span className="truncate font-medium text-blue-600 dark:text-blue-400">
+                    {r.repo}
+                  </span>
+                  <span className="flex shrink-0 items-center gap-2 text-xs text-zinc-500">
+                    {r.starsPerWeek != null && (
+                      <span>⭐ {r.starsPerWeek.toLocaleString()}</span>
+                    )}
+                    {r.language && <Badge>{r.language}</Badge>}
+                  </span>
+                </div>
+                {r.description && (
+                  <p className="line-clamp-2 text-xs leading-relaxed text-zinc-600 dark:text-zinc-400">
+                    {r.description}
+                  </p>
+                )}
+              </a>
+            ))}
+          </div>
+        )}
+      </section>
+
+      <section>
+        <SectionHeader
+          title="📚 最新文章"
+          href="/blog"
+          linkText="看全部 Blog"
+        />
+        {topBlog.length === 0 ? (
+          <p className="text-sm text-zinc-400">目前沒有文章</p>
+        ) : (
+          <div className="flex flex-col gap-2">
+            {topBlog.map((b) => (
+              <a
+                key={b.id}
+                href={b.url ?? "#"}
+                target="_blank"
+                rel="noopener noreferrer"
+                className={`flex flex-col gap-1 p-3 ${cardInteractive}`}
+              >
+                <div className="flex items-center justify-between gap-3">
+                  <span className="truncate font-medium text-blue-600 dark:text-blue-400">
+                    {b.title}
+                  </span>
+                  {b.source && <Badge tone="blue">{b.source}</Badge>}
+                </div>
+                {b.summary && (
+                  <p className="line-clamp-2 text-xs leading-relaxed text-zinc-600 dark:text-zinc-400">
+                    {b.summary}
+                  </p>
+                )}
               </a>
             ))}
           </div>

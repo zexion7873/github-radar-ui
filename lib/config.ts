@@ -7,6 +7,7 @@ export const TABLES = {
   trending: "f67aaa24-d5f2-415c-9358-c7d9d2f9713e",
   lootClaude: "8223d65e-4ed6-4a6e-b8ad-fb0c98c9a4ed",
   lootCopilot: "bafde792-70ff-4e07-9ffd-00ecf77f51be",
+  blog: "d8e442b5-17c1-4e6f-a665-feb49d6e3099",
 } as const;
 
 export const LOOT_TARGETS = {

@@ -1,14 +1,15 @@
 # GitHub Radar
 
-A single-user, mobile-friendly dashboard over the three GitHub-focused Claude Code
+A single-user, mobile-friendly dashboard over the GitHub and AI-blog Claude Code
 routines in [`ai-assistant`](../ai-assistant). It reads their Notion archive tables
 directly, renders them as a browsable, filterable web UI, and writes a loot item's
 triage state back to Notion in place:
 
 | Page | Source table | Shows |
 |---|---|---|
-| `/` | (all three) | **Dashboard** — top-5 hot repos this week + one summary card per loot ledger |
+| `/` | Trending + Loot + Blog | **Dashboard** — top-5 hot repos + latest blog posts (each with a blurb) + one summary card per loot ledger |
 | `/trending` | Trending Archive | Weekly trending AI repos, filterable by category, with 🆕 / 🔁 weeks-on-chart |
+| `/blog` | Blog Archive | AI/agent blog posts grouped 官方 / 個人, each with a one-paragraph summary + 點評, newest first |
 | `/loot/claude` | Loot Ledger (Claude Code) | Loot grouped by status (new / adopted / skipped), with editable status + rating |
 | `/loot/copilot` | Loot Ledger (Copilot) | Same, for the Copilot target |
 
@@ -31,9 +32,9 @@ Both run server-side only — the Notion token never reaches the browser.
    <https://www.notion.so/profile/integrations> → New integration → Internal.
    Because the UI writes loot state back, give it **Read content** *and*
    **Update content** capability. Copy the secret (starts with `ntn_`).
-2. **Share the three databases into it.** Open each in Notion → `•••` →
-   Connections → add the integration: Trending Archive, Loot Ledger (Claude Code),
-   Loot Ledger (Copilot). Unshared tables return 404.
+2. **Share the four databases into it.** Open each in Notion → `•••` →
+   Connections → add the integration: Trending Archive, Blog Archive, Loot Ledger
+   (Claude Code), Loot Ledger (Copilot). Unshared tables return 404.
 3. **Set the three env vars.** Copy `.env.example` to `.env.local` and fill in all
    three:
    ```
@@ -54,7 +55,7 @@ Both run server-side only — the Notion token never reaches the browser.
    ```
    Open <http://localhost:3000> and log in with `APP_PASSWORD`.
 
-The three data-source UUIDs (and the pinned `2025-09-03` Notion API version) live in
+The four data-source UUIDs (and the pinned `2025-09-03` Notion API version) live in
 [`lib/config.ts`](lib/config.ts).
 
 ## Deploy
