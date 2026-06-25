@@ -139,7 +139,7 @@ export default function LootBoard({ rows }: { rows: LootRow[] }) {
                   )}
                   {r.why && (
                     <p className="text-sm">
-                      <span className="font-medium text-blue-700 dark:text-blue-400">為何 </span>
+                      <span className="font-medium text-fuchsia-700 dark:text-fuchsia-400">為何 </span>
                       {r.why}
                     </p>
                   )}
