@@ -21,7 +21,7 @@ jobs:
     runs-on: ubuntu-latest
     permissions:
       contents: read
-      pull-requests: read
+      pull-requests: write # the review posts its findings back via `gh pr comment`
       issues: read
       id-token: write
 
