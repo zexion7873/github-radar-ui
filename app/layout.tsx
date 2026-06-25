@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
 import "./globals.css";
 import Nav from "@/components/Nav";
+import StickyHeader from "@/components/StickyHeader";
 import ThemeToggle from "@/components/ThemeToggle";
 import { logout } from "@/app/login/actions";
 import { cookies } from "next/headers";
@@ -40,7 +41,7 @@ export default async function RootLayout({
           跳到主要內容
         </a>
         <div className="mx-auto w-full max-w-5xl px-4 py-6">
-          <header className="mb-6 flex flex-col gap-3">
+          <StickyHeader>
             <div className="flex items-center justify-between gap-3">
               <h1 className="text-lg font-semibold">📡 GitHub Radar</h1>
               <div className="flex shrink-0 items-center gap-1">
@@ -56,7 +57,7 @@ export default async function RootLayout({
               </div>
             </div>
             <Nav />
-          </header>
+          </StickyHeader>
           <main id="main">{children}</main>
         </div>
       </body>

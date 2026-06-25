@@ -69,7 +69,7 @@ export default function LootBoard({ rows }: { rows: LootRow[] }) {
 
   return (
     <div className="flex flex-col gap-4">
-      <div className="sticky top-0 z-10 -mx-4 flex flex-col gap-3 bg-zinc-50/90 px-4 py-3 backdrop-blur dark:bg-black/90">
+      <div className="sticky top-[var(--header-h)] z-10 -mx-4 flex flex-col gap-3 bg-zinc-50/90 px-4 py-3 backdrop-blur dark:bg-black/90">
         <div className="flex flex-wrap items-center gap-2">
           <input
             type="search"
