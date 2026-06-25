@@ -154,7 +154,7 @@ export default function LootBoard({ rows }: { rows: LootRow[] }) {
                       {formatWeek(r.week)}
                     </p>
                   )}
-                  <div className="mt-auto flex flex-col gap-2 border-t border-zinc-100 pt-2 dark:border-zinc-800">
+                  <div className="mt-auto flex flex-col gap-3 border-t border-zinc-100 pt-3 dark:border-zinc-800">
                     <LootRating pageId={r.id} value={r.recommendation} />
                     <LootStatusControl pageId={r.id} status={r.status ?? "new"} />
                   </div>

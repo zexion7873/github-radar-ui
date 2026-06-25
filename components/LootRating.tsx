@@ -17,7 +17,7 @@ export default function LootRating({
   const [failed, setFailed] = useState(false);
 
   return (
-    <div className="flex items-center gap-0.5" aria-busy={pending}>
+    <div className="flex items-center gap-1" aria-busy={pending}>
       {[1, 2, 3, 4, 5].map((n) => (
         <button
           key={n}
@@ -37,7 +37,7 @@ export default function LootRating({
               }
             })
           }
-          className="rounded p-0.5 text-base leading-none transition-transform focus-visible:ring-2 focus-visible:ring-zinc-400 focus-visible:outline-none active:scale-90 disabled:cursor-default dark:focus-visible:ring-zinc-500"
+          className="rounded p-2 text-lg leading-none transition-transform focus-visible:ring-2 focus-visible:ring-zinc-400 focus-visible:outline-none active:scale-90 disabled:cursor-default dark:focus-visible:ring-zinc-500"
         >
           <span
             className={
