@@ -21,6 +21,7 @@ export type TrendingRow = {
   category: string | null;
   link: string | null;
   description: string;
+  comment: string;
   weeksOnChart: number | null;
 };
 
@@ -47,6 +48,7 @@ export type BlogRow = {
   author: string;
   published: string | null;
   archived: string | null;
+  brief: string;
   summary: string;
   comment: string;
 };
@@ -103,6 +105,7 @@ export function fetchTrending(uuid: string): Promise<Result<TrendingRow>> {
         category: sel(p, "Category"),
         link: urlProp(p, "Link"),
         description: text(p, "Description"),
+        comment: text(p, "Comment"),
         weeksOnChart: num(p, "Weeks on chart"),
       };
     },
@@ -154,6 +157,7 @@ export function fetchBlog(uuid: string): Promise<Result<BlogRow>> {
       author: text(p, "Author"),
       published: dateStart(p, "Published"),
       archived: dateStart(p, "Archived"),
+      brief: text(p, "Brief"),
       summary: text(p, "Summary"),
       comment: text(p, "Comment"),
     };

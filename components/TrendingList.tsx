@@ -108,6 +108,11 @@ export default function TrendingList({ rows }: { rows: TrendingRow[] }) {
                 {r.description}
               </p>
             )}
+            {r.comment && (
+              <p className="border-l-2 border-zinc-200 pl-3 text-sm leading-relaxed text-zinc-500 italic dark:border-zinc-700 dark:text-zinc-400">
+                {r.comment}
+              </p>
+            )}
             {r.week && (
               <p className="mt-auto text-xs text-zinc-400">{formatWeek(r.week)}</p>
             )}
