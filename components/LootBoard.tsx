@@ -1,8 +1,9 @@
 "use client";
-import { useMemo, useState, type ReactNode } from "react";
+import { useMemo, useState } from "react";
 import type { LootRow } from "@/lib/data";
 import {
   Badge,
+  Chip,
   cardInteractive,
   formatWeek,
   STATUS_LABEL,
@@ -56,7 +57,7 @@ export default function LootBoard({ rows }: { rows: LootRow[] }) {
 
   return (
     <div className="flex flex-col gap-4">
-      <div className="flex flex-col gap-3">
+      <div className="sticky top-0 z-10 -mx-4 flex flex-col gap-3 bg-zinc-50/90 px-4 py-3 backdrop-blur dark:bg-black/90">
         <div className="flex flex-wrap items-center gap-2">
           <input
             type="search"
@@ -81,7 +82,7 @@ export default function LootBoard({ rows }: { rows: LootRow[] }) {
           )}
         </div>
 
-        <div className="flex flex-wrap gap-2">
+        <div className="flex flex-wrap gap-2" role="group" aria-label="狀態篩選">
           <Chip on={status === null} onClick={() => setStatus(null)}>
             全部
           </Chip>
@@ -91,11 +92,10 @@ export default function LootBoard({ rows }: { rows: LootRow[] }) {
             </Chip>
           ))}
         </div>
+        <p className="text-xs text-zinc-500">
+          顯示 {filtered.length} / {rows.length}
+        </p>
       </div>
-
-      <p className="text-xs text-zinc-500">
-        顯示 {filtered.length} / {rows.length}
-      </p>
 
       {noResults ? (
         <p className="py-12 text-center text-sm text-zinc-400">
@@ -174,28 +174,5 @@ export default function LootBoard({ rows }: { rows: LootRow[] }) {
         ))
       )}
     </div>
-  );
-}
-
-function Chip({
-  on,
-  onClick,
-  children,
-}: {
-  on: boolean;
-  onClick: () => void;
-  children: ReactNode;
-}) {
-  return (
-    <button
-      onClick={onClick}
-      className={`rounded-full px-3 py-1 text-xs font-medium transition-colors focus-visible:ring-2 focus-visible:ring-zinc-400 focus-visible:outline-none active:scale-95 dark:focus-visible:ring-zinc-500 ${
-        on
-          ? "bg-zinc-900 text-white dark:bg-white dark:text-black"
-          : "bg-zinc-100 text-zinc-600 hover:bg-zinc-200 dark:bg-zinc-800 dark:text-zinc-300 dark:hover:bg-zinc-700"
-      }`}
-    >
-      {children}
-    </button>
   );
 }

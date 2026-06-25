@@ -40,20 +40,22 @@ export default async function RootLayout({
           跳到主要內容
         </a>
         <div className="mx-auto w-full max-w-5xl px-4 py-6">
-          <header className="mb-6 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
-            <h1 className="text-lg font-semibold">📡 GitHub Radar</h1>
-            <div className="flex min-w-0 items-center gap-1">
-              <Nav />
-              <ThemeToggle />
-              <form action={logout} className="shrink-0">
-                <button
-                  type="submit"
-                  className="rounded-full px-3 py-1.5 text-sm font-medium text-zinc-500 transition-colors hover:bg-zinc-100 hover:text-zinc-900 dark:text-zinc-400 dark:hover:bg-zinc-800 dark:hover:text-zinc-100"
-                >
-                  登出
-                </button>
-              </form>
+          <header className="mb-6 flex flex-col gap-3">
+            <div className="flex items-center justify-between gap-3">
+              <h1 className="text-lg font-semibold">📡 GitHub Radar</h1>
+              <div className="flex shrink-0 items-center gap-1">
+                <ThemeToggle />
+                <form action={logout} className="shrink-0">
+                  <button
+                    type="submit"
+                    className="rounded-full px-3 py-1.5 text-sm font-medium text-zinc-500 transition-colors hover:bg-zinc-100 hover:text-zinc-900 dark:text-zinc-400 dark:hover:bg-zinc-800 dark:hover:text-zinc-100"
+                  >
+                    登出
+                  </button>
+                </form>
+              </div>
             </div>
+            <Nav />
           </header>
           <main id="main">{children}</main>
         </div>

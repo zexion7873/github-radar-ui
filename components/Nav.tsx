@@ -13,7 +13,7 @@ const links = [
 export default function Nav() {
   const pathname = usePathname();
   return (
-    <nav aria-label="主要導覽" className="flex min-w-0 flex-1 gap-1 overflow-x-auto">
+    <nav aria-label="主要導覽" className="-mx-1 flex gap-1 overflow-x-auto px-1">
       {links.map((l) => {
         const active = pathname === l.href;
         return (

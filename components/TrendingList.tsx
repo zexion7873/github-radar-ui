@@ -1,7 +1,14 @@
 "use client";
-import { useMemo, useState, type ReactNode } from "react";
+import { useMemo, useState } from "react";
 import type { TrendingRow } from "@/lib/data";
-import { Badge, cardInteractive, formatWeek, CATEGORY_TONE, FRESH_TONE } from "./ui";
+import {
+  Badge,
+  Chip,
+  cardInteractive,
+  formatWeek,
+  CATEGORY_TONE,
+  FRESH_TONE,
+} from "./ui";
 
 type Sort = "recent" | "stars";
 
@@ -36,7 +43,7 @@ export default function TrendingList({ rows }: { rows: TrendingRow[] }) {
 
   return (
     <div>
-      <div className="mb-4 flex flex-col gap-3">
+      <div className="sticky top-0 z-10 -mx-4 mb-4 flex flex-col gap-3 bg-zinc-50/90 px-4 py-3 backdrop-blur dark:bg-black/90">
         <div className="flex flex-wrap items-center gap-2">
           <input
             type="search"
@@ -56,7 +63,7 @@ export default function TrendingList({ rows }: { rows: TrendingRow[] }) {
         </div>
 
         {categories.length > 0 && (
-          <div className="flex flex-wrap gap-2">
+          <div className="flex flex-wrap gap-2" role="group" aria-label="分類篩選">
             <Chip on={active === null} onClick={() => setActive(null)}>
               全部
             </Chip>
@@ -67,11 +74,10 @@ export default function TrendingList({ rows }: { rows: TrendingRow[] }) {
             ))}
           </div>
         )}
+        <p className="text-xs text-zinc-500">
+          顯示 {shown.length} / {rows.length}
+        </p>
       </div>
-
-      <p className="mb-3 text-xs text-zinc-500">
-        顯示 {shown.length} / {rows.length}
-      </p>
 
       <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
         {shown.map((r) => (
@@ -134,28 +140,5 @@ export default function TrendingList({ rows }: { rows: TrendingRow[] }) {
         </p>
       )}
     </div>
-  );
-}
-
-function Chip({
-  on,
-  onClick,
-  children,
-}: {
-  on: boolean;
-  onClick: () => void;
-  children: ReactNode;
-}) {
-  return (
-    <button
-      onClick={onClick}
-      className={`rounded-full px-3 py-1 text-xs font-medium transition-colors focus-visible:ring-2 focus-visible:ring-zinc-400 focus-visible:outline-none active:scale-95 dark:focus-visible:ring-zinc-500 ${
-        on
-          ? "bg-zinc-900 text-white dark:bg-white dark:text-black"
-          : "bg-zinc-100 text-zinc-600 hover:bg-zinc-200 dark:bg-zinc-800 dark:text-zinc-300 dark:hover:bg-zinc-700"
-      }`}
-    >
-      {children}
-    </button>
   );
 }

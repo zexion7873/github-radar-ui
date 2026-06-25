@@ -35,6 +35,34 @@ export function Badge({
   );
 }
 
+// Filter pill, shared by every filter bar (trending / blog / loot) so the chips
+// and their active state stay locked together. `aria-pressed` lets AT announce
+// which filter is on; wrap a row of these in a role="group" with a label.
+export function Chip({
+  on,
+  onClick,
+  children,
+}: {
+  on: boolean;
+  onClick: () => void;
+  children: ReactNode;
+}) {
+  return (
+    <button
+      type="button"
+      onClick={onClick}
+      aria-pressed={on}
+      className={`rounded-full px-3 py-1 text-xs font-medium transition-colors focus-visible:ring-2 focus-visible:ring-zinc-400 focus-visible:outline-none active:scale-95 dark:focus-visible:ring-zinc-500 ${
+        on
+          ? "bg-zinc-900 text-white dark:bg-white dark:text-black"
+          : "bg-zinc-100 text-zinc-600 hover:bg-zinc-200 dark:bg-zinc-800 dark:text-zinc-300 dark:hover:bg-zinc-700"
+      }`}
+    >
+      {children}
+    </button>
+  );
+}
+
 // Loot status enum → display label. The raw enum (new/adopted/skipped) stays the
 // stored/state value; translate only at render so the Chinese UI never shows the
 // schema. Shared by LootBoard (chips + group header) and LootStatusControl.
