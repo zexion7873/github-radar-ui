@@ -1,0 +1,120 @@
+import Link from "next/link";
+import type { TrendingRow, LootRow } from "@/lib/data";
+import { LOOT_TARGETS, type LootTarget } from "@/lib/config";
+import { Badge, cardInteractive } from "./ui";
+
+function SectionHeader({
+  title,
+  href,
+  linkText,
+}: {
+  title: string;
+  href?: string;
+  linkText?: string;
+}) {
+  return (
+    <div className="mb-2 flex items-center justify-between">
+      <h2 className="text-sm font-semibold text-zinc-500">{title}</h2>
+      {href && (
+        <Link
+          href={href}
+          className="text-xs font-medium text-blue-600 hover:underline dark:text-blue-400"
+        >
+          {linkText} →
+        </Link>
+      )}
+    </div>
+  );
+}
+
+function LootSummaryCard({
+  target,
+  rows,
+}: {
+  target: LootTarget;
+  rows: LootRow[] | null;
+}) {
+  const pending = rows?.filter((r) => (r.status ?? "new") === "new") ?? [];
+  return (
+    <Link
+      href={`/loot/${target}`}
+      className={`flex flex-col gap-2 p-4 ${cardInteractive}`}
+    >
+      <div className="flex items-center justify-between">
+        <span className="font-medium">{LOOT_TARGETS[target].label}</span>
+        <Badge tone={pending.length > 0 ? "blue" : "gray"}>
+          {rows == null ? "—" : `${pending.length} 待處理`}
+        </Badge>
+      </div>
+      {pending.slice(0, 3).map((r) => (
+        <p
+          key={r.id}
+          className="truncate text-sm text-zinc-600 dark:text-zinc-400"
+        >
+          {r.repo}
+        </p>
+      ))}
+      {rows != null && pending.length === 0 && (
+        <p className="text-sm text-zinc-400">沒有待處理</p>
+      )}
+    </Link>
+  );
+}
+
+export default function Dashboard({
+  trending,
+  loot,
+}: {
+  trending: TrendingRow[];
+  loot: Record<LootTarget, LootRow[] | null>;
+}) {
+  const topTrending = [...trending]
+    .sort((a, b) => (b.starsPerWeek ?? 0) - (a.starsPerWeek ?? 0))
+    .slice(0, 5);
+
+  return (
+    <div className="flex flex-col gap-6">
+      <section>
+        <SectionHeader
+          title="🔥 熱門 repo"
+          href="/trending"
+          linkText="看全部 Trending"
+        />
+        {topTrending.length === 0 ? (
+          <p className="text-sm text-zinc-400">目前沒有 trending 資料</p>
+        ) : (
+          <div className="flex flex-col gap-2">
+            {topTrending.map((r) => (
+              <a
+                key={r.id}
+                href={r.link ?? "#"}
+                target="_blank"
+                rel="noopener noreferrer"
+                className={`flex items-center justify-between gap-3 p-3 ${cardInteractive}`}
+              >
+                <span className="truncate font-medium text-blue-600 dark:text-blue-400">
+                  {r.repo}
+                </span>
+                <span className="flex shrink-0 items-center gap-2 text-xs text-zinc-500">
+                  {r.starsPerWeek != null && (
+                    <span>⭐ {r.starsPerWeek.toLocaleString()}</span>
+                  )}
+                  {r.language && <Badge>{r.language}</Badge>}
+                </span>
+              </a>
+            ))}
+          </div>
+        )}
+      </section>
+
+      <section>
+        <SectionHeader title="📦 待處理 Loot" />
+        <div className="grid gap-3 sm:grid-cols-2">
+          {(Object.keys(LOOT_TARGETS) as LootTarget[]).map((target) => (
+            <LootSummaryCard key={target} target={target} rows={loot[target]} />
+          ))}
+        </div>
+      </section>
+    </div>
+  );
+}
