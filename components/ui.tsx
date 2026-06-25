@@ -1,5 +1,11 @@
 import { type ReactNode } from "react";
 
+// Shared card surface so every card (trending / loot / stats) gets the same
+// border, shadow, and hover lift — change the look once, it propagates.
+export const cardClass =
+  "rounded-xl border border-zinc-200 bg-white shadow-sm dark:border-zinc-800 dark:bg-zinc-900";
+export const cardInteractive = `${cardClass} transition-shadow duration-200 hover:border-zinc-300 hover:shadow-md dark:hover:border-zinc-700`;
+
 type Tone = "gray" | "blue" | "green" | "amber" | "purple";
 
 const TONE: Record<Tone, string> = {
