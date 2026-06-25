@@ -32,9 +32,11 @@ export default function LootRating({
     timer.current = setTimeout(async () => {
       try {
         await setLootRecommendation(pageId, next);
+        setFailed(false);
       } catch {
+        // Keep the intended rating on screen (don't snap back to the stale value)
+        // and surface a retry, so the user knows the write didn't land.
         setFailed(true);
-        setDisplay(value ?? 0); // the write didn't land; don't show a fake rating
       } finally {
         dirty.current = false;
       }
@@ -73,7 +75,22 @@ export default function LootRating({
           ✕
         </button>
       )}
-      {failed && <span className="ml-1 text-xs text-red-500">更新失敗</span>}
+      {failed && (
+        <span
+          role="status"
+          aria-live="polite"
+          className="ml-1 text-xs text-red-500"
+        >
+          更新失敗{" "}
+          <button
+            type="button"
+            onClick={() => rate(display)}
+            className="font-medium underline focus-visible:ring-2 focus-visible:ring-red-400 focus-visible:outline-none"
+          >
+            重試
+          </button>
+        </span>
+      )}
     </div>
   );
 }

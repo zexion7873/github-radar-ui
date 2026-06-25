@@ -8,12 +8,15 @@ export const cardInteractive = `${cardClass} transition-shadow duration-200 hove
 
 type Tone = "gray" | "blue" | "green" | "amber" | "purple";
 
+// Dark fills use a translucent -500/15 + ring instead of -950: a solid -950 sits
+// at almost the same luminance as the dark card/body, so the pill loses its shape
+// and the colour signal disappears. The light side is unchanged.
 const TONE: Record<Tone, string> = {
   gray: "bg-zinc-100 text-zinc-600 dark:bg-zinc-800 dark:text-zinc-300",
-  blue: "bg-blue-100 text-blue-700 dark:bg-blue-950 dark:text-blue-300",
-  green: "bg-green-100 text-green-700 dark:bg-green-950 dark:text-green-300",
-  amber: "bg-amber-100 text-amber-700 dark:bg-amber-950 dark:text-amber-300",
-  purple: "bg-purple-100 text-purple-700 dark:bg-purple-950 dark:text-purple-300",
+  blue: "bg-blue-100 text-blue-700 dark:bg-blue-500/15 dark:text-blue-300 dark:ring-1 dark:ring-blue-500/25",
+  green: "bg-green-100 text-green-700 dark:bg-green-500/15 dark:text-green-300 dark:ring-1 dark:ring-green-500/25",
+  amber: "bg-amber-100 text-amber-700 dark:bg-amber-500/15 dark:text-amber-300 dark:ring-1 dark:ring-amber-500/25",
+  purple: "bg-purple-100 text-purple-700 dark:bg-purple-500/15 dark:text-purple-300 dark:ring-1 dark:ring-purple-500/25",
 };
 
 export function Badge({
@@ -51,6 +54,20 @@ export const CATEGORY_TONE: Record<string, Tone> = {
   apps: "gray",
   other: "gray",
 };
+
+// Loot status → badge tone. Kept in its own map (not borrowing CATEGORY_TONE) so
+// "blue" can mean a category on /trending and a status on /loot without the two
+// silently colliding — each concept owns its hue within its own surface.
+export const STATUS_TONE: Record<string, Tone> = {
+  new: "blue",
+  adopted: "green",
+  skipped: "gray",
+};
+
+// One fixed tone for every "fresh this week" 🆕 badge (trending + blog), so the
+// freshness cue reads the same everywhere instead of being amber on one page and
+// green on another.
+export const FRESH_TONE: Tone = "green";
 
 export function Notice({
   title,

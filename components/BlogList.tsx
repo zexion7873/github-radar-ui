@@ -1,5 +1,5 @@
 import type { BlogRow } from "@/lib/data";
-import { Badge, cardInteractive, formatWeek } from "./ui";
+import { Badge, cardInteractive, formatWeek, FRESH_TONE } from "./ui";
 
 // Blog Archive's Type is a closed enum (official / individual); render each as
 // its own section, newest first (rows already arrive Published-desc).
@@ -55,7 +55,7 @@ export default function BlogList({ rows }: { rows: BlogRow[] }) {
                       >
                         {r.title}
                       </a>
-                      {isNew && <Badge tone="green">🆕 new</Badge>}
+                      {isNew && <Badge tone={FRESH_TONE}>🆕 新</Badge>}
                     </div>
 
                     <div className="flex flex-wrap items-center gap-1.5 text-xs text-zinc-500">

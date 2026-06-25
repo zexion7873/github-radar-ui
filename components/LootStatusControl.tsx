@@ -23,7 +23,24 @@ export default function LootStatusControl({
   // the server re-renders and the card moves to its new Status group with the real value.
   const [optimistic, setOptimistic] = useOptimistic(status);
   const [pending, startTransition] = useTransition();
-  const [failed, setFailed] = useState(false);
+  // The status the user picked that failed to save. On failure we keep showing
+  // THIS value (not a silent snap-back to the stale server value) plus a red ring
+  // and a real retry, so the user can tell the write didn't land.
+  const [failed, setFailed] = useState<string | null>(null);
+
+  const active = failed ?? optimistic;
+
+  function commit(s: string) {
+    startTransition(async () => {
+      setOptimistic(s);
+      setFailed(null);
+      try {
+        await setLootStatus(pageId, s);
+      } catch {
+        setFailed(s);
+      }
+    });
+  }
 
   return (
     <div className="flex flex-col gap-1" aria-busy={pending}>
@@ -32,23 +49,11 @@ export default function LootStatusControl({
           <button
             key={s}
             type="button"
-            disabled={pending || s === optimistic}
-            onClick={() =>
-              startTransition(async () => {
-                setOptimistic(s);
-                setFailed(false);
-                try {
-                  await setLootStatus(pageId, s);
-                } catch {
-                  // The optimistic highlight reverts automatically; surface the failure
-                  // so the snap-back isn't silent (e.g. session expired, Notion error).
-                  setFailed(true);
-                }
-              })
-            }
+            disabled={pending || s === active}
+            onClick={() => commit(s)}
             className={`flex-1 rounded-md px-3 py-2 text-sm font-medium transition focus-visible:ring-2 focus-visible:ring-zinc-400 focus-visible:outline-none disabled:cursor-default dark:focus-visible:ring-zinc-500 ${
-              s === optimistic
-                ? ACTIVE[s]
+              s === active
+                ? `${ACTIVE[s]}${failed === s ? " ring-2 ring-red-400" : ""}`
                 : "text-zinc-400 hover:bg-zinc-100 dark:text-zinc-500 dark:hover:bg-zinc-800"
             }`}
           >
@@ -56,7 +61,18 @@ export default function LootStatusControl({
           </button>
         ))}
       </div>
-      {failed && <p className="text-xs text-red-500">更新失敗，請重試</p>}
+      {failed && (
+        <p role="status" aria-live="polite" className="text-xs text-red-500">
+          更新失敗 ——{" "}
+          <button
+            type="button"
+            onClick={() => commit(failed)}
+            className="font-medium underline focus-visible:ring-2 focus-visible:ring-red-400 focus-visible:outline-none"
+          >
+            重試
+          </button>
+        </p>
+      )}
     </div>
   );
 }

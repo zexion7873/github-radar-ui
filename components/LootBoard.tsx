@@ -1,16 +1,17 @@
 "use client";
 import { useMemo, useState, type ReactNode } from "react";
 import type { LootRow } from "@/lib/data";
-import { Badge, cardInteractive, formatWeek, STATUS_LABEL } from "./ui";
+import {
+  Badge,
+  cardInteractive,
+  formatWeek,
+  STATUS_LABEL,
+  STATUS_TONE,
+} from "./ui";
 import LootStatusControl from "./LootStatusControl";
 import LootRating from "./LootRating";
 
 const STATUS_ORDER = ["new", "adopted", "skipped"];
-const STATUS_TONE: Record<string, "blue" | "green" | "gray"> = {
-  new: "blue",
-  adopted: "green",
-  skipped: "gray",
-};
 
 export default function LootBoard({ rows }: { rows: LootRow[] }) {
   const types = useMemo(
@@ -132,7 +133,7 @@ export default function LootBoard({ rows }: { rows: LootRow[] }) {
                     >
                       {r.repo}
                     </a>
-                    {r.type && <Badge tone="purple">{r.type}</Badge>}
+                    {r.type && <Badge>{r.type}</Badge>}
                   </div>
                   {r.intro && (
                     <p className="text-sm text-zinc-600 dark:text-zinc-400">
@@ -141,19 +142,19 @@ export default function LootBoard({ rows }: { rows: LootRow[] }) {
                   )}
                   {r.asset && (
                     <p className="text-sm">
-                      <span className="font-medium text-amber-700 dark:text-amber-500">偷什麼 </span>
+                      <span className="font-medium text-zinc-500 dark:text-zinc-400">偷什麼 </span>
                       {r.asset}
                     </p>
                   )}
                   {r.why && (
                     <p className="text-sm">
-                      <span className="font-medium text-fuchsia-700 dark:text-fuchsia-400">為何 </span>
+                      <span className="font-medium text-zinc-500 dark:text-zinc-400">為何 </span>
                       {r.why}
                     </p>
                   )}
                   {r.how && (
                     <p className="text-sm">
-                      <span className="font-medium text-emerald-700 dark:text-emerald-400">怎麼搬 </span>
+                      <span className="font-medium text-zinc-500 dark:text-zinc-400">怎麼搬 </span>
                       {r.how}
                     </p>
                   )}

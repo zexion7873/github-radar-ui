@@ -1,7 +1,7 @@
 "use client";
 import { useMemo, useState, type ReactNode } from "react";
 import type { TrendingRow } from "@/lib/data";
-import { Badge, cardInteractive, formatWeek, CATEGORY_TONE } from "./ui";
+import { Badge, cardInteractive, formatWeek, CATEGORY_TONE, FRESH_TONE } from "./ui";
 
 type Sort = "recent" | "stars";
 
@@ -89,8 +89,8 @@ export default function TrendingList({ rows }: { rows: TrendingRow[] }) {
                 {r.repo}
               </a>
               {r.weeksOnChart != null && (
-                <Badge tone={r.weeksOnChart > 1 ? "green" : "amber"}>
-                  {r.weeksOnChart > 1 ? `🔁 ${r.weeksOnChart}w` : "🆕 new"}
+                <Badge tone={r.weeksOnChart > 1 ? "gray" : FRESH_TONE}>
+                  {r.weeksOnChart > 1 ? `🔁 ${r.weeksOnChart} 週` : "🆕 新上榜"}
                 </Badge>
               )}
             </div>
@@ -99,7 +99,7 @@ export default function TrendingList({ rows }: { rows: TrendingRow[] }) {
               {r.starsPerWeek != null && (
                 <span>⭐ {r.starsPerWeek.toLocaleString()}</span>
               )}
-              {r.language && <Badge>{r.language}</Badge>}
+              {r.language && <span>{r.language}</span>}
               {r.category && (
                 <Badge tone={CATEGORY_TONE[r.category] ?? "gray"}>
                   {r.category}
