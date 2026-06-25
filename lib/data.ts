@@ -52,6 +52,7 @@ async function load<T>(
   uuid: string,
   sorts: Sort[],
   map: (page: NotionPage) => T,
+  tag: string,
 ): Promise<Result<T>> {
   const read = unstable_cache(
     async () => {
@@ -60,7 +61,7 @@ async function load<T>(
       return pages.map(map);
     },
     ["notion-table", uuid],
-    { revalidate: REVALIDATE_SECONDS, tags: ["notion"] },
+    { revalidate: REVALIDATE_SECONDS, tags: ["notion", tag] },
   );
   try {
     return { ok: true, rows: await read() };
@@ -92,6 +93,7 @@ export function fetchTrending(uuid: string): Promise<Result<TrendingRow>> {
         weeksOnChart: num(p, "Weeks on chart"),
       };
     },
+    "notion:trending",
   );
 }
 
@@ -122,5 +124,5 @@ export function fetchLoot(uuid: string): Promise<Result<LootRow>> {
       status: sel(p, "Status"),
       recommendation: num(p, "Recommendation"),
     };
-  });
+  }, "notion:loot");
 }

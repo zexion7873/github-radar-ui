@@ -19,7 +19,7 @@ export async function setLootStatus(pageId: string, status: string) {
   await updateSelect(pageId, "Status", status);
   // updateTag (not revalidateTag) gives read-your-writes: the next read waits for
   // fresh data instead of serving the stale cache, so a reload shows the new Status.
-  updateTag("notion");
+  updateTag("notion:loot");
 }
 
 // Recommendation is 1-5; 0 clears the cell. Same session check as setLootStatus.
@@ -32,5 +32,5 @@ export async function setLootRecommendation(pageId: string, value: number) {
   }
 
   await updateNumber(pageId, "Recommendation", value === 0 ? null : value);
-  updateTag("notion");
+  updateTag("notion:loot");
 }
