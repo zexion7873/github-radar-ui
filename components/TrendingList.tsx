@@ -102,6 +102,9 @@ export default function TrendingList({ rows }: { rows: TrendingRow[] }) {
               >
                 {r.repo}
               </a>
+              {/* 🆕 only for newcomers in the latest week; 🔁 for returnees; a
+                  newcomer whose latest week isn't the newest shows neither —
+                  rare after latestPerRepo, and intentional. */}
               {r.week === latestWeek && (r.weeksOnChart ?? 1) <= 1 ? (
                 <Badge tone={FRESH_TONE}>🆕 新上榜</Badge>
               ) : r.weeksOnChart != null && r.weeksOnChart > 1 ? (

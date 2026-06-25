@@ -18,6 +18,21 @@ export default function LootRating({
   const [failed, setFailed] = useState(false);
   const timer = useRef<ReturnType<typeof setTimeout> | null>(null);
   const dirty = useRef(false);
+  const starRefs = useRef<(HTMLButtonElement | null)[]>([]);
+
+  // Roving-tabindex keyboard model expected of a radiogroup: ←/↓ and →/↑ move
+  // to the adjacent star (clamped 1-5), set it, and follow focus there. The
+  // current value is the single tab stop (the first star when unrated).
+  function onStarKey(e: React.KeyboardEvent, n: number) {
+    let next: number;
+    if (e.key === "ArrowRight" || e.key === "ArrowUp") next = Math.min(5, n + 1);
+    else if (e.key === "ArrowLeft" || e.key === "ArrowDown")
+      next = Math.max(1, n - 1);
+    else return;
+    e.preventDefault();
+    rate(next);
+    starRefs.current[next - 1]?.focus();
+  }
 
   // Adopt the server value when it changes, unless the user has an unsaved tap.
   useEffect(() => {
@@ -49,11 +64,16 @@ export default function LootRating({
         {[1, 2, 3, 4, 5].map((n) => (
           <button
             key={n}
+            ref={(el) => {
+              starRefs.current[n - 1] = el;
+            }}
             type="button"
             role="radio"
             aria-checked={n === display}
             aria-label={`${n} 星`}
+            tabIndex={n === (display || 1) ? 0 : -1}
             onClick={() => rate(n)}
+            onKeyDown={(e) => onStarKey(e, n)}
             className="flex min-h-11 min-w-11 items-center justify-center rounded text-2xl leading-none transition-transform focus-visible:ring-2 focus-visible:ring-zinc-400 focus-visible:outline-none active:scale-90 dark:focus-visible:ring-zinc-500"
           >
             <span

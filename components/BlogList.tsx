@@ -44,7 +44,8 @@ export default function BlogList({ rows }: { rows: BlogRow[] }) {
         (x) =>
           x.title.toLowerCase().includes(q) ||
           x.summary.toLowerCase().includes(q) ||
-          x.brief.toLowerCase().includes(q),
+          x.brief.toLowerCase().includes(q) ||
+          x.comment.toLowerCase().includes(q),
       );
     }
     if (source) r = r.filter((x) => x.source === source);
