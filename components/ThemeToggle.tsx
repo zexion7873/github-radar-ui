@@ -6,7 +6,9 @@
 export default function ThemeToggle() {
   function toggle() {
     const isDark = document.documentElement.classList.toggle("dark");
-    localStorage.setItem("theme", isDark ? "dark" : "light");
+    // Cookie (not localStorage) so the server can render the .dark class on <html>
+    // and the theme survives soft navigations like logout's redirect.
+    document.cookie = `theme=${isDark ? "dark" : "light"}; path=/; max-age=31536000; samesite=lax`;
   }
 
   return (

@@ -4,6 +4,7 @@ import "./globals.css";
 import Nav from "@/components/Nav";
 import ThemeToggle from "@/components/ThemeToggle";
 import { logout } from "@/app/login/actions";
+import { cookies } from "next/headers";
 
 const geistSans = Geist({ variable: "--font-geist-sans", subsets: ["latin"] });
 const geistMono = Geist_Mono({ variable: "--font-geist-mono", subsets: ["latin"] });
@@ -13,18 +14,20 @@ export const metadata: Metadata = {
   description: "Trending repos and loot from the GitHub routines",
 };
 
-// Runs before paint: applies the saved theme (or the system preference when
-// none is saved) so the page never flashes the wrong background on load.
-const themeScript = `(function(){try{var t=localStorage.getItem('theme');if(t==='dark'||(!t&&matchMedia('(prefers-color-scheme:dark)').matches))document.documentElement.classList.add('dark')}catch(e){}})()`;
+// Only needed for first visit (no cookie yet): apply the system preference
+// before paint. Once the user has a theme cookie, the server renders the class
+// directly on <html> below, so it survives soft navigations (e.g. logout).
+const themeScript = `(function(){try{if(/(?:^|; )theme=/.test(document.cookie))return;if(matchMedia('(prefers-color-scheme:dark)').matches)document.documentElement.classList.add('dark')}catch(e){}})()`;
 
-export default function RootLayout({
+export default async function RootLayout({
   children,
 }: Readonly<{ children: React.ReactNode }>) {
+  const theme = (await cookies()).get("theme")?.value;
   return (
     <html
       lang="en"
       suppressHydrationWarning
-      className={`${geistSans.variable} ${geistMono.variable} h-full antialiased`}
+      className={`${geistSans.variable} ${geistMono.variable} h-full antialiased${theme === "dark" ? " dark" : ""}`}
     >
       <head>
         <script dangerouslySetInnerHTML={{ __html: themeScript }} />
