@@ -39,6 +39,8 @@ jobs:
           plugin_marketplaces: 'https://github.com/anthropics/claude-code.git'
           plugins: 'code-review@claude-code-plugins'
           prompt: '/code-review:code-review ${{ github.repository }}/pull/${{ github.event.pull_request.number }}'
+          claude_args: |
+            --append-system-prompt "Also check for documentation drift. If this PR changes app behavior, routes, environment variables, auth, or the Notion read/write surface without a matching update to README.md or .env.example, flag it as a finding. Docs that contradict the shipped code are a defect, not a nitpick."
           # See https://github.com/anthropics/claude-code-action/blob/main/docs/usage.md
           # or https://code.claude.com/docs/en/cli-reference for available options
 
