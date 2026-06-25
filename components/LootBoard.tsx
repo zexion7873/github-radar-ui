@@ -3,6 +3,7 @@ import { useMemo, useState, type ReactNode } from "react";
 import type { LootRow } from "@/lib/data";
 import { Badge, cardInteractive, formatWeek } from "./ui";
 import LootStatusControl from "./LootStatusControl";
+import LootRating from "./LootRating";
 
 const STATUS_ORDER = ["new", "adopted", "skipped"];
 const STATUS_TONE: Record<string, "blue" | "green" | "gray"> = {
@@ -103,7 +104,13 @@ export default function LootBoard({ rows }: { rows: LootRow[] }) {
               <span>{groups.get(key)!.length}</span>
             </h2>
             <div className="grid gap-3 sm:grid-cols-2">
-              {groups.get(key)!.map((r) => (
+              {groups
+                .get(key)!
+                .slice()
+                .sort(
+                  (a, b) => (b.recommendation ?? -1) - (a.recommendation ?? -1),
+                )
+                .map((r) => (
                 <article
                   key={r.id}
                   className={`flex flex-col gap-1.5 p-4 ${cardInteractive}`}
@@ -147,7 +154,8 @@ export default function LootBoard({ rows }: { rows: LootRow[] }) {
                       {formatWeek(r.week)}
                     </p>
                   )}
-                  <div className="mt-auto border-t border-zinc-100 pt-2 dark:border-zinc-800">
+                  <div className="mt-auto flex flex-col gap-2 border-t border-zinc-100 pt-2 dark:border-zinc-800">
+                    <LootRating pageId={r.id} value={r.recommendation} />
                     <LootStatusControl pageId={r.id} status={r.status ?? "new"} />
                   </div>
                 </article>

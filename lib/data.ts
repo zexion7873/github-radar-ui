@@ -35,6 +35,7 @@ export type LootRow = {
   why: string;
   how: string;
   status: string | null;
+  recommendation: number | null;
 };
 
 export type Result<T> = { ok: true; rows: T[] } | { ok: false; error: string };
@@ -119,6 +120,7 @@ export function fetchLoot(uuid: string): Promise<Result<LootRow>> {
       why: text(p, "Why"),
       how: text(p, "How"),
       status: sel(p, "Status"),
+      recommendation: num(p, "Recommendation"),
     };
   });
 }
