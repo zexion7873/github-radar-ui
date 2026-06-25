@@ -1,7 +1,7 @@
-import { fetchTrending, fetchLoot } from "@/lib/data";
+import { fetchTrending, fetchLoot, latestPerRepo } from "@/lib/data";
 import { TABLES } from "@/lib/config";
-import TrendingList from "@/components/TrendingList";
 import StatsBar from "@/components/StatsBar";
+import Dashboard from "@/components/Dashboard";
 import { DataError } from "@/components/ui";
 
 export const dynamic = "force-dynamic";
@@ -14,9 +14,9 @@ const pendingCount = (
     : null;
 
 export default async function Page() {
-  // Read all three tables in parallel; loot only feeds the stat cards, so a loot
-  // failure degrades to "—" rather than failing the whole page — only a trending
-  // failure (the main content) shows the error notice.
+  // All three tables in parallel; loot failures degrade to "—" / null in the
+  // cards rather than failing the page. Only a trending failure (the page's
+  // backbone — stat counts and the hot list) shows the error notice.
   const [trending, lootClaude, lootCopilot] = await Promise.all([
     fetchTrending(TABLES.trending),
     fetchLoot(TABLES.lootClaude),
@@ -24,20 +24,32 @@ export default async function Page() {
   ]);
   if (!trending.ok) return <DataError error={trending.error} />;
 
-  const rows = trending.rows;
-  const newOnChart = rows.filter((r) => (r.weeksOnChart ?? 1) <= 1).length;
+  const repos = latestPerRepo(trending.rows);
+  const latestWeek = repos.reduce(
+    (max, r) => (r.week && r.week > max ? r.week : max),
+    "",
+  );
+  const newThisWeek = repos.filter(
+    (r) => r.week === latestWeek && (r.weeksOnChart ?? 1) <= 1,
+  ).length;
 
   return (
     <div className="flex flex-col gap-6">
       <StatsBar
         stats={[
-          { label: "追蹤中 repo", value: rows.length },
-          { label: "🆕 本週新上榜", value: newOnChart },
+          { label: "追蹤中 repo", value: repos.length },
+          { label: "🆕 本週新上榜", value: newThisWeek },
           { label: "Claude 待處理", value: pendingCount(lootClaude) },
           { label: "Copilot 待處理", value: pendingCount(lootCopilot) },
         ]}
       />
-      <TrendingList rows={rows} />
+      <Dashboard
+        trending={repos}
+        loot={{
+          claude: lootClaude.ok ? lootClaude.rows : null,
+          copilot: lootCopilot.ok ? lootCopilot.rows : null,
+        }}
+      />
     </div>
   );
 }
