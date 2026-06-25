@@ -38,6 +38,19 @@ export type LootRow = {
   recommendation: number | null;
 };
 
+export type BlogRow = {
+  id: string;
+  title: string;
+  url: string | null;
+  source: string;
+  type: string | null; // "official" | "individual"
+  author: string;
+  published: string | null;
+  archived: string | null;
+  summary: string;
+  comment: string;
+};
+
 export type Result<T> = { ok: true; rows: T[] } | { ok: false; error: string };
 
 type Sort = { property: string; direction: "ascending" | "descending" };
@@ -125,4 +138,24 @@ export function fetchLoot(uuid: string): Promise<Result<LootRow>> {
       recommendation: num(p, "Recommendation"),
     };
   }, "notion:loot");
+}
+
+// Blog Archive is one row per post (no per-repo dedup needed). Property keys are
+// the Notion display names — confirm against a live query before trusting them.
+export function fetchBlog(uuid: string): Promise<Result<BlogRow>> {
+  return load(uuid, [{ property: "Published", direction: "descending" }], (pg) => {
+    const p = pg.properties;
+    return {
+      id: pg.id,
+      title: text(p, "Title"),
+      url: urlProp(p, "URL"),
+      source: text(p, "Source"),
+      type: sel(p, "Type"),
+      author: text(p, "Author"),
+      published: dateStart(p, "Published"),
+      archived: dateStart(p, "Archived"),
+      summary: text(p, "Summary"),
+      comment: text(p, "Comment"),
+    };
+  }, "notion:blog");
 }

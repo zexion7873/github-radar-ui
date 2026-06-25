@@ -32,6 +32,17 @@ export function Badge({
   );
 }
 
+// Trending/Blog category → badge tone, shared by the trending list and the
+// dashboard so a category wears the same colour everywhere.
+export const CATEGORY_TONE: Record<string, Tone> = {
+  agents: "purple",
+  models: "blue",
+  infra: "green",
+  tooling: "amber",
+  apps: "gray",
+  other: "gray",
+};
+
 export function Notice({
   title,
   children,
