@@ -1,0 +1,79 @@
+"use client";
+
+import { useEffect, useRef, useState } from "react";
+import { setLootRecommendation } from "@/app/loot/actions";
+
+// 1-5 star control: clicking a star sets that rating (idempotent — re-tapping the
+// same star keeps it, so rapid taps don't accidentally clear it); the ✕ clears it
+// (→ null). Taps update the display instantly and debounce the Notion write, so
+// rapid re-rating doesn't lag and only the last tap in a burst persists.
+export default function LootRating({
+  pageId,
+  value,
+}: {
+  pageId: string;
+  value: number | null;
+}) {
+  const [display, setDisplay] = useState(value ?? 0);
+  const [failed, setFailed] = useState(false);
+  const timer = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const dirty = useRef(false);
+
+  // Adopt the server value when it changes, unless the user has an unsaved tap.
+  useEffect(() => {
+    if (!dirty.current) setDisplay(value ?? 0);
+  }, [value]);
+
+  function rate(next: number) {
+    setDisplay(next);
+    setFailed(false);
+    dirty.current = true;
+    if (timer.current) clearTimeout(timer.current);
+    timer.current = setTimeout(async () => {
+      try {
+        await setLootRecommendation(pageId, next);
+      } catch {
+        setFailed(true);
+        setDisplay(value ?? 0); // the write didn't land; don't show a fake rating
+      } finally {
+        dirty.current = false;
+      }
+    }, 400);
+  }
+
+  return (
+    <div className="flex items-center gap-1">
+      {[1, 2, 3, 4, 5].map((n) => (
+        <button
+          key={n}
+          type="button"
+          aria-label={`${n} 星`}
+          aria-pressed={n <= display}
+          onClick={() => rate(n)}
+          className="rounded p-2 text-2xl leading-none transition-transform focus-visible:ring-2 focus-visible:ring-zinc-400 focus-visible:outline-none active:scale-90 dark:focus-visible:ring-zinc-500"
+        >
+          <span
+            className={
+              n <= display
+                ? "text-amber-400"
+                : "text-zinc-300 dark:text-zinc-600"
+            }
+          >
+            ★
+          </span>
+        </button>
+      ))}
+      {display > 0 && (
+        <button
+          type="button"
+          onClick={() => rate(0)}
+          aria-label="清除評分"
+          className="ml-1 rounded p-1.5 text-sm text-zinc-400 transition-colors hover:text-zinc-600 focus-visible:ring-2 focus-visible:ring-zinc-400 focus-visible:outline-none dark:hover:text-zinc-300 dark:focus-visible:ring-zinc-500"
+        >
+          ✕
+        </button>
+      )}
+      {failed && <span className="ml-1 text-xs text-red-500">更新失敗</span>}
+    </div>
+  );
+}

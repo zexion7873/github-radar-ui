@@ -97,6 +97,18 @@ export async function updateSelect(
   });
 }
 
+// Writes a number property; pass null to clear the cell.
+export async function updateNumber(
+  pageId: string,
+  prop: string,
+  value: number | null,
+): Promise<void> {
+  await notionFetch(`/pages/${pageId}`, {
+    method: "PATCH",
+    body: JSON.stringify({ properties: { [prop]: { number: value } } }),
+  });
+}
+
 export async function queryAll(
   dataSourceId: string,
   body: Record<string, unknown>,
