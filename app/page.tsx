@@ -1,4 +1,4 @@
-import { fetchTrending, fetchLoot } from "@/lib/data";
+import { fetchTrending, fetchLoot, latestPerRepo } from "@/lib/data";
 import { TABLES } from "@/lib/config";
 import StatsBar from "@/components/StatsBar";
 import Dashboard from "@/components/Dashboard";
@@ -24,21 +24,27 @@ export default async function Page() {
   ]);
   if (!trending.ok) return <DataError error={trending.error} />;
 
-  const rows = trending.rows;
-  const newOnChart = rows.filter((r) => (r.weeksOnChart ?? 1) <= 1).length;
+  const repos = latestPerRepo(trending.rows);
+  const latestWeek = repos.reduce(
+    (max, r) => (r.week && r.week > max ? r.week : max),
+    "",
+  );
+  const newThisWeek = repos.filter(
+    (r) => r.week === latestWeek && (r.weeksOnChart ?? 1) <= 1,
+  ).length;
 
   return (
     <div className="flex flex-col gap-6">
       <StatsBar
         stats={[
-          { label: "追蹤中 repo", value: rows.length },
-          { label: "🆕 本週新上榜", value: newOnChart },
+          { label: "追蹤中 repo", value: repos.length },
+          { label: "🆕 本週新上榜", value: newThisWeek },
           { label: "Claude 待處理", value: pendingCount(lootClaude) },
           { label: "Copilot 待處理", value: pendingCount(lootCopilot) },
         ]}
       />
       <Dashboard
-        trending={rows}
+        trending={repos}
         loot={{
           claude: lootClaude.ok ? lootClaude.rows : null,
           copilot: lootCopilot.ok ? lootCopilot.rows : null,

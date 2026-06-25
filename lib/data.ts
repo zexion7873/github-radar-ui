@@ -94,6 +94,17 @@ export function fetchTrending(uuid: string): Promise<Result<TrendingRow>> {
   );
 }
 
+// Trending Archive is one row per repo per week. Collapse to each repo's most
+// recent week so callers see distinct repos, not weekly snapshots.
+export function latestPerRepo(rows: TrendingRow[]): TrendingRow[] {
+  const byRepo = new Map<string, TrendingRow>();
+  for (const r of rows) {
+    const prev = byRepo.get(r.repo);
+    if (!prev || (r.week ?? "") > (prev.week ?? "")) byRepo.set(r.repo, r);
+  }
+  return [...byRepo.values()];
+}
+
 export function fetchLoot(uuid: string): Promise<Result<LootRow>> {
   return load(uuid, [{ property: "Week", direction: "descending" }], (pg) => {
     const p = pg.properties;
