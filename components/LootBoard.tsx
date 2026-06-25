@@ -133,19 +133,19 @@ export default function LootBoard({ rows }: { rows: LootRow[] }) {
                   )}
                   {r.asset && (
                     <p className="text-sm">
-                      <span className="text-zinc-500 dark:text-zinc-400">偷什麼 </span>
+                      <span className="font-medium text-amber-700 dark:text-amber-500">偷什麼 </span>
                       {r.asset}
                     </p>
                   )}
                   {r.why && (
                     <p className="text-sm">
-                      <span className="text-zinc-500 dark:text-zinc-400">為何 </span>
+                      <span className="font-medium text-blue-700 dark:text-blue-400">為何 </span>
                       {r.why}
                     </p>
                   )}
                   {r.how && (
                     <p className="text-sm">
-                      <span className="text-zinc-500 dark:text-zinc-400">怎麼搬 </span>
+                      <span className="font-medium text-emerald-700 dark:text-emerald-400">怎麼搬 </span>
                       {r.how}
                     </p>
                   )}
