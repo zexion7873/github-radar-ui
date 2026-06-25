@@ -52,6 +52,18 @@ export default function LootBoard({ rows }: { rows: LootRow[] }) {
     ...[...groups.keys()].filter((k) => !STATUS_ORDER.includes(k)),
   ];
 
+  // Freeze each card's position from the first render's recommendation order, so
+  // rating a card — which revalidates and would otherwise re-sort the group —
+  // doesn't make it jump and cost the user their place mid-triage. The lazy
+  // useState initialiser snapshots once on mount; cards added later append, and a
+  // full reload re-snapshots against the latest ratings.
+  const [order] = useState(() => {
+    const ranked = [...rows].sort(
+      (a, b) => (b.recommendation ?? -1) - (a.recommendation ?? -1),
+    );
+    return new Map(ranked.map((r, i) => [r.id, i]));
+  });
+
   const noResults = filtered.length === 0;
   const hasFilter = !!query || !!type || !!status;
 
@@ -117,7 +129,8 @@ export default function LootBoard({ rows }: { rows: LootRow[] }) {
                 .get(key)!
                 .slice()
                 .sort(
-                  (a, b) => (b.recommendation ?? -1) - (a.recommendation ?? -1),
+                  (a, b) =>
+                    (order.get(a.id) ?? Infinity) - (order.get(b.id) ?? Infinity),
                 )
                 .map((r) => (
                 <article
