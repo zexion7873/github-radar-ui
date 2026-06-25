@@ -1,7 +1,7 @@
 "use client";
 import { useMemo, useState, type ReactNode } from "react";
 import type { TrendingRow } from "@/lib/data";
-import { Badge, formatWeek } from "./ui";
+import { Badge, cardInteractive, formatWeek } from "./ui";
 
 const CATEGORY_TONE: Record<
   string,
@@ -15,6 +15,8 @@ const CATEGORY_TONE: Record<
   other: "gray",
 };
 
+type Sort = "recent" | "stars";
+
 export default function TrendingList({ rows }: { rows: TrendingRow[] }) {
   const categories = useMemo(
     () =>
@@ -24,28 +26,66 @@ export default function TrendingList({ rows }: { rows: TrendingRow[] }) {
     [rows],
   );
   const [active, setActive] = useState<string | null>(null);
-  const shown = active ? rows.filter((r) => r.category === active) : rows;
+  const [query, setQuery] = useState("");
+  const [sort, setSort] = useState<Sort>("recent");
+
+  const shown = useMemo(() => {
+    let r = active ? rows.filter((x) => x.category === active) : rows;
+    const q = query.trim().toLowerCase();
+    if (q) {
+      r = r.filter(
+        (x) =>
+          x.repo.toLowerCase().includes(q) ||
+          x.description.toLowerCase().includes(q),
+      );
+    }
+    // "recent" keeps the server order (Week desc, then Stars/wk desc).
+    if (sort === "stars") {
+      r = [...r].sort((a, b) => (b.starsPerWeek ?? 0) - (a.starsPerWeek ?? 0));
+    }
+    return r;
+  }, [rows, active, query, sort]);
 
   return (
     <div>
-      {categories.length > 0 && (
-        <div className="mb-4 flex flex-wrap gap-2">
-          <Chip on={active === null} onClick={() => setActive(null)}>
-            All
-          </Chip>
-          {categories.map((c) => (
-            <Chip key={c} on={active === c} onClick={() => setActive(c)}>
-              {c}
-            </Chip>
-          ))}
+      <div className="mb-4 flex flex-col gap-3">
+        <div className="flex flex-wrap items-center gap-2">
+          <input
+            type="search"
+            value={query}
+            onChange={(e) => setQuery(e.target.value)}
+            placeholder="搜尋 repo 或描述…"
+            className="w-full rounded-lg border border-zinc-200 bg-white px-3 py-1.5 text-sm placeholder:text-zinc-400 focus:border-zinc-400 focus:ring-2 focus:ring-zinc-200 focus:outline-none sm:w-64 dark:border-zinc-800 dark:bg-zinc-900 dark:focus:ring-zinc-700"
+          />
+          <select
+            value={sort}
+            onChange={(e) => setSort(e.target.value as Sort)}
+            className="rounded-lg border border-zinc-200 bg-white px-3 py-1.5 text-sm focus:border-zinc-400 focus:ring-2 focus:ring-zinc-200 focus:outline-none dark:border-zinc-800 dark:bg-zinc-900 dark:focus:ring-zinc-700"
+          >
+            <option value="recent">最新優先</option>
+            <option value="stars">⭐/週 最高</option>
+          </select>
         </div>
-      )}
+
+        {categories.length > 0 && (
+          <div className="flex flex-wrap gap-2">
+            <Chip on={active === null} onClick={() => setActive(null)}>
+              All
+            </Chip>
+            {categories.map((c) => (
+              <Chip key={c} on={active === c} onClick={() => setActive(c)}>
+                {c}
+              </Chip>
+            ))}
+          </div>
+        )}
+      </div>
 
       <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
         {shown.map((r) => (
           <article
             key={r.id}
-            className="flex flex-col gap-2 rounded-xl border border-zinc-200 bg-white p-4 dark:border-zinc-800 dark:bg-zinc-900"
+            className={`flex flex-col gap-2 p-4 ${cardInteractive}`}
           >
             <div className="flex items-start justify-between gap-2">
               <a
@@ -88,7 +128,13 @@ export default function TrendingList({ rows }: { rows: TrendingRow[] }) {
       </div>
 
       {shown.length === 0 && (
-        <p className="py-12 text-center text-sm text-zinc-400">No rows yet.</p>
+        <p className="py-12 text-center text-sm text-zinc-400">
+          {query
+            ? `沒有符合「${query}」的結果`
+            : active
+              ? "這個分類目前沒有資料"
+              : "No rows yet."}
+        </p>
       )}
     </div>
   );
@@ -106,10 +152,10 @@ function Chip({
   return (
     <button
       onClick={onClick}
-      className={`rounded-full px-3 py-1 text-xs font-medium transition-colors ${
+      className={`rounded-full px-3 py-1 text-xs font-medium transition-colors focus-visible:ring-2 focus-visible:ring-zinc-400 focus-visible:outline-none active:scale-95 dark:focus-visible:ring-zinc-500 ${
         on
           ? "bg-zinc-900 text-white dark:bg-white dark:text-black"
-          : "bg-zinc-100 text-zinc-600 hover:bg-zinc-200 dark:bg-zinc-800 dark:text-zinc-300"
+          : "bg-zinc-100 text-zinc-600 hover:bg-zinc-200 dark:bg-zinc-800 dark:text-zinc-300 dark:hover:bg-zinc-700"
       }`}
     >
       {children}

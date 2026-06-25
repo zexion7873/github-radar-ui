@@ -34,3 +34,8 @@ export async function login(formData: FormData) {
   });
   redirect(from);
 }
+
+export async function logout() {
+  (await cookies()).delete("gh_radar");
+  redirect("/login");
+}
