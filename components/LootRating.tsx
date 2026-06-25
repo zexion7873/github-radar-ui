@@ -45,32 +45,35 @@ export default function LootRating({
 
   return (
     <div className="flex items-center gap-1">
-      {[1, 2, 3, 4, 5].map((n) => (
-        <button
-          key={n}
-          type="button"
-          aria-label={`${n} 星`}
-          aria-pressed={n <= display}
-          onClick={() => rate(n)}
-          className="rounded p-2 text-2xl leading-none transition-transform focus-visible:ring-2 focus-visible:ring-zinc-400 focus-visible:outline-none active:scale-90 dark:focus-visible:ring-zinc-500"
-        >
-          <span
-            className={
-              n <= display
-                ? "text-amber-400"
-                : "text-zinc-300 dark:text-zinc-600"
-            }
+      <div role="radiogroup" aria-label="推薦評分" className="flex items-center">
+        {[1, 2, 3, 4, 5].map((n) => (
+          <button
+            key={n}
+            type="button"
+            role="radio"
+            aria-checked={n === display}
+            aria-label={`${n} 星`}
+            onClick={() => rate(n)}
+            className="flex min-h-11 min-w-11 items-center justify-center rounded text-2xl leading-none transition-transform focus-visible:ring-2 focus-visible:ring-zinc-400 focus-visible:outline-none active:scale-90 dark:focus-visible:ring-zinc-500"
           >
-            ★
-          </span>
-        </button>
-      ))}
+            <span
+              className={
+                n <= display
+                  ? "text-amber-400"
+                  : "text-zinc-300 dark:text-zinc-600"
+              }
+            >
+              ★
+            </span>
+          </button>
+        ))}
+      </div>
       {display > 0 && (
         <button
           type="button"
           onClick={() => rate(0)}
           aria-label="清除評分"
-          className="ml-1 rounded p-1.5 text-sm text-zinc-400 transition-colors hover:text-zinc-600 focus-visible:ring-2 focus-visible:ring-zinc-400 focus-visible:outline-none dark:hover:text-zinc-300 dark:focus-visible:ring-zinc-500"
+          className="flex min-h-11 min-w-11 items-center justify-center rounded text-sm text-zinc-400 transition-colors hover:text-zinc-600 focus-visible:ring-2 focus-visible:ring-zinc-400 focus-visible:outline-none dark:hover:text-zinc-300 dark:focus-visible:ring-zinc-500"
         >
           ✕
         </button>

@@ -159,7 +159,7 @@ export default function LootBoard({ rows }: { rows: LootRow[] }) {
                     </p>
                   )}
                   {r.week && (
-                    <p className="mt-1 text-xs text-zinc-400">
+                    <p className="mt-1 text-xs text-zinc-500">
                       {formatWeek(r.week)}
                     </p>
                   )}

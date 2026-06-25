@@ -124,7 +124,7 @@ export default function TrendingList({ rows }: { rows: TrendingRow[] }) {
               </p>
             )}
             {r.week && (
-              <p className="mt-auto text-xs text-zinc-400">{formatWeek(r.week)}</p>
+              <p className="mt-auto text-xs text-zinc-500">{formatWeek(r.week)}</p>
             )}
           </article>
         ))}

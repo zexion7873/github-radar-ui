@@ -135,7 +135,7 @@ export default function BlogList({ rows }: { rows: BlogRow[] }) {
                           </p>
                         )}
                         {r.published && (
-                          <p className="mt-auto text-xs text-zinc-400">
+                          <p className="mt-auto text-xs text-zinc-500">
                             {formatWeek(r.published)}
                           </p>
                         )}
