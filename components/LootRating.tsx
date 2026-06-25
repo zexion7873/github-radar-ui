@@ -50,7 +50,7 @@ export default function LootRating({
           aria-label={`${n} 星`}
           aria-pressed={n <= display}
           onClick={() => rate(n)}
-          className="rounded p-2 text-lg leading-none transition-transform focus-visible:ring-2 focus-visible:ring-zinc-400 focus-visible:outline-none active:scale-90 dark:focus-visible:ring-zinc-500"
+          className="rounded p-2 text-2xl leading-none transition-transform focus-visible:ring-2 focus-visible:ring-zinc-400 focus-visible:outline-none active:scale-90 dark:focus-visible:ring-zinc-500"
         >
           <span
             className={
