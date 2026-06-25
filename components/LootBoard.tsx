@@ -1,5 +1,6 @@
 import type { LootRow } from "@/lib/data";
 import { Badge, formatWeek } from "./ui";
+import LootStatusControl from "./LootStatusControl";
 
 const STATUS_ORDER = ["new", "adopted", "skipped"];
 const STATUS_TONE: Record<string, "blue" | "green" | "gray"> = {
@@ -80,6 +81,9 @@ export default function LootBoard({ rows }: { rows: LootRow[] }) {
                     {formatWeek(r.week)}
                   </p>
                 )}
+                <div className="mt-auto border-t border-zinc-100 pt-2 dark:border-zinc-800">
+                  <LootStatusControl pageId={r.id} status={r.status ?? "new"} />
+                </div>
               </article>
             ))}
           </div>

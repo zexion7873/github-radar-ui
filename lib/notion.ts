@@ -83,6 +83,20 @@ type QueryResponse = {
   next_cursor: string | null;
 };
 
+// Writes a select property on a page. `value` MUST match an existing option name
+// exactly — a typo spawns a duplicate option in Notion. Uncached (notionFetch is
+// always `no-store`), so the write hits Notion directly.
+export async function updateSelect(
+  pageId: string,
+  prop: string,
+  value: string,
+): Promise<void> {
+  await notionFetch(`/pages/${pageId}`, {
+    method: "PATCH",
+    body: JSON.stringify({ properties: { [prop]: { select: { name: value } } } }),
+  });
+}
+
 export async function queryAll(
   dataSourceId: string,
   body: Record<string, unknown>,
