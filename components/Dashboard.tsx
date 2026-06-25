@@ -1,7 +1,7 @@
 import Link from "next/link";
 import type { TrendingRow, LootRow, BlogRow } from "@/lib/data";
 import { LOOT_TARGETS, type LootTarget } from "@/lib/config";
-import { Badge, cardInteractive } from "./ui";
+import { Badge, cardInteractive, CATEGORY_TONE } from "./ui";
 
 function SectionHeader({
   title,
@@ -104,7 +104,11 @@ export default function Dashboard({
                     {r.starsPerWeek != null && (
                       <span>⭐ {r.starsPerWeek.toLocaleString()}</span>
                     )}
-                    {r.language && <Badge>{r.language}</Badge>}
+                    {r.category && (
+                      <Badge tone={CATEGORY_TONE[r.category] ?? "gray"}>
+                        {r.category}
+                      </Badge>
+                    )}
                   </span>
                 </div>
                 {r.description && (

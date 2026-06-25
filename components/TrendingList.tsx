@@ -1,19 +1,7 @@
 "use client";
 import { useMemo, useState, type ReactNode } from "react";
 import type { TrendingRow } from "@/lib/data";
-import { Badge, cardInteractive, formatWeek } from "./ui";
-
-const CATEGORY_TONE: Record<
-  string,
-  "blue" | "green" | "amber" | "purple" | "gray"
-> = {
-  agents: "purple",
-  models: "blue",
-  infra: "green",
-  tooling: "amber",
-  apps: "gray",
-  other: "gray",
-};
+import { Badge, cardInteractive, formatWeek, CATEGORY_TONE } from "./ui";
 
 type Sort = "recent" | "stars";
 
