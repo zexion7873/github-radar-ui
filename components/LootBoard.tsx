@@ -98,8 +98,8 @@ export default function LootBoard({ rows }: { rows: LootRow[] }) {
       </div>
 
       {noResults ? (
-        <p className="py-12 text-center text-sm text-zinc-400">
-          {hasFilter ? "沒有符合條件的 loot" : "No loot yet."}
+        <p className="py-12 text-center text-sm text-zinc-500">
+          {hasFilter ? "沒有符合條件的 loot" : "還沒有 loot，等抓取任務跑完"}
         </p>
       ) : (
         keys.map((key) => (
@@ -112,7 +112,7 @@ export default function LootBoard({ rows }: { rows: LootRow[] }) {
                 {groups.get(key)!.length}
               </span>
             </h2>
-            <div className="grid gap-3 sm:grid-cols-2">
+            <div className="grid gap-3 md:grid-cols-2">
               {groups
                 .get(key)!
                 .slice()

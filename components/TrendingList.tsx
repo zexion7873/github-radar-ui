@@ -41,6 +41,14 @@ export default function TrendingList({ rows }: { rows: TrendingRow[] }) {
     return r;
   }, [rows, active, query, sort]);
 
+  // Latest week across all repos — drives the 🆕 badge so it means the SAME
+  // thing as the dashboard's "本週新上榜" stat (newcomer in the most recent week),
+  // not just "any repo with ≤1 week on chart" regardless of when.
+  const latestWeek = useMemo(
+    () => rows.reduce((m, r) => (r.week && r.week > m ? r.week : m), ""),
+    [rows],
+  );
+
   return (
     <div>
       <div className="sticky top-0 z-10 -mx-4 mb-4 flex flex-col gap-3 bg-zinc-50/90 px-4 py-3 backdrop-blur dark:bg-black/90">
@@ -94,11 +102,11 @@ export default function TrendingList({ rows }: { rows: TrendingRow[] }) {
               >
                 {r.repo}
               </a>
-              {r.weeksOnChart != null && (
-                <Badge tone={r.weeksOnChart > 1 ? "gray" : FRESH_TONE}>
-                  {r.weeksOnChart > 1 ? `🔁 ${r.weeksOnChart} 週` : "🆕 新上榜"}
-                </Badge>
-              )}
+              {r.week === latestWeek && (r.weeksOnChart ?? 1) <= 1 ? (
+                <Badge tone={FRESH_TONE}>🆕 新上榜</Badge>
+              ) : r.weeksOnChart != null && r.weeksOnChart > 1 ? (
+                <Badge tone="gray">🔁 {r.weeksOnChart} 週</Badge>
+              ) : null}
             </div>
 
             <div className="flex flex-wrap items-center gap-1.5 text-xs text-zinc-500">
@@ -114,12 +122,12 @@ export default function TrendingList({ rows }: { rows: TrendingRow[] }) {
             </div>
 
             {r.description && (
-              <p className="text-sm leading-relaxed text-zinc-700 dark:text-zinc-300">
+              <p className="line-clamp-3 text-sm leading-relaxed text-zinc-700 dark:text-zinc-300">
                 {r.description}
               </p>
             )}
             {r.comment && (
-              <p className="border-l-2 border-zinc-200 pl-3 text-sm leading-relaxed text-zinc-500 italic dark:border-zinc-700 dark:text-zinc-400">
+              <p className="line-clamp-3 border-l-2 border-zinc-200 pl-3 text-sm leading-relaxed text-zinc-500 italic dark:border-zinc-700 dark:text-zinc-400">
                 {r.comment}
               </p>
             )}
@@ -131,12 +139,12 @@ export default function TrendingList({ rows }: { rows: TrendingRow[] }) {
       </div>
 
       {shown.length === 0 && (
-        <p className="py-12 text-center text-sm text-zinc-400">
+        <p className="py-12 text-center text-sm text-zinc-500">
           {query
             ? `沒有符合「${query}」的結果`
             : active
               ? "這個分類目前沒有資料"
-              : "No rows yet."}
+              : "還沒有 trending 資料，等下次同步"}
         </p>
       )}
     </div>

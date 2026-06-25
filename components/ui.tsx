@@ -115,7 +115,7 @@ export function Notice({
 export function DataError({ error }: { error: string }) {
   if (error.includes("NOTION_TOKEN")) {
     return (
-      <Notice title="Notion token not set">
+      <Notice title="尚未設定 Notion token">
         <p>
           Add your Notion internal integration token to{" "}
           <code className="font-mono">.env.local</code>:
@@ -131,7 +131,7 @@ export function DataError({ error }: { error: string }) {
     );
   }
   return (
-    <Notice title="Could not read Notion">
+    <Notice title="讀取 Notion 失敗">
       <p className="font-mono text-xs">{error}</p>
       <p className="mt-2">
         Common causes: the database is not shared with the integration, or the

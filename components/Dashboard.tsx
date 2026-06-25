@@ -1,7 +1,7 @@
 import Link from "next/link";
 import type { TrendingRow, LootRow, BlogRow } from "@/lib/data";
 import { LOOT_TARGETS, type LootTarget } from "@/lib/config";
-import { Badge, cardInteractive, CATEGORY_TONE } from "./ui";
+import { Badge, cardInteractive, CATEGORY_TONE, formatWeek } from "./ui";
 
 function SectionHeader({
   title,
@@ -13,7 +13,7 @@ function SectionHeader({
   linkText?: string;
 }) {
   return (
-    <div className="mb-2 flex items-center justify-between">
+    <div className="mb-3 flex items-center justify-between">
       <h2 className="text-base font-semibold text-zinc-900 dark:text-zinc-100">
         {title}
       </h2>
@@ -79,7 +79,7 @@ export default function Dashboard({
   const topBlog = (blog ?? []).slice(0, 3);
 
   return (
-    <div className="flex flex-col gap-6">
+    <div className="flex flex-col gap-8">
       <section>
         <SectionHeader
           title="🔥 熱門 repo"
@@ -119,7 +119,7 @@ export default function Dashboard({
                   </p>
                 )}
                 {r.comment && (
-                  <p className="line-clamp-2 border-l-2 border-zinc-200 pl-2 text-xs leading-relaxed text-zinc-500 italic dark:border-zinc-700 dark:text-zinc-400">
+                  <p className="line-clamp-3 border-l-2 border-zinc-200 pl-2 text-xs leading-relaxed text-zinc-500 italic dark:border-zinc-700 dark:text-zinc-400">
                     {r.comment}
                   </p>
                 )}
@@ -159,8 +159,13 @@ export default function Dashboard({
                   </p>
                 )}
                 {b.comment && (
-                  <p className="line-clamp-2 border-l-2 border-zinc-200 pl-2 text-xs leading-relaxed text-zinc-500 italic dark:border-zinc-700 dark:text-zinc-400">
+                  <p className="line-clamp-3 border-l-2 border-zinc-200 pl-2 text-xs leading-relaxed text-zinc-500 italic dark:border-zinc-700 dark:text-zinc-400">
                     {b.comment}
+                  </p>
+                )}
+                {b.published && (
+                  <p className="text-xs text-zinc-500">
+                    {formatWeek(b.published)}
                   </p>
                 )}
               </a>
