@@ -82,13 +82,13 @@ export default function LootRating({
             tabIndex={n === (display || 1) ? 0 : -1}
             onClick={() => rate(n)}
             onKeyDown={(e) => onStarKey(e, n)}
-            className="flex min-h-11 min-w-11 items-center justify-center rounded text-2xl leading-none transition-transform focus-visible:ring-2 focus-visible:ring-zinc-400 focus-visible:outline-none active:scale-90 dark:focus-visible:ring-zinc-500"
+            className="flex min-h-11 min-w-11 items-center justify-center rounded-none text-2xl leading-none transition-transform focus-visible:ring-2 focus-visible:ring-accent/30 focus-visible:outline-none active:scale-90"
           >
             <span
               className={
                 n <= display
-                  ? "text-amber-400"
-                  : "text-zinc-300 dark:text-zinc-600"
+                  ? "text-accent"
+                  : "text-muted"
               }
             >
               ★
@@ -101,7 +101,7 @@ export default function LootRating({
           type="button"
           onClick={() => rate(0)}
           aria-label="清除評分"
-          className="flex min-h-11 min-w-11 items-center justify-center rounded text-sm text-zinc-400 transition-colors hover:text-zinc-600 focus-visible:ring-2 focus-visible:ring-zinc-400 focus-visible:outline-none dark:hover:text-zinc-300 dark:focus-visible:ring-zinc-500"
+          className="flex min-h-11 min-w-11 items-center justify-center rounded-none text-sm text-muted transition-colors hover:text-foreground focus-visible:ring-2 focus-visible:ring-accent/30 focus-visible:outline-none"
         >
           ✕
         </button>

@@ -52,19 +52,19 @@ export default function TrendingList({ rows }: { rows: TrendingRow[] }) {
 
   return (
     <div>
-      <div className="sticky top-[var(--header-h)] z-10 -mx-4 mb-4 flex flex-col gap-3 bg-zinc-50/90 px-4 py-3 backdrop-blur dark:bg-black/90">
+      <div className="sticky top-[var(--header-h)] z-20 -mx-4 mb-4 flex flex-col gap-3 border-b border-border bg-background/80 px-4 py-3 backdrop-blur">
         <div className="flex flex-wrap items-center gap-2">
           <input
             type="search"
             value={query}
             onChange={(e) => setQuery(e.target.value)}
             placeholder="搜尋 repo 或描述…"
-            className="w-full rounded-lg border border-zinc-200 bg-white px-3 py-1.5 text-sm placeholder:text-zinc-400 focus:border-zinc-400 focus:ring-2 focus:ring-zinc-200 focus:outline-none sm:w-64 dark:border-zinc-800 dark:bg-zinc-900 dark:focus:ring-zinc-700"
+            className="w-full rounded-none border border-border bg-surface px-3 py-1.5 text-sm placeholder:text-muted focus:border-accent focus:ring-2 focus:ring-accent/30 focus:outline-none sm:w-64"
           />
           <select
             value={sort}
             onChange={(e) => setSort(e.target.value as Sort)}
-            className="rounded-lg border border-zinc-200 bg-white px-3 py-1.5 text-sm focus:border-zinc-400 focus:ring-2 focus:ring-zinc-200 focus:outline-none dark:border-zinc-800 dark:bg-zinc-900 dark:focus:ring-zinc-700"
+            className="rounded-none border border-border bg-surface px-3 py-1.5 text-sm focus:border-accent focus:ring-2 focus:ring-accent/30 focus:outline-none"
           >
             <option value="recent">最新優先</option>
             <option value="stars">⭐/週 最高</option>
@@ -83,7 +83,7 @@ export default function TrendingList({ rows }: { rows: TrendingRow[] }) {
             ))}
           </div>
         )}
-        <p className="text-xs text-zinc-500">
+        <p className="text-xs text-muted">
           顯示 {shown.length} / {rows.length}
         </p>
       </div>
@@ -106,7 +106,7 @@ export default function TrendingList({ rows }: { rows: TrendingRow[] }) {
                 href={r.link ?? "#"}
                 target="_blank"
                 rel="noopener noreferrer"
-                className="relative z-10 font-medium break-all text-blue-600 hover:underline dark:text-blue-400"
+                className="relative z-10 font-medium break-all text-foreground hover:text-accent"
               >
                 {r.repo}
               </a>
@@ -119,41 +119,41 @@ export default function TrendingList({ rows }: { rows: TrendingRow[] }) {
               {r.week === latestWeek && (r.weeksOnChart ?? 1) <= 1 ? (
                 <Badge tone={FRESH_TONE}>🆕 新上榜</Badge>
               ) : r.weeksOnChart != null && r.weeksOnChart > 1 ? (
-                <Badge tone="gray">🔁 {r.weeksOnChart} 週</Badge>
+                <Badge tone="muted">🔁 {r.weeksOnChart} 週</Badge>
               ) : null}
             </div>
 
-            <div className="flex flex-wrap items-center gap-1.5 text-xs text-zinc-500">
+            <div className="flex flex-wrap items-center gap-1.5 text-xs text-muted">
               {r.starsPerWeek != null && (
                 <span>⭐ {r.starsPerWeek.toLocaleString()}</span>
               )}
               {r.language && <span>{r.language}</span>}
               {r.category && (
-                <Badge tone={CATEGORY_TONE[r.category] ?? "gray"}>
+                <Badge tone={CATEGORY_TONE[r.category] ?? "muted"}>
                   {r.category}
                 </Badge>
               )}
             </div>
 
             {r.description && (
-              <p className="line-clamp-3 text-sm leading-relaxed text-zinc-700 dark:text-zinc-300">
+              <p className="line-clamp-3 text-sm leading-relaxed text-foreground">
                 {r.description}
               </p>
             )}
             {r.comment && (
-              <p className="line-clamp-3 border-l-2 border-zinc-200 pl-3 text-sm leading-relaxed text-zinc-500 italic dark:border-zinc-700 dark:text-zinc-400">
+              <p className="line-clamp-3 border-l-2 border-border pl-3 text-sm leading-relaxed text-muted italic">
                 {r.comment}
               </p>
             )}
             {r.week && (
-              <p className="mt-auto text-xs text-zinc-500">{formatWeek(r.week)}</p>
+              <p className="mt-auto text-xs text-muted">{formatWeek(r.week)}</p>
             )}
           </article>
         ))}
       </div>
 
       {shown.length === 0 && (
-        <p className="py-12 text-center text-sm text-zinc-500">
+        <p className="py-12 text-center text-sm text-muted">
           {query
             ? `沒有符合「${query}」的結果`
             : active

@@ -14,13 +14,13 @@ function SectionHeader({
 }) {
   return (
     <div className="mb-3 flex items-center justify-between">
-      <h2 className="text-base font-semibold text-zinc-900 dark:text-zinc-100">
+      <h2 className="font-serif text-base font-semibold text-foreground">
         {title}
       </h2>
       {href && (
         <Link
           href={href}
-          className="text-xs font-medium text-blue-600 hover:underline dark:text-blue-400"
+          className="text-xs font-medium text-accent hover:underline"
         >
           {linkText} →
         </Link>
@@ -44,20 +44,20 @@ function LootSummaryCard({
     >
       <div className="flex items-center justify-between">
         <span className="font-medium">{LOOT_TARGETS[target].label}</span>
-        <Badge tone={pending.length > 0 ? "blue" : "gray"}>
+        <Badge tone={pending.length > 0 ? "accent" : "muted"}>
           {rows == null ? "—" : `${pending.length} 待處理`}
         </Badge>
       </div>
       {pending.slice(0, 3).map((r) => (
         <p
           key={r.id}
-          className="truncate text-sm text-zinc-600 dark:text-zinc-400"
+          className="truncate text-sm text-muted"
         >
           {r.repo}
         </p>
       ))}
       {rows != null && pending.length === 0 && (
-        <p className="text-sm text-zinc-400">沒有待處理</p>
+        <p className="text-sm text-muted">沒有待處理</p>
       )}
     </Link>
   );
@@ -87,7 +87,7 @@ export default function Dashboard({
           linkText="看全部 Trending"
         />
         {topTrending.length === 0 ? (
-          <p className="text-sm text-zinc-400">目前沒有 trending 資料</p>
+          <p className="text-sm text-muted">目前沒有 trending 資料</p>
         ) : (
           <div className="flex flex-col gap-2">
             {topTrending.map((r) => (
@@ -105,11 +105,11 @@ export default function Dashboard({
                     href={r.link ?? "#"}
                     target="_blank"
                     rel="noopener noreferrer"
-                    className="relative z-10 truncate font-medium text-blue-600 hover:underline dark:text-blue-400"
+                    className="relative z-10 truncate font-medium text-foreground hover:text-accent"
                   >
                     {r.repo}
                   </a>
-                  <span className="flex shrink-0 items-center gap-2 text-xs text-zinc-500">
+                  <span className="flex shrink-0 items-center gap-2 text-xs text-muted">
                     {r.starsPerWeek != null && (
                       <span>⭐ {r.starsPerWeek.toLocaleString()}</span>
                     )}
@@ -121,12 +121,12 @@ export default function Dashboard({
                   </span>
                 </div>
                 {r.description && (
-                  <p className="line-clamp-2 text-xs leading-relaxed text-zinc-600 dark:text-zinc-400">
+                  <p className="line-clamp-2 text-xs leading-relaxed text-muted">
                     {r.description}
                   </p>
                 )}
                 {r.comment && (
-                  <p className="line-clamp-3 border-l-2 border-zinc-200 pl-2 text-xs leading-relaxed text-zinc-500 italic dark:border-zinc-700 dark:text-zinc-400">
+                  <p className="line-clamp-3 border-l-2 border-border pl-2 text-xs leading-relaxed text-muted italic">
                     {r.comment}
                   </p>
                 )}
@@ -143,7 +143,7 @@ export default function Dashboard({
           linkText="看全部 Blog"
         />
         {topBlog.length === 0 ? (
-          <p className="text-sm text-zinc-400">目前沒有文章</p>
+          <p className="text-sm text-muted">目前沒有文章</p>
         ) : (
           <div className="flex flex-col gap-2">
             {topBlog.map((b) => (
@@ -161,24 +161,24 @@ export default function Dashboard({
                     href={b.url ?? "#"}
                     target="_blank"
                     rel="noopener noreferrer"
-                    className="relative z-10 truncate font-medium text-blue-600 hover:underline dark:text-blue-400"
+                    className="relative z-10 truncate font-medium text-foreground hover:text-accent"
                   >
                     {b.title}
                   </a>
-                  {b.source && <Badge tone="blue">{b.source}</Badge>}
+                  {b.source && <Badge tone="muted">{b.source}</Badge>}
                 </div>
                 {(b.brief || b.summary) && (
-                  <p className="line-clamp-2 text-xs leading-relaxed text-zinc-600 dark:text-zinc-400">
+                  <p className="line-clamp-2 text-xs leading-relaxed text-muted">
                     {b.brief || b.summary}
                   </p>
                 )}
                 {b.comment && (
-                  <p className="line-clamp-3 border-l-2 border-zinc-200 pl-2 text-xs leading-relaxed text-zinc-500 italic dark:border-zinc-700 dark:text-zinc-400">
+                  <p className="line-clamp-3 border-l-2 border-border pl-2 text-xs leading-relaxed text-muted italic">
                     {b.comment}
                   </p>
                 )}
                 {b.published && (
-                  <p className="text-xs text-zinc-500">
+                  <p className="text-xs text-muted">
                     {formatWeek(b.published)}
                   </p>
                 )}

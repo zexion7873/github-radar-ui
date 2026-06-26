@@ -83,20 +83,20 @@ export default function LootBoard({ rows }: { rows: LootRow[] }) {
 
   return (
     <div className="flex flex-col gap-4">
-      <div className="sticky top-[var(--header-h)] z-10 -mx-4 flex flex-col gap-3 bg-zinc-50/90 px-4 py-3 backdrop-blur dark:bg-black/90">
+      <div className="sticky top-[var(--header-h)] z-20 -mx-4 flex flex-col gap-3 border-b border-border bg-background/80 px-4 py-3 backdrop-blur">
         <div className="flex flex-wrap items-center gap-2">
           <input
             type="search"
             value={query}
             onChange={(e) => setQuery(e.target.value)}
             placeholder="搜尋 repo / 介紹 / 資產…"
-            className="w-full rounded-lg border border-zinc-200 bg-white px-3 py-1.5 text-sm placeholder:text-zinc-400 focus:border-zinc-400 focus:ring-2 focus:ring-zinc-200 focus:outline-none sm:w-64 dark:border-zinc-800 dark:bg-zinc-900 dark:focus:ring-zinc-700"
+            className="w-full rounded-none border border-border bg-surface px-3 py-1.5 text-sm placeholder:text-muted focus:border-accent focus:ring-2 focus:ring-accent/30 focus:outline-none sm:w-64"
           />
           {types.length > 0 && (
             <select
               value={type ?? ""}
               onChange={(e) => setType(e.target.value || null)}
-              className="rounded-lg border border-zinc-200 bg-white px-3 py-1.5 text-sm focus:border-zinc-400 focus:ring-2 focus:ring-zinc-200 focus:outline-none dark:border-zinc-800 dark:bg-zinc-900 dark:focus:ring-zinc-700"
+              className="rounded-none border border-border bg-surface px-3 py-1.5 text-sm focus:border-accent focus:ring-2 focus:ring-accent/30 focus:outline-none"
             >
               <option value="">全部類型</option>
               {types.map((t) => (
@@ -118,23 +118,23 @@ export default function LootBoard({ rows }: { rows: LootRow[] }) {
             </Chip>
           ))}
         </div>
-        <p className="text-xs text-zinc-500">
+        <p className="text-xs text-muted">
           顯示 {filtered.length} / {rows.length}
         </p>
       </div>
 
       {noResults ? (
-        <p className="py-12 text-center text-sm text-zinc-500">
+        <p className="py-12 text-center text-sm text-muted">
           {hasFilter ? "沒有符合條件的 loot" : "還沒有 loot，等抓取任務跑完"}
         </p>
       ) : (
         keys.map((key) => (
           <section key={key}>
-            <h2 className="mb-3 flex items-center gap-2 text-base font-semibold text-zinc-900 dark:text-zinc-100">
-              <Badge tone={STATUS_TONE[key] ?? "gray"}>
+            <h2 className="mb-3 flex items-center gap-2 text-base font-semibold text-foreground">
+              <Badge tone={STATUS_TONE[key] ?? "muted"}>
                 {STATUS_LABEL[key] ?? key}
               </Badge>
-              <span className="text-sm font-normal text-zinc-400">
+              <span className="text-sm font-normal text-muted">
                 {groups.get(key)!.length}
               </span>
             </h2>
@@ -156,41 +156,41 @@ export default function LootBoard({ rows }: { rows: LootRow[] }) {
                       href={r.link ?? "#"}
                       target="_blank"
                       rel="noopener noreferrer"
-                      className="font-medium break-all text-blue-600 hover:underline dark:text-blue-400"
+                      className="font-medium break-all text-foreground hover:text-accent"
                     >
                       {r.repo}
                     </a>
                     {r.type && <Badge>{r.type}</Badge>}
                   </div>
                   {r.intro && (
-                    <p className="line-clamp-3 text-sm text-zinc-600 dark:text-zinc-400">
+                    <p className="line-clamp-3 text-sm text-muted">
                       {r.intro}
                     </p>
                   )}
                   {r.asset && (
                     <p className="line-clamp-3 text-sm">
-                      <span className="font-medium text-zinc-500 dark:text-zinc-400">偷什麼 </span>
+                      <span className="font-medium text-muted">偷什麼 </span>
                       {r.asset}
                     </p>
                   )}
                   {r.why && (
                     <p className="line-clamp-3 text-sm">
-                      <span className="font-medium text-zinc-500 dark:text-zinc-400">為何 </span>
+                      <span className="font-medium text-muted">為何 </span>
                       {r.why}
                     </p>
                   )}
                   {r.how && (
                     <p className="line-clamp-3 text-sm">
-                      <span className="font-medium text-zinc-500 dark:text-zinc-400">怎麼搬 </span>
+                      <span className="font-medium text-muted">怎麼搬 </span>
                       {r.how}
                     </p>
                   )}
                   {r.week && (
-                    <p className="mt-1 text-xs text-zinc-500">
+                    <p className="mt-1 text-xs text-muted">
                       {formatWeek(r.week)}
                     </p>
                   )}
-                  <div className="mt-auto flex flex-col gap-3 border-t border-zinc-100 pt-3 dark:border-zinc-800">
+                  <div className="mt-auto flex flex-col gap-3 border-t border-border pt-3">
                     <LootRating pageId={r.id} value={r.recommendation} />
                     <LootStatusControl pageId={r.id} status={r.status ?? "new"} />
                   </div>

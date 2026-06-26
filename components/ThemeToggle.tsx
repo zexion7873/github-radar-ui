@@ -33,7 +33,7 @@ export default function ThemeToggle() {
       onClick={toggle}
       aria-pressed={dark}
       aria-label="切換深色模式"
-      className="shrink-0 rounded-full p-1.5 text-zinc-500 transition-colors hover:bg-zinc-100 hover:text-zinc-900 dark:text-zinc-400 dark:hover:bg-zinc-800 dark:hover:text-zinc-100"
+      className="shrink-0 rounded-none p-1.5 text-muted transition-colors hover:text-foreground"
     >
       <span aria-hidden="true" className="dark:hidden">🌙</span>
       <span aria-hidden="true" className="hidden dark:inline">☀️</span>

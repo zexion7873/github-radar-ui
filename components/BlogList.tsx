@@ -17,7 +17,7 @@ const KNOWN_TYPES = new Set(GROUPS.map((g) => g.type));
 const WEEK_MS = 7 * 24 * 60 * 60 * 1000;
 
 const inputClass =
-  "w-full rounded-lg border border-zinc-200 bg-white px-3 py-1.5 text-sm placeholder:text-zinc-400 focus:border-zinc-400 focus:ring-2 focus:ring-zinc-200 focus:outline-none sm:w-64 dark:border-zinc-800 dark:bg-zinc-900 dark:focus:ring-zinc-700";
+  "w-full rounded-none border border-border bg-surface px-3 py-1.5 text-sm placeholder:text-muted focus:border-accent focus:ring-2 focus:ring-accent/30 focus:outline-none sm:w-64";
 
 export default function BlogList({ rows }: { rows: BlogRow[] }) {
   const sources = useMemo(
@@ -89,30 +89,30 @@ export default function BlogList({ rows }: { rows: BlogRow[] }) {
             href={r.url ?? "#"}
             target="_blank"
             rel="noopener noreferrer"
-            className="relative z-10 font-medium break-words text-blue-600 hover:underline dark:text-blue-400"
+            className="relative z-10 font-medium break-words text-foreground hover:text-accent"
           >
             {r.title}
           </a>
           {isNew && <Badge tone={FRESH_TONE}>🆕 新</Badge>}
         </div>
 
-        <div className="flex flex-wrap items-center gap-1.5 text-xs text-zinc-500">
-          <Badge tone="blue">{r.source}</Badge>
+        <div className="flex flex-wrap items-center gap-1.5 text-xs text-muted">
+          <Badge tone="muted">{r.source}</Badge>
           {r.author && <span>{r.author}</span>}
         </div>
 
         {body && (
-          <p className="line-clamp-4 text-sm leading-relaxed text-zinc-700 dark:text-zinc-300">
+          <p className="line-clamp-4 text-sm leading-relaxed text-foreground">
             {body}
           </p>
         )}
         {r.comment && (
-          <p className="line-clamp-3 border-l-2 border-zinc-200 pl-3 text-sm leading-relaxed text-zinc-500 italic dark:border-zinc-700 dark:text-zinc-400">
+          <p className="line-clamp-3 border-l-2 border-border pl-3 text-sm leading-relaxed text-muted italic">
             {r.comment}
           </p>
         )}
         {r.published && (
-          <p className="mt-auto text-xs text-zinc-500">
+          <p className="mt-auto text-xs text-muted">
             {formatWeek(r.published)}
           </p>
         )}
@@ -122,7 +122,7 @@ export default function BlogList({ rows }: { rows: BlogRow[] }) {
 
   return (
     <div>
-      <div className="sticky top-[var(--header-h)] z-10 -mx-4 mb-4 flex flex-col gap-3 bg-zinc-50/90 px-4 py-3 backdrop-blur dark:bg-black/90">
+      <div className="sticky top-[var(--header-h)] z-20 -mx-4 mb-4 flex flex-col gap-3 border-b border-border bg-background/80 px-4 py-3 backdrop-blur">
         <div className="flex flex-wrap items-center gap-2">
           <input
             type="search"
@@ -144,22 +144,22 @@ export default function BlogList({ rows }: { rows: BlogRow[] }) {
             ))}
           </div>
         )}
-        <p className="text-xs text-zinc-500">
+        <p className="text-xs text-muted">
           顯示 {shown.length} / {rows.length}
         </p>
       </div>
 
       {sections.length === 0 ? (
-        <p className="py-12 text-center text-sm text-zinc-500">
+        <p className="py-12 text-center text-sm text-muted">
           {rows.length === 0 ? "還沒有文章" : "沒有符合的文章"}
         </p>
       ) : (
         <div className="flex flex-col gap-8">
           {sections.map(({ label, items }) => (
             <section key={label}>
-              <h2 className="mb-3 text-base font-semibold text-zinc-900 dark:text-zinc-100">
+              <h2 className="mb-3 text-base font-semibold font-serif text-foreground">
                 {label}
-                <span className="ml-2 text-sm font-normal text-zinc-400">
+                <span className="ml-2 text-sm font-normal text-muted">
                   {items.length}
                 </span>
               </h2>
