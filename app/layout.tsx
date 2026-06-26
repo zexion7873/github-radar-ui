@@ -6,6 +6,7 @@ import StickyHeader from "@/components/StickyHeader";
 import ThemeToggle from "@/components/ThemeToggle";
 import { logout } from "@/app/login/actions";
 import { cookies } from "next/headers";
+import { isAuthed } from "@/lib/auth";
 
 const geistSans = Geist({ variable: "--font-geist-sans", subsets: ["latin"] });
 const geistMono = Geist_Mono({ variable: "--font-geist-mono", subsets: ["latin"] });
@@ -23,7 +24,12 @@ const themeScript = `(function(){try{if(/(?:^|; )theme=/.test(document.cookie))r
 export default async function RootLayout({
   children,
 }: Readonly<{ children: React.ReactNode }>) {
-  const theme = (await cookies()).get("theme")?.value;
+  const cookieStore = await cookies();
+  const theme = cookieStore.get("theme")?.value;
+  // Only logged-in pages wear the chrome (title + nav + 登出). On /login the user
+  // has no session, so showing nav tabs (every one bounces back to /login) and a
+  // 登出 button is just a confusing dead-loop — render the bare page instead.
+  const authed = isAuthed(cookieStore.get("gh_radar")?.value);
   return (
     <html
       lang="en"
@@ -34,30 +40,34 @@ export default async function RootLayout({
         <script dangerouslySetInnerHTML={{ __html: themeScript }} />
       </head>
       <body className="min-h-full bg-zinc-50 text-zinc-900 dark:bg-black dark:text-zinc-100">
-        <a
-          href="#main"
-          className="sr-only focus:not-sr-only focus:absolute focus:top-4 focus:left-4 focus:z-50 focus:rounded-lg focus:bg-zinc-900 focus:px-3 focus:py-2 focus:text-sm focus:text-white dark:focus:bg-white dark:focus:text-black"
-        >
-          跳到主要內容
-        </a>
+        {authed && (
+          <a
+            href="#main"
+            className="sr-only focus:not-sr-only focus:absolute focus:top-4 focus:left-4 focus:z-50 focus:rounded-lg focus:bg-zinc-900 focus:px-3 focus:py-2 focus:text-sm focus:text-white dark:focus:bg-white dark:focus:text-black"
+          >
+            跳到主要內容
+          </a>
+        )}
         <div className="mx-auto w-full max-w-5xl px-4 py-6">
-          <StickyHeader>
-            <div className="flex items-center justify-between gap-3">
-              <h1 className="text-lg font-semibold">📡 GitHub Radar</h1>
-              <div className="flex shrink-0 items-center gap-1">
-                <ThemeToggle />
-                <form action={logout} className="shrink-0">
-                  <button
-                    type="submit"
-                    className="rounded-full px-3 py-1.5 text-sm font-medium text-zinc-500 transition-colors hover:bg-zinc-100 hover:text-zinc-900 dark:text-zinc-400 dark:hover:bg-zinc-800 dark:hover:text-zinc-100"
-                  >
-                    登出
-                  </button>
-                </form>
+          {authed && (
+            <StickyHeader>
+              <div className="flex items-center justify-between gap-3">
+                <h1 className="text-lg font-semibold">📡 GitHub Radar</h1>
+                <div className="flex shrink-0 items-center gap-1">
+                  <ThemeToggle />
+                  <form action={logout} className="shrink-0">
+                    <button
+                      type="submit"
+                      className="rounded-full px-3 py-1.5 text-sm font-medium text-zinc-500 transition-colors hover:bg-zinc-100 hover:text-zinc-900 dark:text-zinc-400 dark:hover:bg-zinc-800 dark:hover:text-zinc-100"
+                    >
+                      登出
+                    </button>
+                  </form>
+                </div>
               </div>
-            </div>
-            <Nav />
-          </StickyHeader>
+              <Nav />
+            </StickyHeader>
+          )}
           <main id="main">{children}</main>
         </div>
       </body>
