@@ -6,7 +6,6 @@ import {
   Badge,
   Chip,
   ChipScroller,
-  cardInteractive,
   formatWeek,
   FRESH_TONE,
 } from "./ui";
@@ -82,45 +81,44 @@ export default function BlogList({ rows }: { rows: BlogRow[] }) {
     return (
       <article
         key={r.id}
-        className={`relative flex flex-col gap-2 p-4 ${cardInteractive}`}
+        className="group relative grid gap-x-8 gap-y-2 py-5 sm:grid-cols-[1fr_15rem]"
       >
-        {/* Whole-card link to the post detail (full summary + comment); the title
+        {/* Whole-row link to the post detail (full summary + comment); the title
             link below sits above it (z-10) so a tap on it still opens the source. */}
         <Link
           href={`/blog/${r.id}`}
           aria-label={`${r.title} 詳情`}
           className="absolute inset-0"
         />
-        <div className="flex items-start justify-between gap-2">
-          <a
-            href={r.url ?? "#"}
-            target="_blank"
-            rel="noopener noreferrer"
-            className="relative z-10 font-medium break-words text-foreground hover:text-accent"
-          >
-            {r.title}
-          </a>
-          {isNew && <Badge tone={FRESH_TONE}>🆕 新</Badge>}
+        <div className="flex flex-col gap-2">
+          <div className="flex items-start justify-between gap-2">
+            <a
+              href={r.url ?? "#"}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="relative z-10 font-serif text-lg leading-snug break-words text-foreground transition-colors hover:text-accent"
+            >
+              {r.title}
+            </a>
+            {isNew && <Badge tone={FRESH_TONE}>🆕 新</Badge>}
+          </div>
+          <div className="flex flex-wrap items-center gap-1.5 font-mono text-[11px] tracking-wide text-muted uppercase">
+            <Badge tone="muted">{r.source}</Badge>
+            {r.author && <span>{r.author}</span>}
+            {r.published && <span>{formatWeek(r.published)}</span>}
+          </div>
+          {body && (
+            <p className="line-clamp-3 font-serif-text text-[0.9375rem] leading-relaxed text-foreground">
+              {body}
+            </p>
+          )}
         </div>
-
-        <div className="flex flex-wrap items-center gap-1.5 text-xs text-muted">
-          <Badge tone="muted">{r.source}</Badge>
-          {r.author && <span>{r.author}</span>}
-        </div>
-
-        {body && (
-          <p className="line-clamp-4 text-sm leading-relaxed text-foreground">
-            {body}
-          </p>
-        )}
+        {/* The curator's 點評 as a margin annotation pinned beside the entry — the
+            page's signature motif. A hairline gutter on sm+; stacks below with an
+            accent tick on mobile (single column). Sits under the row link overlay. */}
         {r.comment && (
-          <p className="line-clamp-3 border-l-2 border-border pl-3 text-sm leading-relaxed text-muted font-serif-text italic">
+          <p className="line-clamp-4 border-l-2 border-accent/40 pl-4 font-serif-text text-sm leading-relaxed text-muted italic sm:border-l sm:border-border">
             {r.comment}
-          </p>
-        )}
-        {r.published && (
-          <p className="mt-auto text-xs text-muted">
-            {formatWeek(r.published)}
           </p>
         )}
       </article>
@@ -161,18 +159,16 @@ export default function BlogList({ rows }: { rows: BlogRow[] }) {
           {rows.length === 0 ? "還沒有文章" : "沒有符合的文章"}
         </p>
       ) : (
-        <div className="flex flex-col gap-8">
+        <div className="flex flex-col gap-10">
           {sections.map(({ label, items }) => (
             <section key={label}>
-              <h2 className="mb-3 text-xl font-serif tracking-tight text-foreground">
+              <h2 className="mb-1 flex items-baseline gap-2 border-b-2 border-foreground pb-1 font-serif text-2xl tracking-tight text-foreground">
                 {label}
-                <span className="ml-2 text-sm font-normal text-muted">
+                <span className="font-mono text-xs font-normal tracking-wide text-muted">
                   {items.length}
                 </span>
               </h2>
-              <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
-                {items.map(card)}
-              </div>
+              <div className="divide-y divide-border">{items.map(card)}</div>
             </section>
           ))}
         </div>

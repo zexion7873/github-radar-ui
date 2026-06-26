@@ -18,6 +18,13 @@ export default async function Page({
   const post = result.rows.find((r) => r.id === id);
   if (!post) notFound();
 
+  // Drop cap whenever the brief opens with a letter — Latin or CJK both flatter a
+  // large first character. The case it can't survive is leading punctuation: a
+  // full-width quote (「) makes ::first-letter swallow the quote + next glyph into
+  // one mushy blob, so those are gated out (\p{L} matches letters incl. 漢字 but
+  // excludes punctuation / quotes / digits).
+  const briefDropCap = !!post.brief && /^\s*\p{L}/u.test(post.brief);
+
   return (
     <div className="mx-auto flex max-w-2xl flex-col gap-8">
       <Link
@@ -44,14 +51,20 @@ export default async function Page({
       </header>
 
       {post.brief && (
-        <p className="text-sm leading-relaxed text-muted first-letter:float-left first-letter:mr-2 first-letter:font-serif first-letter:text-5xl first-letter:leading-[0.8] first-letter:text-accent">
+        <p
+          className={`font-serif-text text-[1.0625rem] leading-[1.8] text-foreground ${
+            briefDropCap
+              ? "first-letter:float-left first-letter:mr-3 first-letter:font-serif first-letter:text-6xl first-letter:leading-[0.7] first-letter:text-accent"
+              : ""
+          }`}
+        >
           {post.brief}
         </p>
       )}
       {post.summary && (
         <section className="flex flex-col gap-2">
           <h2 className="font-serif text-xl">摘要</h2>
-          <p className="text-sm leading-relaxed whitespace-pre-line text-foreground">
+          <p className="font-serif-text text-[1.0625rem] leading-[1.8] whitespace-pre-line text-foreground">
             {post.summary}
           </p>
         </section>
