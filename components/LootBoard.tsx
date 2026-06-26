@@ -1,16 +1,18 @@
 "use client";
-import { useMemo, useState, type ReactNode } from "react";
+import { useMemo, useState } from "react";
 import type { LootRow } from "@/lib/data";
-import { Badge, cardInteractive, formatWeek } from "./ui";
+import {
+  Badge,
+  Chip,
+  cardInteractive,
+  formatWeek,
+  STATUS_LABEL,
+  STATUS_TONE,
+} from "./ui";
 import LootStatusControl from "./LootStatusControl";
 import LootRating from "./LootRating";
 
 const STATUS_ORDER = ["new", "adopted", "skipped"];
-const STATUS_TONE: Record<string, "blue" | "green" | "gray"> = {
-  new: "blue",
-  adopted: "green",
-  skipped: "gray",
-};
 
 export default function LootBoard({ rows }: { rows: LootRow[] }) {
   const types = useMemo(
@@ -50,12 +52,24 @@ export default function LootBoard({ rows }: { rows: LootRow[] }) {
     ...[...groups.keys()].filter((k) => !STATUS_ORDER.includes(k)),
   ];
 
+  // Freeze each card's position from the first render's recommendation order, so
+  // rating a card — which revalidates and would otherwise re-sort the group —
+  // doesn't make it jump and cost the user their place mid-triage. The lazy
+  // useState initialiser snapshots once on mount; cards added later append, and a
+  // full reload re-snapshots against the latest ratings.
+  const [order] = useState(() => {
+    const ranked = [...rows].sort(
+      (a, b) => (b.recommendation ?? -1) - (a.recommendation ?? -1),
+    );
+    return new Map(ranked.map((r, i) => [r.id, i]));
+  });
+
   const noResults = filtered.length === 0;
   const hasFilter = !!query || !!type || !!status;
 
   return (
     <div className="flex flex-col gap-4">
-      <div className="flex flex-col gap-3">
+      <div className="sticky top-[var(--header-h)] z-10 -mx-4 flex flex-col gap-3 bg-zinc-50/90 px-4 py-3 backdrop-blur dark:bg-black/90">
         <div className="flex flex-wrap items-center gap-2">
           <input
             type="search"
@@ -80,35 +94,43 @@ export default function LootBoard({ rows }: { rows: LootRow[] }) {
           )}
         </div>
 
-        <div className="flex flex-wrap gap-2">
+        <div className="flex flex-wrap gap-2" role="group" aria-label="狀態篩選">
           <Chip on={status === null} onClick={() => setStatus(null)}>
             全部
           </Chip>
           {STATUS_ORDER.map((s) => (
             <Chip key={s} on={status === s} onClick={() => setStatus(s)}>
-              {s}
+              {STATUS_LABEL[s] ?? s}
             </Chip>
           ))}
         </div>
+        <p className="text-xs text-zinc-500">
+          顯示 {filtered.length} / {rows.length}
+        </p>
       </div>
 
       {noResults ? (
-        <p className="py-12 text-center text-sm text-zinc-400">
-          {hasFilter ? "沒有符合條件的 loot" : "No loot yet."}
+        <p className="py-12 text-center text-sm text-zinc-500">
+          {hasFilter ? "沒有符合條件的 loot" : "還沒有 loot，等抓取任務跑完"}
         </p>
       ) : (
         keys.map((key) => (
           <section key={key}>
-            <h2 className="mb-2 flex items-center gap-2 text-sm font-semibold text-zinc-500">
-              <Badge tone={STATUS_TONE[key] ?? "gray"}>{key}</Badge>
-              <span>{groups.get(key)!.length}</span>
+            <h2 className="mb-3 flex items-center gap-2 text-base font-semibold text-zinc-900 dark:text-zinc-100">
+              <Badge tone={STATUS_TONE[key] ?? "gray"}>
+                {STATUS_LABEL[key] ?? key}
+              </Badge>
+              <span className="text-sm font-normal text-zinc-400">
+                {groups.get(key)!.length}
+              </span>
             </h2>
-            <div className="grid gap-3 sm:grid-cols-2">
+            <div className="grid gap-3 md:grid-cols-2">
               {groups
                 .get(key)!
                 .slice()
                 .sort(
-                  (a, b) => (b.recommendation ?? -1) - (a.recommendation ?? -1),
+                  (a, b) =>
+                    (order.get(a.id) ?? Infinity) - (order.get(b.id) ?? Infinity),
                 )
                 .map((r) => (
                 <article
@@ -124,7 +146,7 @@ export default function LootBoard({ rows }: { rows: LootRow[] }) {
                     >
                       {r.repo}
                     </a>
-                    {r.type && <Badge tone="purple">{r.type}</Badge>}
+                    {r.type && <Badge>{r.type}</Badge>}
                   </div>
                   {r.intro && (
                     <p className="text-sm text-zinc-600 dark:text-zinc-400">
@@ -133,24 +155,24 @@ export default function LootBoard({ rows }: { rows: LootRow[] }) {
                   )}
                   {r.asset && (
                     <p className="text-sm">
-                      <span className="font-medium text-amber-700 dark:text-amber-500">偷什麼 </span>
+                      <span className="font-medium text-zinc-500 dark:text-zinc-400">偷什麼 </span>
                       {r.asset}
                     </p>
                   )}
                   {r.why && (
                     <p className="text-sm">
-                      <span className="font-medium text-fuchsia-700 dark:text-fuchsia-400">為何 </span>
+                      <span className="font-medium text-zinc-500 dark:text-zinc-400">為何 </span>
                       {r.why}
                     </p>
                   )}
                   {r.how && (
                     <p className="text-sm">
-                      <span className="font-medium text-emerald-700 dark:text-emerald-400">怎麼搬 </span>
+                      <span className="font-medium text-zinc-500 dark:text-zinc-400">怎麼搬 </span>
                       {r.how}
                     </p>
                   )}
                   {r.week && (
-                    <p className="mt-1 text-xs text-zinc-400">
+                    <p className="mt-1 text-xs text-zinc-500">
                       {formatWeek(r.week)}
                     </p>
                   )}
@@ -165,28 +187,5 @@ export default function LootBoard({ rows }: { rows: LootRow[] }) {
         ))
       )}
     </div>
-  );
-}
-
-function Chip({
-  on,
-  onClick,
-  children,
-}: {
-  on: boolean;
-  onClick: () => void;
-  children: ReactNode;
-}) {
-  return (
-    <button
-      onClick={onClick}
-      className={`rounded-full px-3 py-1 text-xs font-medium transition-colors focus-visible:ring-2 focus-visible:ring-zinc-400 focus-visible:outline-none active:scale-95 dark:focus-visible:ring-zinc-500 ${
-        on
-          ? "bg-zinc-900 text-white dark:bg-white dark:text-black"
-          : "bg-zinc-100 text-zinc-600 hover:bg-zinc-200 dark:bg-zinc-800 dark:text-zinc-300 dark:hover:bg-zinc-700"
-      }`}
-    >
-      {children}
-    </button>
   );
 }

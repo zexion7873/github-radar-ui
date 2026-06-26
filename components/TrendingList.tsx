@@ -1,7 +1,14 @@
 "use client";
-import { useMemo, useState, type ReactNode } from "react";
+import { useMemo, useState } from "react";
 import type { TrendingRow } from "@/lib/data";
-import { Badge, cardInteractive, formatWeek, CATEGORY_TONE } from "./ui";
+import {
+  Badge,
+  Chip,
+  cardInteractive,
+  formatWeek,
+  CATEGORY_TONE,
+  FRESH_TONE,
+} from "./ui";
 
 type Sort = "recent" | "stars";
 
@@ -34,9 +41,17 @@ export default function TrendingList({ rows }: { rows: TrendingRow[] }) {
     return r;
   }, [rows, active, query, sort]);
 
+  // Latest week across all repos — drives the 🆕 badge so it means the SAME
+  // thing as the dashboard's "本週新上榜" stat (newcomer in the most recent week),
+  // not just "any repo with ≤1 week on chart" regardless of when.
+  const latestWeek = useMemo(
+    () => rows.reduce((m, r) => (r.week && r.week > m ? r.week : m), ""),
+    [rows],
+  );
+
   return (
     <div>
-      <div className="mb-4 flex flex-col gap-3">
+      <div className="sticky top-[var(--header-h)] z-10 -mx-4 mb-4 flex flex-col gap-3 bg-zinc-50/90 px-4 py-3 backdrop-blur dark:bg-black/90">
         <div className="flex flex-wrap items-center gap-2">
           <input
             type="search"
@@ -56,9 +71,9 @@ export default function TrendingList({ rows }: { rows: TrendingRow[] }) {
         </div>
 
         {categories.length > 0 && (
-          <div className="flex flex-wrap gap-2">
+          <div className="flex flex-wrap gap-2" role="group" aria-label="分類篩選">
             <Chip on={active === null} onClick={() => setActive(null)}>
-              All
+              全部
             </Chip>
             {categories.map((c) => (
               <Chip key={c} on={active === c} onClick={() => setActive(c)}>
@@ -67,6 +82,9 @@ export default function TrendingList({ rows }: { rows: TrendingRow[] }) {
             ))}
           </div>
         )}
+        <p className="text-xs text-zinc-500">
+          顯示 {shown.length} / {rows.length}
+        </p>
       </div>
 
       <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
@@ -84,18 +102,21 @@ export default function TrendingList({ rows }: { rows: TrendingRow[] }) {
               >
                 {r.repo}
               </a>
-              {r.weeksOnChart != null && (
-                <Badge tone={r.weeksOnChart > 1 ? "green" : "amber"}>
-                  {r.weeksOnChart > 1 ? `🔁 ${r.weeksOnChart}w` : "🆕 new"}
-                </Badge>
-              )}
+              {/* 🆕 only for newcomers in the latest week; 🔁 for returnees; a
+                  newcomer whose latest week isn't the newest shows neither —
+                  rare after latestPerRepo, and intentional. */}
+              {r.week === latestWeek && (r.weeksOnChart ?? 1) <= 1 ? (
+                <Badge tone={FRESH_TONE}>🆕 新上榜</Badge>
+              ) : r.weeksOnChart != null && r.weeksOnChart > 1 ? (
+                <Badge tone="gray">🔁 {r.weeksOnChart} 週</Badge>
+              ) : null}
             </div>
 
             <div className="flex flex-wrap items-center gap-1.5 text-xs text-zinc-500">
               {r.starsPerWeek != null && (
                 <span>⭐ {r.starsPerWeek.toLocaleString()}</span>
               )}
-              {r.language && <Badge>{r.language}</Badge>}
+              {r.language && <span>{r.language}</span>}
               {r.category && (
                 <Badge tone={CATEGORY_TONE[r.category] ?? "gray"}>
                   {r.category}
@@ -104,54 +125,31 @@ export default function TrendingList({ rows }: { rows: TrendingRow[] }) {
             </div>
 
             {r.description && (
-              <p className="text-sm leading-relaxed text-zinc-700 dark:text-zinc-300">
+              <p className="line-clamp-3 text-sm leading-relaxed text-zinc-700 dark:text-zinc-300">
                 {r.description}
               </p>
             )}
             {r.comment && (
-              <p className="border-l-2 border-zinc-200 pl-3 text-sm leading-relaxed text-zinc-500 italic dark:border-zinc-700 dark:text-zinc-400">
+              <p className="line-clamp-3 border-l-2 border-zinc-200 pl-3 text-sm leading-relaxed text-zinc-500 italic dark:border-zinc-700 dark:text-zinc-400">
                 {r.comment}
               </p>
             )}
             {r.week && (
-              <p className="mt-auto text-xs text-zinc-400">{formatWeek(r.week)}</p>
+              <p className="mt-auto text-xs text-zinc-500">{formatWeek(r.week)}</p>
             )}
           </article>
         ))}
       </div>
 
       {shown.length === 0 && (
-        <p className="py-12 text-center text-sm text-zinc-400">
+        <p className="py-12 text-center text-sm text-zinc-500">
           {query
             ? `沒有符合「${query}」的結果`
             : active
               ? "這個分類目前沒有資料"
-              : "No rows yet."}
+              : "還沒有 trending 資料，等下次同步"}
         </p>
       )}
     </div>
-  );
-}
-
-function Chip({
-  on,
-  onClick,
-  children,
-}: {
-  on: boolean;
-  onClick: () => void;
-  children: ReactNode;
-}) {
-  return (
-    <button
-      onClick={onClick}
-      className={`rounded-full px-3 py-1 text-xs font-medium transition-colors focus-visible:ring-2 focus-visible:ring-zinc-400 focus-visible:outline-none active:scale-95 dark:focus-visible:ring-zinc-500 ${
-        on
-          ? "bg-zinc-900 text-white dark:bg-white dark:text-black"
-          : "bg-zinc-100 text-zinc-600 hover:bg-zinc-200 dark:bg-zinc-800 dark:text-zinc-300 dark:hover:bg-zinc-700"
-      }`}
-    >
-      {children}
-    </button>
   );
 }

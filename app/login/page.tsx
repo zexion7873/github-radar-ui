@@ -13,21 +13,28 @@ export default async function LoginPage({
         <input
           type="password"
           name="password"
-          placeholder="Password"
+          aria-label="密碼"
+          aria-invalid={!!error}
+          aria-describedby={error ? "login-error" : undefined}
+          placeholder="輸入密碼"
           autoFocus
           autoComplete="current-password"
           className="rounded-lg border border-zinc-300 bg-white px-3 py-2 text-sm dark:border-zinc-700 dark:bg-zinc-900"
         />
         {error && (
-          <p className="text-sm text-red-600 dark:text-red-400">
-            Wrong password.
+          <p
+            id="login-error"
+            role="alert"
+            className="text-sm text-red-600 dark:text-red-400"
+          >
+            密碼錯誤，再試一次。
           </p>
         )}
         <button
           type="submit"
           className="rounded-lg bg-zinc-900 px-3 py-2 text-sm font-medium text-white dark:bg-white dark:text-black"
         >
-          Enter
+          進入
         </button>
       </form>
     </div>
