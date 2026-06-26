@@ -73,7 +73,7 @@ const TRENDING_PROPS = {
   weeksOnChart: "Weeks on chart",
 } as const;
 
-const LOOT_PROPS = {
+export const LOOT_PROPS = {
   repo: "Repo",
   intro: "Intro",
   asset: "Asset",
@@ -218,7 +218,13 @@ export function fetchBlog(uuid: string): Promise<Result<BlogRow>> {
   const P = BLOG_PROPS;
   return load(
     uuid,
-    [{ property: P.published, direction: "descending" }],
+    // Published is the primary order; the blog routine archives best-effort and
+    // Notion sinks empty-date rows to the bottom of a date sort, so fall back to
+    // Archived (always set on write) — a post with no Published can't bury itself.
+    [
+      { property: P.published, direction: "descending" },
+      { property: P.archived, direction: "descending" },
+    ],
     Object.values(P),
     (pg) => {
       const p = pg.properties;
