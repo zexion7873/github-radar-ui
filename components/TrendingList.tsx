@@ -5,6 +5,7 @@ import type { TrendingRow } from "@/lib/data";
 import {
   Badge,
   Chip,
+  ChipScroller,
   cardInteractive,
   formatWeek,
   CATEGORY_TONE,
@@ -72,7 +73,7 @@ export default function TrendingList({ rows }: { rows: TrendingRow[] }) {
         </div>
 
         {categories.length > 0 && (
-          <div className="flex flex-wrap gap-2" role="group" aria-label="分類篩選">
+          <ChipScroller label="分類篩選">
             <Chip on={active === null} onClick={() => setActive(null)}>
               全部
             </Chip>
@@ -81,7 +82,7 @@ export default function TrendingList({ rows }: { rows: TrendingRow[] }) {
                 {c}
               </Chip>
             ))}
-          </div>
+          </ChipScroller>
         )}
         <p className="text-xs text-muted">
           顯示 {shown.length} / {rows.length}

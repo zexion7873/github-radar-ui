@@ -7,6 +7,7 @@ import { LOOT_STATUSES, type LootTarget } from "@/lib/config";
 import {
   Badge,
   Chip,
+  ChipScroller,
   cardInteractive,
   formatWeek,
   STATUS_LABEL,
@@ -115,7 +116,7 @@ export default function LootBoard({
           )}
         </div>
 
-        <div className="flex flex-wrap gap-2" role="group" aria-label="狀態篩選">
+        <ChipScroller label="狀態篩選">
           <Chip on={status === null} onClick={() => setStatus(null)}>
             全部
           </Chip>
@@ -124,7 +125,7 @@ export default function LootBoard({
               {STATUS_LABEL[s] ?? s}
             </Chip>
           ))}
-        </div>
+        </ChipScroller>
         <p className="text-xs text-muted">
           顯示 {filtered.length} / {rows.length}
         </p>

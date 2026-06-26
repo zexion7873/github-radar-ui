@@ -2,7 +2,14 @@
 import { useMemo, useState } from "react";
 import Link from "next/link";
 import type { BlogRow } from "@/lib/data";
-import { Badge, Chip, cardInteractive, formatWeek, FRESH_TONE } from "./ui";
+import {
+  Badge,
+  Chip,
+  ChipScroller,
+  cardInteractive,
+  formatWeek,
+  FRESH_TONE,
+} from "./ui";
 
 // Blog Archive's Type is a closed enum (official / individual); render each as
 // its own section, newest first (rows already arrive Published-desc). Anything
@@ -133,7 +140,7 @@ export default function BlogList({ rows }: { rows: BlogRow[] }) {
           />
         </div>
         {sources.length > 0 && (
-          <div className="flex flex-wrap gap-2" role="group" aria-label="來源篩選">
+          <ChipScroller label="來源篩選">
             <Chip on={source === null} onClick={() => setSource(null)}>
               全部
             </Chip>
@@ -142,7 +149,7 @@ export default function BlogList({ rows }: { rows: BlogRow[] }) {
                 {s}
               </Chip>
             ))}
-          </div>
+          </ChipScroller>
         )}
         <p className="text-xs text-muted">
           顯示 {shown.length} / {rows.length}

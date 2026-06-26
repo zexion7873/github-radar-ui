@@ -43,3 +43,6 @@ next-env.d.ts
 
 # oh-my-claudecode tooling state (local sessions, memory, logs)
 .omc/
+
+# agent run-continuation state (local)
+.omo/

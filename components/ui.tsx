@@ -51,7 +51,7 @@ export function Chip({
       type="button"
       onClick={onClick}
       aria-pressed={on}
-      className={`rounded-none border px-3 py-1 font-mono text-[11px] tracking-[0.08em] uppercase transition-colors focus-visible:ring-2 focus-visible:ring-accent/30 focus-visible:outline-none active:scale-95 ${
+      className={`shrink-0 rounded-none border px-3 py-1 font-mono text-[11px] tracking-[0.08em] uppercase transition-colors focus-visible:ring-2 focus-visible:ring-accent/30 focus-visible:outline-none active:scale-95 ${
         on
           ? "border-foreground bg-foreground text-background"
           : "border-border text-muted hover:border-foreground hover:text-foreground"
@@ -59,6 +59,35 @@ export function Chip({
     >
       {children}
     </button>
+  );
+}
+
+// A row of filter chips that scrolls horizontally on mobile (chips overflow into
+// one swipeable line instead of wrapping into many tall rows that eat the
+// viewport under the sticky header), reverting to wrap on sm+. The right-edge
+// gradient hints there's more to scroll — mobile only, since the desktop wrap
+// already shows every chip.
+export function ChipScroller({
+  children,
+  label,
+}: {
+  children: ReactNode;
+  label: string;
+}) {
+  return (
+    <div className="relative">
+      <div
+        className="flex gap-2 overflow-x-auto pb-1 sm:flex-wrap sm:overflow-x-visible sm:pb-0 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden"
+        role="group"
+        aria-label={label}
+      >
+        {children}
+      </div>
+      <div
+        aria-hidden="true"
+        className="pointer-events-none absolute inset-y-0 right-0 w-10 bg-gradient-to-l from-background to-transparent sm:hidden"
+      />
+    </div>
   );
 }
 
