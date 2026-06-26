@@ -1,5 +1,5 @@
 import type { Metadata } from "next";
-import { Geist, Geist_Mono, DM_Serif_Display } from "next/font/google";
+import { Geist, Geist_Mono, DM_Serif_Display, Newsreader } from "next/font/google";
 import "./globals.css";
 import Nav from "@/components/Nav";
 import StickyHeader from "@/components/StickyHeader";
@@ -7,6 +7,8 @@ import ThemeToggle from "@/components/ThemeToggle";
 import { logout } from "@/app/login/actions";
 import { cookies } from "next/headers";
 import { isAuthed } from "@/lib/auth";
+import { formatWeek } from "@/components/ui";
+import Link from "next/link";
 
 const geistSans = Geist({ variable: "--font-geist-sans", subsets: ["latin"] });
 const geistMono = Geist_Mono({ variable: "--font-geist-mono", subsets: ["latin"] });
@@ -16,6 +18,14 @@ const dmSerif = DM_Serif_Display({
   variable: "--font-dm-serif",
   subsets: ["latin"],
   weight: "400",
+});
+// Newsreader is a variable text serif WITH a true italic — the editorial reading
+// face. DM Serif Display stays display-only (masthead, section heads, numerals,
+// drop-cap); pull-quotes and the AI 點評 voice render in Newsreader italic.
+const newsreader = Newsreader({
+  variable: "--font-newsreader",
+  subsets: ["latin"],
+  style: ["normal", "italic"],
 });
 
 export const metadata: Metadata = {
@@ -37,11 +47,14 @@ export default async function RootLayout({
   // has no session, so showing nav tabs (every one bounces back to /login) and a
   // 登出 button is just a confusing dead-loop — render the bare page instead.
   const authed = isAuthed(cookieStore.get("gh_radar")?.value);
+  // Masthead dateline — today's edition date. Distinct from LastSynced's "資料最新
+  // 到" (the data-freshness date); a broadsheet's masthead carries the print date.
+  const today = formatWeek(new Date().toISOString());
   return (
     <html
       lang="en"
       suppressHydrationWarning
-      className={`${geistSans.variable} ${geistMono.variable} ${dmSerif.variable} h-full antialiased${theme === "dark" ? " dark" : ""}`}
+      className={`${geistSans.variable} ${geistMono.variable} ${dmSerif.variable} ${newsreader.variable} h-full antialiased${theme === "dark" ? " dark" : ""}`}
     >
       <head>
         <script dangerouslySetInnerHTML={{ __html: themeScript }} />
@@ -59,9 +72,16 @@ export default async function RootLayout({
           {authed && (
             <StickyHeader>
               <div className="flex items-center justify-between gap-3">
-                <h1 className="font-serif text-xl tracking-tight">
-                  📡 GitHub <span className="text-accent">Radar</span>
-                </h1>
+                <div className="flex flex-col">
+                  <h1 className="font-serif text-2xl leading-none tracking-tight">
+                    <Link href="/" className="transition-colors hover:text-accent">
+                      📡 GitHub <span className="text-accent">Radar</span>
+                    </Link>
+                  </h1>
+                  <p className="mt-1.5 font-mono text-[10px] tracking-[0.18em] text-muted uppercase">
+                    {today} · Weekly Radar
+                  </p>
+                </div>
                 <div className="flex shrink-0 items-center gap-1">
                   <ThemeToggle />
                   <form action={logout} className="shrink-0">

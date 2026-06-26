@@ -9,13 +9,23 @@
      semantic utilities wired in @theme inline (bg-surface, text-muted,
      text-accent, …), so a restyle is a token edit here, not a component sweep. */
   --background: #f7f4ef;
-  --surface: #ffffff;
-  --border: #d9d3c8;
+  --surface: #fdfbf7;
+  --border: #d4cdbf;
   --foreground: #1a1714;
   --muted: #7a7268;
   --accent: #b84e2b;
   --pos: #2d7d4f;
-  --neg: #b84e2b;
+  /* danger is a cooler, deeper red than the accent so a write failure never
+     reads as "hot" — accent stays scarce, reserved for hot/fresh/featured. */
+  --danger: #9e2b1e;
+  /* ink-2 is the card hover border: ink-toned, not full foreground, so the lift
+     reads as ink pressing in rather than a selection outline. */
+  --ink-2: #4a443c;
+
+  /* Motion: one easing curve (fast out, settled in — ink hitting paper, no
+     overshoot) and one duration, so components stop improvising. */
+  --ease-ink: cubic-bezier(0.2, 0, 0, 1);
+  --dur-ink: 140ms;
 
   /* Sticky header height, measured at runtime by StickyHeader; the page filter
      bars pin at this offset so they sit just below the header instead of under
@@ -25,14 +35,15 @@
 }
 
 .dark {
-  --background: #111010;
-  --surface: #1a1917;
-  --border: #2e2c29;
-  --foreground: #ede8e0;
-  --muted: #8a8278;
+  --background: #12110f;
+  --surface: #1c1a16;
+  --border: #35322d;
+  --foreground: #ece6db;
+  --muted: #928a7d;
   --accent: #d4643f;
   --pos: #5bb87e;
-  --neg: #d4643f;
+  --danger: #e0574a;
+  --ink-2: #ccc3b6;
 }
 
 @theme inline {
@@ -43,12 +54,44 @@
   --color-muted: var(--muted);
   --color-accent: var(--accent);
   --color-pos: var(--pos);
-  --color-neg: var(--neg);
-  --font-sans: var(--font-geist-sans);
-  --font-mono: var(--font-geist-mono);
-  --font-serif: var(--font-dm-serif);
+  --color-danger: var(--danger);
+  --color-ink-2: var(--ink-2);
+  /* Latin face first, then a curated 繁中 fallback (PingFang on Mac, JhengHei on
+     Windows, Noto on Linux/Android). The UI is bilingual and Geist/DM Serif carry
+     no CJK glyphs, so this pins the Chinese fallback instead of leaving it to the
+     OS default. The serif tokens deliberately fall back to a CJK *sans* (PingFang),
+     not 明體: small on-screen 明體 is mushy, and Latin-serif + CJK-sans is the
+     standard mixed-script pairing. */
+  --font-sans: var(--font-geist-sans), "PingFang TC", "Microsoft JhengHei", "Noto Sans TC", sans-serif;
+  --font-mono: var(--font-geist-mono), "PingFang TC", "Microsoft JhengHei", "Noto Sans TC", monospace;
+  --font-serif: var(--font-dm-serif), "PingFang TC", "Microsoft JhengHei", "Noto Sans TC", serif;
+  --font-serif-text: var(--font-newsreader), "PingFang TC", "Microsoft JhengHei", "Noto Sans TC", serif;
 }
 
 body {
   font-family: var(--font-geist-sans), system-ui, sans-serif;
+}
+
+/* Selection is a warm paper-shadow tint, never the accent — the terracotta is
+   reserved for meaning (hot/fresh/peak), not incidental UI. */
+::selection {
+  background: #e7decf;
+  color: #1a1714;
+}
+.dark ::selection {
+  background: #2f2a22;
+  color: #ece6db;
+}
+
+/* Respect users who ask for less motion: collapse every transition/animation
+   (the skeleton pulse, card/link transitions) to an instant state change. */
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
 }

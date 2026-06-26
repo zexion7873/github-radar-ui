@@ -5,7 +5,7 @@ import { type ReactNode } from "react";
 // zero radius, hairline border, no shadow; depth comes from the border darkening
 // to ink on hover, not from a lift.
 export const cardClass = "rounded-none border border-border bg-surface";
-export const cardInteractive = `${cardClass} transition-colors duration-150 hover:border-foreground`;
+export const cardInteractive = `${cardClass} transition-colors duration-[var(--dur-ink)] ease-[var(--ease-ink)] hover:border-ink-2`;
 
 // Three semantic outline tones — the editorial palette trades the old five-colour
 // pill rainbow for one accent (terracotta) meaning "hot / needs attention", a
@@ -27,7 +27,7 @@ export function Badge({
 }) {
   return (
     <span
-      className={`inline-flex shrink-0 items-center whitespace-nowrap rounded-none border px-1.5 py-0 font-mono text-[11px] tracking-wide uppercase ${TONE[tone]}`}
+      className={`inline-flex shrink-0 items-center whitespace-nowrap rounded-none border px-1.5 py-0 font-mono text-[11px] tracking-[0.08em] uppercase ${TONE[tone]}`}
     >
       {children}
     </span>
@@ -51,7 +51,7 @@ export function Chip({
       type="button"
       onClick={onClick}
       aria-pressed={on}
-      className={`rounded-none border px-3 py-1 font-mono text-[11px] tracking-wide uppercase transition-colors focus-visible:ring-2 focus-visible:ring-accent/30 focus-visible:outline-none active:scale-95 ${
+      className={`rounded-none border px-3 py-1 font-mono text-[11px] tracking-[0.08em] uppercase transition-colors focus-visible:ring-2 focus-visible:ring-accent/30 focus-visible:outline-none active:scale-95 ${
         on
           ? "border-foreground bg-foreground text-background"
           : "border-border text-muted hover:border-foreground hover:text-foreground"
@@ -104,7 +104,7 @@ export function Notice({
 }) {
   return (
     <div className="rounded-none border border-accent bg-surface p-5 text-sm text-foreground">
-      <p className="font-serif text-base text-accent">{title}</p>
+      <p className="font-serif-text text-base text-accent">{title}</p>
       <div className="mt-2 leading-relaxed">{children}</div>
     </div>
   );
