@@ -43,6 +43,11 @@ export default async function Page({
         </div>
       </header>
 
+      {post.brief && (
+        <p className="text-sm leading-relaxed text-zinc-600 dark:text-zinc-400">
+          {post.brief}
+        </p>
+      )}
       {post.summary && (
         <section className="flex flex-col gap-2">
           <h2 className="text-base font-semibold">摘要</h2>
