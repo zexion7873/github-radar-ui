@@ -141,7 +141,7 @@ export default function TrendingList({ rows }: { rows: TrendingRow[] }) {
               </p>
             )}
             {r.comment && (
-              <p className="line-clamp-3 border-l-2 border-border pl-3 text-sm leading-relaxed text-muted font-serif-text italic">
+              <p className="line-clamp-3 border-l-2 border-border pl-3 text-sm leading-relaxed text-muted">
                 {r.comment}
               </p>
             )}
