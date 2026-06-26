@@ -26,7 +26,7 @@ export default function StickyHeader({ children }: { children: ReactNode }) {
   return (
     <header
       ref={ref}
-      className="sticky top-0 z-30 -mx-4 mb-6 flex flex-col gap-3 bg-zinc-50/90 px-4 py-4 backdrop-blur dark:bg-black/90"
+      className="sticky top-0 z-30 -mx-4 mb-6 flex flex-col gap-3 border-b border-border bg-background/80 px-4 py-4 backdrop-blur"
     >
       {children}
     </header>
