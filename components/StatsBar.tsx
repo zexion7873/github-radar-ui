@@ -1,16 +1,15 @@
-export type Stat = { label: string; value: number | null; featured?: boolean };
+export type Stat = { label: string; value: number | null };
 
 export default function StatsBar({ stats }: { stats: Stat[] }) {
   return (
     <div className="grid grid-cols-2 gap-3 md:grid-cols-4">
       {stats.map((s) => (
-        // Top-edge rule carries the only colour: the featured stat gets the
-        // accent kicker, the rest an ink rule — the print-masthead cue.
+        // Every tile is a headline metric, so each gets the accent top rule (the
+        // print-masthead cue) — same call as the trending readout: when all cells
+        // are the featured data, the scarce accent marks them all.
         <div
           key={s.label}
-          className={`border-x border-b border-border bg-surface p-4 ${
-            s.featured ? "border-t-[3px] border-t-accent" : "border-t-[3px] border-t-foreground"
-          }`}
+          className="border-x border-b border-t-[3px] border-border border-t-accent bg-surface p-4"
         >
           <div className="font-serif text-4xl tabular-nums">{s.value ?? "—"}</div>
           <div className="mt-1 font-mono text-[11px] tracking-[0.14em] text-muted uppercase">

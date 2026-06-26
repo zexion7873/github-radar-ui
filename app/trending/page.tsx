@@ -1,4 +1,8 @@
-import { fetchTrending, latestPerRepo } from "@/lib/data";
+import {
+  fetchTrending,
+  latestPerRepo,
+  weeklySeriesByRepo,
+} from "@/lib/data";
 import { TABLES } from "@/lib/config";
 import TrendingList from "@/components/TrendingList";
 import { DataError } from "@/components/ui";
@@ -9,6 +13,12 @@ export default async function Page() {
   const result = await fetchTrending(TABLES.trending);
   if (!result.ok) return <DataError error={result.error} />;
   // Collapse the weekly archive to one row per repo (latest week) so the list
-  // shows distinct repos rather than the same repo repeated across weeks.
-  return <TrendingList rows={latestPerRepo(result.rows)} />;
+  // shows distinct repos rather than the same repo repeated across weeks. The
+  // full archive also feeds the per-repo series behind each row's sparkline/delta.
+  return (
+    <TrendingList
+      rows={latestPerRepo(result.rows)}
+      series={weeklySeriesByRepo(result.rows)}
+    />
+  );
 }

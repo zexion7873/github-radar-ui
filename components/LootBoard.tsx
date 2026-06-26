@@ -8,10 +8,10 @@ import {
   Badge,
   Chip,
   ChipScroller,
-  cardInteractive,
   formatWeek,
   STATUS_LABEL,
   STATUS_TONE,
+  STATUS_SPINE,
 } from "./ui";
 import LootStatusControl from "./LootStatusControl";
 import LootRating from "./LootRating";
@@ -89,6 +89,17 @@ export default function LootBoard({
   const noResults = filtered.length === 0;
   const hasFilter = !!query || !!type || !!status;
 
+  // Throughput at a glance: how much of the queue is still pending and what share
+  // of the whole target has been adopted. Derived from the full `rows`, so the
+  // numbers don't swing with the active filter.
+  const pending = rows.filter((r) => (r.status ?? "new") === "new").length;
+  const adoptRate =
+    rows.length > 0
+      ? Math.round(
+          (rows.filter((r) => r.status === "adopted").length / rows.length) * 100,
+        )
+      : 0;
+
   return (
     <div className="flex flex-col gap-4">
       <div className="sticky top-[var(--header-h)] z-20 -mx-4 flex flex-col gap-3 border-b border-border bg-background/80 px-4 py-3 backdrop-blur">
@@ -126,8 +137,8 @@ export default function LootBoard({
             </Chip>
           ))}
         </ChipScroller>
-        <p className="text-xs text-muted">
-          顯示 {filtered.length} / {rows.length}
+        <p className="font-mono text-[11px] tracking-wide text-muted">
+          顯示 {filtered.length} / {rows.length} · 待處理 {pending} · 採用率 {adoptRate}%
         </p>
       </div>
 
@@ -136,73 +147,94 @@ export default function LootBoard({
           {hasFilter ? "沒有符合條件的 loot" : "還沒有 loot，等抓取任務跑完"}
         </p>
       ) : (
-        keys.map((key) => (
-          <section key={key}>
-            <h2 className="mb-3 flex items-center gap-2 text-base font-semibold text-foreground">
-              <Badge tone={STATUS_TONE[key] ?? "muted"}>
-                {STATUS_LABEL[key] ?? key}
-              </Badge>
-              <span className="text-sm font-normal text-muted">
-                {groups.get(key)!.length}
-              </span>
-            </h2>
-            <div className="grid gap-3 md:grid-cols-2">
-              {groups
-                .get(key)!
-                .slice()
-                .sort(
-                  (a, b) =>
-                    (order.get(a.id) ?? Infinity) - (order.get(b.id) ?? Infinity),
-                )
-                .map((r) => (
-                <article
-                  key={r.id}
-                  className={`flex flex-col gap-1.5 p-4 ${cardInteractive}`}
+        keys.map((key) => {
+          const items = groups
+            .get(key)!
+            .slice()
+            .sort(
+              (a, b) =>
+                (order.get(a.id) ?? Infinity) - (order.get(b.id) ?? Infinity),
+            );
+          // 待處理 lane opens by default — it's the work; adopted/skipped collapse
+          // to keep the queue, not the archive, in front of you.
+          return (
+            <details key={key} open={key === "new"} className="group/lane">
+              <summary className="flex cursor-pointer list-none items-center gap-2 border-b-2 border-foreground pb-1.5 [&::-webkit-details-marker]:hidden">
+                <span
+                  aria-hidden
+                  className="font-mono text-xs text-muted transition-transform group-open/lane:rotate-90"
                 >
-                  {/* The detail link covers the content box only; the controls
-                      below sit OUTSIDE this relative box so the absolute link
-                      can't swallow taps on the rating stars / status buttons.
-                      The repo link rides above it (z-10) so its tap still opens
-                      the repo directly — same two-anchor trick as TrendingList. */}
-                  <div className="relative flex flex-col gap-1.5">
-                    <Link
-                      href={`/loot/${target}/${r.id}`}
-                      aria-label={`${r.repo} 明細`}
-                      className="absolute inset-0"
-                    />
-                    <div className="flex items-start justify-between gap-2">
-                      <a
-                        href={r.link ?? "#"}
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        className="relative z-10 font-medium break-all text-foreground hover:text-accent"
-                      >
-                        {r.repo}
-                      </a>
-                      {r.type && <Badge>{r.type}</Badge>}
+                  ›
+                </span>
+                <Badge tone={STATUS_TONE[key] ?? "muted"}>
+                  {STATUS_LABEL[key] ?? key}
+                </Badge>
+                <span className="font-mono text-xs text-muted">{items.length}</span>
+              </summary>
+              <ol className="mt-2 list-none divide-y divide-border border-b border-border">
+                {items.map((r) => (
+                  <li
+                    key={r.id}
+                    className={`relative border-l-[3px] ${STATUS_SPINE[key] ?? "border-l-border"}`}
+                  >
+                    <div className="flex flex-col gap-2 p-4">
+                      {/* The detail link covers the content box only; the controls
+                          below sit OUTSIDE this relative box so the absolute link
+                          can't swallow taps on the rating stars / status buttons.
+                          The repo link rides above it (z-10) so its tap still opens
+                          the repo directly — same two-anchor trick as TrendingList. */}
+                      <div className="relative flex flex-col gap-1.5">
+                        <Link
+                          href={`/loot/${target}/${r.id}`}
+                          aria-label={`${r.repo} 明細`}
+                          className="absolute inset-0"
+                        />
+                        <div className="flex items-start justify-between gap-2">
+                          <span className="flex min-w-0 items-center gap-2">
+                            {/* Square unread mark (zero-radius doctrine — an ink
+                                tick, not a round dot) on pending rows only. */}
+                            {key === "new" && (
+                              <span
+                                aria-hidden
+                                className="h-1.5 w-1.5 shrink-0 bg-accent"
+                              />
+                            )}
+                            <a
+                              href={r.link ?? "#"}
+                              target="_blank"
+                              rel="noopener noreferrer"
+                              className="relative z-10 truncate font-mono text-sm font-medium text-foreground hover:text-accent"
+                            >
+                              {r.repo}
+                            </a>
+                          </span>
+                          <span className="flex shrink-0 items-center gap-2">
+                            {r.type && <Badge>{r.type}</Badge>}
+                            {r.week && (
+                              <span className="font-mono text-[11px] text-muted">
+                                {formatWeek(r.week)}
+                              </span>
+                            )}
+                          </span>
+                        </div>
+                        {r.intro && (
+                          <p className="line-clamp-2 text-sm text-muted">{r.intro}</p>
+                        )}
+                        {r.why && (
+                          <p className="line-clamp-2 text-sm">{r.why}</p>
+                        )}
+                      </div>
+                      <div className="flex flex-col gap-3 border-t border-border pt-3">
+                        <LootRating pageId={r.id} value={r.recommendation} />
+                        <LootStatusControl pageId={r.id} status={r.status ?? "new"} />
+                      </div>
                     </div>
-                    {r.intro && (
-                      <p className="line-clamp-3 text-sm text-muted">{r.intro}</p>
-                    )}
-                    {r.why && (
-                      <p className="line-clamp-3 text-sm">
-                        <span className="font-medium text-muted">為何 </span>
-                        {r.why}
-                      </p>
-                    )}
-                    {r.week && (
-                      <p className="mt-1 text-xs text-muted">{formatWeek(r.week)}</p>
-                    )}
-                  </div>
-                  <div className="mt-auto flex flex-col gap-3 border-t border-border pt-3">
-                    <LootRating pageId={r.id} value={r.recommendation} />
-                    <LootStatusControl pageId={r.id} status={r.status ?? "new"} />
-                  </div>
-                </article>
-              ))}
-            </div>
-          </section>
-        ))
+                  </li>
+                ))}
+              </ol>
+            </details>
+          );
+        })
       )}
     </div>
   );

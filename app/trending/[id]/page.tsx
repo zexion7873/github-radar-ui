@@ -50,31 +50,65 @@ export default async function Page({
           {latest.repo} ↗
         </a>
         <div className="flex flex-wrap items-center gap-2 font-mono text-[11px] tracking-wide text-muted uppercase">
-          {latest.starsPerWeek != null && (
-            <span>★ {latest.starsPerWeek.toLocaleString()} / 週</span>
-          )}
           {latest.language && <span>{latest.language}</span>}
           {latest.category && (
             <Badge tone={CATEGORY_TONE[latest.category] ?? "muted"}>
               {latest.category}
             </Badge>
           )}
-          {latest.weeksOnChart != null && <span>🔁 上榜 {latest.weeksOnChart} 週</span>}
           {latest.week && <span>最新 {formatWeek(latest.week)}</span>}
         </div>
       </header>
 
-      <section className="flex flex-col gap-3 border-y border-border py-6">
-        <div className="flex items-baseline justify-between gap-2">
-          <h2 className="font-serif text-xl">每週 stars / 週</h2>
-          {delta != null && (
-            <span
-              className={`font-mono text-sm ${delta >= 0 ? "text-pos" : "text-muted"}`}
-            >
-              {delta >= 0 ? "▲" : "▼"} {Math.abs(delta).toLocaleString()} vs 上週
-            </span>
-          )}
+      {/* Terminal-style readout — the Tape dialect's signature on the detail page:
+          the key figures as big mono tabular numerals, the trajectory the hero
+          chart below. The ★/週 and 上榜週數 move here from the header meta so each
+          figure is stated once. */}
+      {/* Accent top on every cell: this readout exists to feature these three
+          figures, so each is "hot" metric content that earns the mark — the accent
+          still marks meaning (all three ARE the headline data here), unlike
+          StatsBar where one featured stat sits among context cells. Delta is a
+          ticker reading: green up, danger red down — never on the same surface as
+          the write-failure red, so the two never collide. */}
+      <div className="grid grid-cols-3 border-b border-border">
+        <div className="border-t-[3px] border-t-accent border-r border-border px-3 py-3">
+          <div className="font-mono text-2xl tabular-nums text-foreground">
+            {latest.starsPerWeek?.toLocaleString() ?? "—"}
+          </div>
+          <div className="mt-1 font-mono text-[10px] tracking-wide text-muted uppercase">
+            ★ / 週
+          </div>
         </div>
+        <div className="border-t-[3px] border-t-accent border-r border-border px-3 py-3">
+          <div
+            className={`font-mono text-2xl tabular-nums ${
+              delta == null
+                ? "text-muted"
+                : delta >= 0
+                  ? "text-pos"
+                  : "text-danger"
+            }`}
+          >
+            {delta == null
+              ? "—"
+              : `${delta >= 0 ? "▲" : "▼"}${Math.abs(delta).toLocaleString()}`}
+          </div>
+          <div className="mt-1 font-mono text-[10px] tracking-wide text-muted uppercase">
+            vs 上週
+          </div>
+        </div>
+        <div className="border-t-[3px] border-t-accent px-3 py-3">
+          <div className="font-mono text-2xl tabular-nums text-foreground">
+            {latest.weeksOnChart ?? "—"}
+          </div>
+          <div className="mt-1 font-mono text-[10px] tracking-wide text-muted uppercase">
+            上榜週數
+          </div>
+        </div>
+      </div>
+
+      <section className="flex flex-col gap-3">
+        <h2 className="font-serif text-xl">每週趨勢</h2>
         {history.length > 1 ? (
           <StarsTrend
             points={history.map((r) => ({ week: r.week, stars: r.starsPerWeek }))}

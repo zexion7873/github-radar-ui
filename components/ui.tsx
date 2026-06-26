@@ -120,6 +120,16 @@ export const STATUS_TONE: Record<string, Tone> = {
   skipped: "muted",
 };
 
+// Status → left-spine border colour, the loot worklist's structural cue. The
+// board row and the detail header both wear it, so the status hue lives in one
+// place (mirrors STATUS_TONE / STATUS_LABEL). The accent only ever marks 待處理,
+// so a drained queue reads as all-neutral ink.
+export const STATUS_SPINE: Record<string, string> = {
+  new: "border-l-accent",
+  adopted: "border-l-pos",
+  skipped: "border-l-border",
+};
+
 // One fixed tone for every "fresh this week" 🆕 badge (trending + blog): the
 // same accent as pending, so freshness reads as "hot" everywhere.
 export const FRESH_TONE: Tone = "accent";

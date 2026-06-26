@@ -7,11 +7,10 @@ import { STATUS_LABEL } from "./ui";
 
 const STATUSES = LOOT_STATUSES;
 
-const ACTIVE: Record<string, string> = {
-  new: "bg-accent/10 text-accent",
-  adopted: "bg-pos/10 text-pos",
-  skipped: "bg-border text-foreground",
-};
+// The active status is a neutral pressed-ink fill, not a status colour: the loot
+// board's left spine already carries the status hue (accent = 待處理, pos = 已採用),
+// so colouring the button too would double-spend the scarce accent on every row.
+const ACTIVE_CLASS = "bg-foreground/10 text-foreground";
 
 export default function LootStatusControl({
   pageId,
@@ -62,7 +61,7 @@ export default function LootStatusControl({
             }}
             className={`flex-1 cursor-pointer rounded-none px-3 py-2 text-sm font-medium transition-colors focus-visible:ring-2 focus-visible:ring-accent/30 focus-visible:outline-none ${
               s === active
-                ? `${ACTIVE[s]}${failed === s ? " ring-2 ring-danger/60" : ""} cursor-default`
+                ? `${ACTIVE_CLASS}${failed === s ? " ring-2 ring-danger/60" : ""} cursor-default`
                 : "border border-border text-muted hover:text-foreground"
             }`}
           >

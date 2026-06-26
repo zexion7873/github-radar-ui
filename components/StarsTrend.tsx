@@ -7,12 +7,39 @@ import { formatWeek } from "./ui";
 // rectangles, the peak week in accent, a single baseline rule, zero radius.
 export default function StarsTrend({
   points,
+  compact = false,
 }: {
   points: { week: string | null; stars: number | null }[];
+  compact?: boolean;
 }) {
   const max = Math.max(1, ...points.map((p) => p.stars ?? 0));
   const first = points[0]?.week ?? null;
   const last = points[points.length - 1]?.week ?? null;
+
+  // Inline sparkline for the trending list: a tiny bar strip, peak in accent, no
+  // axis labels or baseline — just enough to read the shape of the trajectory at
+  // a glance beside each row. The full chart (below) carries the detail page.
+  if (compact) {
+    return (
+      <div
+        className="flex h-6 w-20 items-stretch gap-px"
+        role="img"
+        aria-label={`每週趨勢，共 ${points.length} 週，最高 ${max.toLocaleString()}`}
+      >
+        {points.map((p, i) => {
+          const isPeak = (p.stars ?? 0) === max && max > 0;
+          return (
+            <div key={p.week ?? i} className="flex flex-1 flex-col justify-end">
+              <div
+                className={isPeak ? "bg-accent" : "bg-foreground/35"}
+                style={{ height: `${Math.max(10, ((p.stars ?? 0) / max) * 100)}%` }}
+              />
+            </div>
+          );
+        })}
+      </div>
+    );
+  }
 
   return (
     <div>
