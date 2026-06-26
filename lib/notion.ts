@@ -55,15 +55,12 @@ async function notionFetch<T>(
 
 // A `collection://<uuid>` handle may already be a data_source_id, or a database id
 // that holds one. Try it as a data source; on failure resolve via the database.
-const dataSourceCache = new Map<string, string>();
-
+// Not memoised: the caller (lib/data.ts) already wraps the whole read in a 600s
+// unstable_cache, so the extra GET only runs on a cache miss — a module-level map
+// here would just add a never-invalidating staleness layer underneath it.
 export async function resolveDataSourceId(uuid: string): Promise<string> {
-  const cached = dataSourceCache.get(uuid);
-  if (cached) return cached;
-
   try {
     await notionFetch<unknown>(`/data_sources/${uuid}`, { method: "GET" });
-    dataSourceCache.set(uuid, uuid);
     return uuid;
   } catch {
     const db = await notionFetch<{ data_sources?: { id: string }[] }>(
@@ -72,7 +69,6 @@ export async function resolveDataSourceId(uuid: string): Promise<string> {
     );
     const id = db.data_sources?.[0]?.id;
     if (!id) throw new NotionError(`No data source found for ${uuid}`);
-    dataSourceCache.set(uuid, id);
     return id;
   }
 }
