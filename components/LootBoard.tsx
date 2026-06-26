@@ -221,10 +221,7 @@ export default function LootBoard({
                           <p className="line-clamp-2 text-sm text-muted">{r.intro}</p>
                         )}
                         {r.why && (
-                          <p className="line-clamp-2 text-sm">
-                            <span className="font-medium text-muted">為何 </span>
-                            {r.why}
-                          </p>
+                          <p className="line-clamp-2 text-sm">{r.why}</p>
                         )}
                       </div>
                       <div className="flex flex-col gap-3 border-t border-border pt-3">
