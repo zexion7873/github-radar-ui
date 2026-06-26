@@ -82,7 +82,7 @@ export default function Dashboard({
     <div className="flex flex-col gap-8">
       <section>
         <SectionHeader
-          title="🔥 熱門 repo"
+          title="熱門 repo"
           href="/trending"
           linkText="看全部 Trending"
         />
@@ -138,7 +138,7 @@ export default function Dashboard({
 
       <section className="border-t border-border pt-8">
         <SectionHeader
-          title="📚 最新文章"
+          title="最新文章"
           href="/blog"
           linkText="看全部 Blog"
         />
@@ -189,7 +189,7 @@ export default function Dashboard({
       </section>
 
       <section className="border-t border-border pt-8">
-        <SectionHeader title="📦 待處理 Loot" />
+        <SectionHeader title="待處理 Loot" />
         <div className="grid gap-3 sm:grid-cols-2">
           {(Object.keys(LOOT_TARGETS) as LootTarget[]).map((target) => (
             <LootSummaryCard key={target} target={target} rows={loot[target]} />

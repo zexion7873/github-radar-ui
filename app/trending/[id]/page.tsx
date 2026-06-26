@@ -2,7 +2,7 @@ import { notFound } from "next/navigation";
 import Link from "next/link";
 import { fetchTrending } from "@/lib/data";
 import { TABLES } from "@/lib/config";
-import { Badge, CATEGORY_TONE, DataError, formatWeek } from "@/components/ui";
+import { Badge, BigStat, CATEGORY_TONE, DataError, formatWeek } from "@/components/ui";
 import StarsTrend from "@/components/StarsTrend";
 
 export const dynamic = "force-dynamic";
@@ -50,9 +50,6 @@ export default async function Page({
           {latest.repo} ↗
         </a>
         <div className="flex flex-wrap items-center gap-2 font-mono text-[11px] tracking-wide text-muted uppercase">
-          {latest.starsPerWeek != null && (
-            <span>★ {latest.starsPerWeek.toLocaleString()} / 週</span>
-          )}
           {latest.language && <span>{latest.language}</span>}
           {latest.category && (
             <Badge tone={CATEGORY_TONE[latest.category] ?? "muted"}>
@@ -64,17 +61,24 @@ export default async function Page({
         </div>
       </header>
 
+      {latest.starsPerWeek != null && (
+        <BigStat
+          value={latest.starsPerWeek.toLocaleString()}
+          label="★ Stars / 週"
+          featured
+          className="sm:max-w-xs"
+          sub={
+            delta != null && (
+              <span className={delta >= 0 ? "text-pos" : "text-muted"}>
+                {delta >= 0 ? "▲" : "▼"} {Math.abs(delta).toLocaleString()} vs 上週
+              </span>
+            )
+          }
+        />
+      )}
+
       <section className="flex flex-col gap-3 border-y border-border py-6">
-        <div className="flex items-baseline justify-between gap-2">
-          <h2 className="font-serif text-xl">每週 stars / 週</h2>
-          {delta != null && (
-            <span
-              className={`font-mono text-sm ${delta >= 0 ? "text-pos" : "text-muted"}`}
-            >
-              {delta >= 0 ? "▲" : "▼"} {Math.abs(delta).toLocaleString()} vs 上週
-            </span>
-          )}
-        </div>
+        <h2 className="font-serif text-xl">每週趨勢</h2>
         {history.length > 1 ? (
           <StarsTrend
             points={history.map((r) => ({ week: r.week, stars: r.starsPerWeek }))}

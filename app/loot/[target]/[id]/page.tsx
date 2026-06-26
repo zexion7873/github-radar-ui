@@ -78,7 +78,17 @@ export default async function Page({
 
       {current.intro && <Prose title="介紹">{current.intro}</Prose>}
       {current.asset && <Prose title="偷什麼">{current.asset}</Prose>}
-      {current.why && <Prose title="為何值得">{current.why}</Prose>}
+      {current.why && (
+        // The loot's core claim — why it's worth stealing. Render as the accent
+        // pull-quote (same as blog/trending detail 點評), not a plain Prose block,
+        // so it reads as the page's editorial stance. The other fields stay Prose.
+        <section className="flex flex-col gap-2">
+          <h2 className="font-serif text-xl">為何值得</h2>
+          <p className="border-l-[3px] border-accent pl-4 font-serif-text text-lg leading-relaxed whitespace-pre-line text-foreground italic">
+            {current.why}
+          </p>
+        </section>
+      )}
       {current.how && <Prose title="怎麼搬">{current.how}</Prose>}
 
       <section className="flex flex-col gap-4 border-y border-border py-6">

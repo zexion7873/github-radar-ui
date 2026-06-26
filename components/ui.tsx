@@ -91,6 +91,38 @@ export function ChipScroller({
   );
 }
 
+// The print-masthead big number: a top-edge rule (accent kicker when featured,
+// else ink), an oversized serif tabular numeral, a mono uppercase label, and an
+// optional sub line (e.g. a delta). The single source for StatsBar's cells and
+// the detail-page hero stats, so every enlarged number reads identically.
+export function BigStat({
+  value,
+  label,
+  featured = false,
+  sub,
+  className = "",
+}: {
+  value: ReactNode;
+  label: string;
+  featured?: boolean;
+  sub?: ReactNode;
+  className?: string;
+}) {
+  return (
+    <div
+      className={`border-x border-b border-t-[3px] border-border bg-surface p-4 ${
+        featured ? "border-t-accent" : "border-t-foreground"
+      } ${className}`}
+    >
+      <div className="font-serif text-4xl tabular-nums">{value}</div>
+      <div className="mt-1 font-mono text-[11px] tracking-[0.14em] text-muted uppercase">
+        {label}
+      </div>
+      {sub && <div className="mt-2 font-mono text-sm tabular-nums">{sub}</div>}
+    </div>
+  );
+}
+
 // Loot status enum → display label. The raw enum (new/adopted/skipped) stays the
 // stored/state value; translate only at render so the Chinese UI never shows the
 // schema. Shared by LootBoard (chips + group header) and LootStatusControl.

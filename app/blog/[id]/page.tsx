@@ -44,7 +44,16 @@ export default async function Page({
       </header>
 
       {post.brief && (
-        <p className="text-sm leading-relaxed text-muted first-letter:float-left first-letter:mr-2 first-letter:font-serif first-letter:text-5xl first-letter:leading-[0.8] first-letter:text-accent">
+        // Drop-cap only when the first char is a single Han char or Latin letter.
+        // A leading full-width punctuation / quote / emoji blows up to half a word
+        // and breaks the line — fall back to a plain lead paragraph in that case.
+        <p
+          className={`text-sm leading-relaxed text-muted ${
+            /^[A-Za-z一-鿿]/.test(post.brief)
+              ? "first-letter:float-left first-letter:mr-2 first-letter:font-serif first-letter:text-5xl first-letter:leading-[0.8] first-letter:text-accent"
+              : ""
+          }`}
+        >
           {post.brief}
         </p>
       )}

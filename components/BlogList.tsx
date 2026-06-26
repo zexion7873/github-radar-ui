@@ -16,8 +16,8 @@ import {
 // outside the enum (or a blank Type) falls into the catch-all section below so it
 // never silently vanishes from the page.
 const GROUPS: { type: string; label: string }[] = [
-  { type: "official", label: "🏛 官方" },
-  { type: "individual", label: "👤 個人" },
+  { type: "official", label: "官方" },
+  { type: "individual", label: "個人" },
 ];
 const KNOWN_TYPES = new Set(GROUPS.map((g) => g.type));
 
@@ -68,7 +68,7 @@ export default function BlogList({ rows }: { rows: BlogRow[] }) {
   const sections = [
     ...GROUPS.map((g) => ({ label: g.label, items: shown.filter((r) => r.type === g.type) })),
     {
-      label: "🗂 其他",
+      label: "其他",
       items: shown.filter((r) => !KNOWN_TYPES.has(r.type ?? "")),
     },
   ].filter((s) => s.items.length > 0);
