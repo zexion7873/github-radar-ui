@@ -190,6 +190,19 @@ export function latestPerRepo(rows: TrendingRow[]): TrendingRow[] {
   return [...byRepo.values()];
 }
 
+// Loot is one row per candidate per week (config.ts). Collapse to each repo's
+// most recent week so the board shows distinct assets, not the same repo repeated
+// across weeks — mirrors latestPerRepo for trending. The detail page re-reads the
+// full archive and regathers a repo's earlier weeks for its 歷次點評 section.
+export function latestLootPerRepo(rows: LootRow[]): LootRow[] {
+  const byRepo = new Map<string, LootRow>();
+  for (const r of rows) {
+    const prev = byRepo.get(r.repo);
+    if (!prev || (r.week ?? "") > (prev.week ?? "")) byRepo.set(r.repo, r);
+  }
+  return [...byRepo.values()];
+}
+
 export function fetchLoot(uuid: string): Promise<Result<LootRow>> {
   const P = LOOT_PROPS;
   return load(
