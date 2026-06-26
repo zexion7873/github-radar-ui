@@ -2,7 +2,7 @@
 
 import { cookies } from "next/headers";
 import { updateTag } from "next/cache";
-import { updateSelect, updateNumber } from "@/lib/notion";
+import { updateSelect } from "@/lib/notion";
 import { fetchLoot, LOOT_PROPS } from "@/lib/data";
 import { TABLES, LOOT_STATUSES } from "@/lib/config";
 import { isAuthed } from "@/lib/auth";
@@ -44,16 +44,5 @@ export async function setLootStatus(pageId: string, status: string) {
   await updateSelect(pageId, LOOT_PROPS.status, status);
   // updateTag (not revalidateTag) gives read-your-writes: the next read waits for
   // fresh data instead of serving the stale cache, so a reload shows the new Status.
-  updateTag("notion:loot");
-}
-
-export async function setLootRecommendation(pageId: string, value: number) {
-  await assertAuthed();
-  if (!Number.isInteger(value) || value < 0 || value > 5) {
-    throw new Error(`invalid rating: ${value}`);
-  }
-  await assertLootPage(pageId);
-
-  await updateNumber(pageId, LOOT_PROPS.recommendation, value === 0 ? null : value);
   updateTag("notion:loot");
 }

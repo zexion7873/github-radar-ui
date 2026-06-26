@@ -225,7 +225,7 @@ export default function LootBoard({
                         )}
                       </div>
                       <div className="flex flex-col gap-3 border-t border-border pt-3">
-                        <LootRating pageId={r.id} value={r.recommendation} />
+                        <LootRating value={r.recommendation} />
                         <LootStatusControl pageId={r.id} status={r.status ?? "new"} />
                       </div>
                     </div>
