@@ -35,7 +35,9 @@ export default function ThemeToggle() {
       aria-label="切換深色模式"
       className="shrink-0 rounded-none p-1.5 text-muted transition-colors hover:text-foreground"
     >
-      <span aria-hidden="true" className="dark:hidden">🌙</span>
+      {/* Icon contrasts its background: 🌑 dark disc on the light paper, ☀️ bright
+          sun on the dark surface — not the "switch-to" convention. */}
+      <span aria-hidden="true" className="dark:hidden">🌑</span>
       <span aria-hidden="true" className="hidden dark:inline">☀️</span>
     </button>
   );
