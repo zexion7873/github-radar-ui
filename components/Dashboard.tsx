@@ -149,7 +149,7 @@ export default function Dashboard({
             {rest.map((r, i) => (
               <li
                 key={r.id}
-                className="relative grid grid-cols-[2rem_1fr] gap-2 py-3"
+                className="relative grid grid-cols-[2rem_minmax(0,1fr)] gap-2 py-3"
               >
                 <Link
                   href={`/trending/${r.id}`}
@@ -160,13 +160,13 @@ export default function Dashboard({
                 <span className="pt-0.5 font-mono text-xs tabular-nums text-muted">
                   {String(i + 2).padStart(2, "0")}
                 </span>
-                <div className="flex flex-col gap-1">
+                <div className="flex min-w-0 flex-col gap-1">
                   <div className="flex items-center justify-between gap-2">
                     <a
                       href={r.link ?? "#"}
                       target="_blank"
                       rel="noopener noreferrer"
-                      className="relative z-10 truncate font-medium text-foreground hover:text-accent"
+                      className="relative z-10 min-w-0 truncate font-medium text-foreground hover:text-accent"
                     >
                       {r.repo}
                     </a>
@@ -205,7 +205,7 @@ export default function Dashboard({
             {topBlog.map((b, i) => (
               <li
                 key={b.id}
-                className="relative grid grid-cols-[2rem_1fr] gap-2 py-3"
+                className="relative grid grid-cols-[2rem_minmax(0,1fr)] gap-2 py-3"
               >
                 <Link
                   href={`/blog/${b.id}`}
@@ -215,13 +215,13 @@ export default function Dashboard({
                 <span className="pt-0.5 font-mono text-xs tabular-nums text-muted">
                   {String(i + 1).padStart(2, "0")}
                 </span>
-                <div className="flex flex-col gap-1">
+                <div className="flex min-w-0 flex-col gap-1">
                   <div className="flex items-center justify-between gap-2">
                     <a
                       href={b.url ?? "#"}
                       target="_blank"
                       rel="noopener noreferrer"
-                      className="relative z-10 truncate font-serif text-base text-foreground hover:text-accent"
+                      className="relative z-10 min-w-0 truncate font-serif text-base text-foreground hover:text-accent"
                     >
                       {b.title}
                     </a>
