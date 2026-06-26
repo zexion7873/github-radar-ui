@@ -95,7 +95,7 @@ export default async function Page({
         <h2 className="font-mono text-[11px] tracking-[0.14em] text-muted uppercase">
           我的評估
         </h2>
-        <LootRating pageId={current.id} value={current.recommendation} />
+        <LootRating value={current.recommendation} />
         <LootStatusControl pageId={current.id} status={status} />
       </section>
 
