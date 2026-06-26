@@ -2,9 +2,10 @@
 
 import { useOptimistic, useState, useTransition } from "react";
 import { setLootStatus } from "@/app/loot/actions";
+import { LOOT_STATUSES } from "@/lib/config";
 import { STATUS_LABEL } from "./ui";
 
-const STATUSES = ["new", "adopted", "skipped"] as const;
+const STATUSES = LOOT_STATUSES;
 
 const ACTIVE: Record<string, string> = {
   new: "bg-blue-100 text-blue-700 dark:bg-blue-950 dark:text-blue-300",
@@ -49,11 +50,19 @@ export default function LootStatusControl({
           <button
             key={s}
             type="button"
-            disabled={pending || s === active}
-            onClick={() => commit(s)}
-            className={`flex-1 rounded-md px-3 py-2 text-sm font-medium transition focus-visible:ring-2 focus-visible:ring-zinc-400 focus-visible:outline-none disabled:cursor-default dark:focus-visible:ring-zinc-500 ${
+            // Not `disabled`: a disabled button is blurred and dropped from tab
+            // order, so the keyboard user who just picked a status would lose focus
+            // mid-interaction. Stay focusable; mark state with aria-pressed and
+            // no-op the click when it's already active or a write is in flight.
+            aria-pressed={s === active}
+            aria-disabled={pending || s === active}
+            onClick={() => {
+              if (pending || s === active) return;
+              commit(s);
+            }}
+            className={`flex-1 cursor-pointer rounded-md px-3 py-2 text-sm font-medium transition focus-visible:ring-2 focus-visible:ring-zinc-400 focus-visible:outline-none dark:focus-visible:ring-zinc-500 ${
               s === active
-                ? `${ACTIVE[s]}${failed === s ? " ring-2 ring-red-400" : ""}`
+                ? `${ACTIVE[s]}${failed === s ? " ring-2 ring-red-400" : ""} cursor-default`
                 : "text-zinc-400 hover:bg-zinc-100 dark:text-zinc-500 dark:hover:bg-zinc-800"
             }`}
           >

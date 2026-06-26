@@ -2,6 +2,7 @@ import { fetchTrending, fetchLoot, fetchBlog, latestPerRepo } from "@/lib/data";
 import { TABLES } from "@/lib/config";
 import StatsBar from "@/components/StatsBar";
 import Dashboard from "@/components/Dashboard";
+import LastSynced from "@/components/LastSynced";
 import { DataError } from "@/components/ui";
 
 export const dynamic = "force-dynamic";
@@ -34,8 +35,23 @@ export default async function Page() {
     (r) => r.week === latestWeek && (r.weeksOnChart ?? 1) <= 1,
   ).length;
 
+  // Freshest source date across every table — the dashboard's "is the pipeline
+  // still alive" signal. Loot/blog failures just contribute nothing here.
+  const lootRows = [
+    ...(lootClaude.ok ? lootClaude.rows : []),
+    ...(lootCopilot.ok ? lootCopilot.rows : []),
+  ];
+  const latestSync = [
+    ...repos.map((r) => r.week),
+    ...lootRows.map((r) => r.week),
+    ...(blog.ok ? blog.rows.flatMap((r) => [r.published, r.archived]) : []),
+  ]
+    .filter((d): d is string => !!d)
+    .reduce((max, d) => (d > max ? d : max), "");
+
   return (
     <div className="flex flex-col gap-6">
+      {latestSync && <LastSynced iso={latestSync} />}
       <StatsBar
         stats={[
           { label: "追蹤中 repo", value: repos.length },
