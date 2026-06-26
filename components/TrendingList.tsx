@@ -1,5 +1,6 @@
 "use client";
 import { useMemo, useState } from "react";
+import Link from "next/link";
 import type { TrendingRow } from "@/lib/data";
 import {
   Badge,
@@ -91,14 +92,21 @@ export default function TrendingList({ rows }: { rows: TrendingRow[] }) {
         {shown.map((r) => (
           <article
             key={r.id}
-            className={`flex flex-col gap-2 p-4 ${cardInteractive}`}
+            className={`relative flex flex-col gap-2 p-4 ${cardInteractive}`}
           >
+            {/* Whole-card link to the detail/trend page; the repo link below sits
+                above it (z-10) so a tap on the name still opens the repo directly. */}
+            <Link
+              href={`/trending/${r.id}`}
+              aria-label={`${r.repo} 詳情與趨勢`}
+              className="absolute inset-0"
+            />
             <div className="flex items-start justify-between gap-2">
               <a
                 href={r.link ?? "#"}
                 target="_blank"
                 rel="noopener noreferrer"
-                className="font-medium break-all text-blue-600 hover:underline dark:text-blue-400"
+                className="relative z-10 font-medium break-all text-blue-600 hover:underline dark:text-blue-400"
               >
                 {r.repo}
               </a>
