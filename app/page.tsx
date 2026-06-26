@@ -4,6 +4,7 @@ import {
   fetchBlog,
   latestPerRepo,
   latestLootPerRepo,
+  weeklySeriesByRepo,
   type LootRow,
 } from "@/lib/data";
 import { TABLES } from "@/lib/config";
@@ -69,13 +70,14 @@ export default async function Page() {
       <StatsBar
         stats={[
           { label: "本週在榜", value: onChartThisWeek },
-          { label: "本週新上榜", value: newThisWeek, featured: true },
+          { label: "本週新上榜", value: newThisWeek },
           { label: "Claude 待處理", value: pendingCount(lootClaudeRows) },
           { label: "Copilot 待處理", value: pendingCount(lootCopilotRows) },
         ]}
       />
       <Dashboard
         trending={repos}
+        series={weeklySeriesByRepo(trending.rows)}
         loot={{
           claude: lootClaudeRows,
           copilot: lootCopilotRows,
