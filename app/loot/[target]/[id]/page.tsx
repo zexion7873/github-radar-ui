@@ -7,6 +7,7 @@ import {
   DataError,
   STATUS_LABEL,
   STATUS_TONE,
+  STATUS_SPINE,
   formatWeek,
 } from "@/components/ui";
 import LootRating from "@/components/LootRating";
@@ -18,8 +19,13 @@ export const dynamic = "force-dynamic";
 // full, preserving the source line breaks (whitespace-pre-line).
 function Prose({ title, children }: { title: string; children: string }) {
   return (
-    <section className="flex flex-col gap-2">
-      <h2 className="font-serif text-xl">{title}</h2>
+    // Dossier field: a mono label rule over the body, so the detail reads as the
+    // record behind a worklist item. Loot benches the serifs (its dialect voice),
+    // so every heading here is mono, not the editorial serif the other pages use.
+    <section className="flex flex-col gap-2 border-t border-border pt-4">
+      <h2 className="font-mono text-[11px] tracking-[0.14em] text-muted uppercase">
+        {title}
+      </h2>
       <p className="text-sm leading-relaxed whitespace-pre-line text-foreground">
         {children}
       </p>
@@ -58,12 +64,16 @@ export default async function Page({
         ← {label}
       </Link>
 
-      <header className="flex flex-col gap-2">
+      {/* Worklist dialect echo: the board's status spine carries onto the detail
+          header, and the repo wears the same mono voice as the board rows. */}
+      <header
+        className={`flex flex-col gap-2 border-l-[3px] pl-4 ${STATUS_SPINE[status] ?? "border-l-border"}`}
+      >
         <a
           href={current.link ?? "#"}
           target="_blank"
           rel="noopener noreferrer"
-          className="font-serif text-2xl break-all text-foreground transition-colors hover:text-accent"
+          className="font-mono text-xl break-all text-foreground transition-colors hover:text-accent"
         >
           {current.repo} ↗
         </a>
@@ -82,20 +92,24 @@ export default async function Page({
       {current.how && <Prose title="怎麼搬">{current.how}</Prose>}
 
       <section className="flex flex-col gap-4 border-y border-border py-6">
-        <h2 className="font-serif text-xl">我的評估</h2>
+        <h2 className="font-mono text-[11px] tracking-[0.14em] text-muted uppercase">
+          我的評估
+        </h2>
         <LootRating pageId={current.id} value={current.recommendation} />
         <LootStatusControl pageId={current.id} status={status} />
       </section>
 
       {past.length > 0 && (
-        <section className="flex flex-col gap-5">
-          <h2 className="font-serif text-xl">歷次點評</h2>
+        <section className="flex flex-col gap-5 border-t border-border pt-4">
+          <h2 className="font-mono text-[11px] tracking-[0.14em] text-muted uppercase">
+            歷次點評
+          </h2>
           {past.map((h) => {
             const hStatus = h.status ?? "new";
             return (
               <article
                 key={h.id}
-                className="flex flex-col gap-2 border-l-2 border-border pl-4"
+                className={`flex flex-col gap-2 border-l-[3px] pl-4 ${STATUS_SPINE[hStatus] ?? "border-l-border"}`}
               >
                 <div className="flex flex-wrap items-center gap-2 font-mono text-[11px] tracking-wide text-muted uppercase">
                   {h.week && <span>{formatWeek(h.week)}</span>}
