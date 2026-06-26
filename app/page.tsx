@@ -34,6 +34,10 @@ export default async function Page() {
   const newThisWeek = repos.filter(
     (r) => r.week === latestWeek && (r.weeksOnChart ?? 1) <= 1,
   ).length;
+  // repos whose most recent week IS the latest week = this week's live chart.
+  // Distinct from repos.length, which counts every repo ever archived (it only
+  // ever grows — a repo that fell off weeks ago still has a row in the dedup).
+  const onChartThisWeek = repos.filter((r) => r.week === latestWeek).length;
 
   // Freshest source date across every table — the dashboard's "is the pipeline
   // still alive" signal. Loot/blog failures just contribute nothing here.
@@ -54,8 +58,8 @@ export default async function Page() {
       {latestSync && <LastSynced iso={latestSync} />}
       <StatsBar
         stats={[
-          { label: "追蹤中 repo", value: repos.length },
-          { label: "🆕 本週新上榜", value: newThisWeek },
+          { label: "本週在榜", value: onChartThisWeek },
+          { label: "🆕 本週新上榜", value: newThisWeek, featured: true },
           { label: "Claude 待處理", value: pendingCount(lootClaude) },
           { label: "Copilot 待處理", value: pendingCount(lootCopilot) },
         ]}
