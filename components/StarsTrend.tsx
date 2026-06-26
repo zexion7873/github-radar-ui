@@ -30,8 +30,10 @@ export default function StarsTrend({
               title={`${formatWeek(p.week)}：${p.stars?.toLocaleString() ?? "—"}`}
             >
               <div
-                className={`w-full transition-colors group-hover:bg-accent ${
-                  isPeak ? "bg-accent" : "bg-foreground/35"
+                className={`w-full transition-colors duration-[var(--dur-ink)] ease-[var(--ease-ink)] ${
+                  isPeak
+                    ? "bg-accent"
+                    : "bg-foreground/45 group-hover:bg-foreground/70"
                 }`}
                 style={{ height: `${Math.max(2, ((p.stars ?? 0) / max) * 100)}%` }}
               />

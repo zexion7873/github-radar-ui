@@ -110,13 +110,13 @@ export default function LootRating({
         <span
           role="status"
           aria-live="polite"
-          className="ml-1 text-xs text-red-500"
+          className="ml-1 text-xs text-danger"
         >
           更新失敗{" "}
           <button
             type="button"
             onClick={() => rate(display)}
-            className="font-medium underline focus-visible:ring-2 focus-visible:ring-red-400 focus-visible:outline-none"
+            className="font-medium underline focus-visible:ring-2 focus-visible:ring-danger/60 focus-visible:outline-none"
           >
             重試
           </button>

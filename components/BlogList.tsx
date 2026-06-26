@@ -10,7 +10,7 @@ import { Badge, Chip, cardInteractive, formatWeek, FRESH_TONE } from "./ui";
 // never silently vanishes from the page.
 const GROUPS: { type: string; label: string }[] = [
   { type: "official", label: "🏛 官方" },
-  { type: "individual", label: "🧑‍💻 個人" },
+  { type: "individual", label: "👤 個人" },
 ];
 const KNOWN_TYPES = new Set(GROUPS.map((g) => g.type));
 
@@ -107,7 +107,7 @@ export default function BlogList({ rows }: { rows: BlogRow[] }) {
           </p>
         )}
         {r.comment && (
-          <p className="line-clamp-3 border-l-2 border-border pl-3 text-sm leading-relaxed text-muted italic">
+          <p className="line-clamp-3 border-l-2 border-border pl-3 text-sm leading-relaxed text-muted italic font-serif-text">
             {r.comment}
           </p>
         )}
@@ -157,7 +157,7 @@ export default function BlogList({ rows }: { rows: BlogRow[] }) {
         <div className="flex flex-col gap-8">
           {sections.map(({ label, items }) => (
             <section key={label}>
-              <h2 className="mb-3 text-base font-semibold font-serif text-foreground">
+              <h2 className="mb-3 text-xl font-serif tracking-tight text-foreground">
                 {label}
                 <span className="ml-2 text-sm font-normal text-muted">
                   {items.length}

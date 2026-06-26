@@ -19,7 +19,7 @@ export default async function Page({
   if (!post) notFound();
 
   return (
-    <div className="flex flex-col gap-6">
+    <div className="mx-auto flex max-w-2xl flex-col gap-8">
       <Link
         href="/blog"
         className="font-mono text-[11px] tracking-wide text-muted uppercase transition-colors hover:text-foreground"
@@ -44,13 +44,13 @@ export default async function Page({
       </header>
 
       {post.brief && (
-        <p className="text-sm leading-relaxed text-muted">
+        <p className="text-sm leading-relaxed text-muted first-letter:float-left first-letter:mr-2 first-letter:font-serif first-letter:text-5xl first-letter:leading-[0.8] first-letter:text-accent">
           {post.brief}
         </p>
       )}
       {post.summary && (
         <section className="flex flex-col gap-2">
-          <h2 className="font-serif text-lg">摘要</h2>
+          <h2 className="font-serif text-xl">摘要</h2>
           <p className="text-sm leading-relaxed whitespace-pre-line text-foreground">
             {post.summary}
           </p>
@@ -58,8 +58,8 @@ export default async function Page({
       )}
       {post.comment && (
         <section className="flex flex-col gap-2">
-          <h2 className="font-serif text-lg">點評</h2>
-          <p className="border-l-2 border-border pl-3 text-sm leading-relaxed whitespace-pre-line text-muted italic">
+          <h2 className="font-serif text-xl">點評</h2>
+          <p className="border-l-[3px] border-accent pl-4 font-serif-text italic text-lg leading-relaxed whitespace-pre-line text-foreground">
             {post.comment}
           </p>
         </section>

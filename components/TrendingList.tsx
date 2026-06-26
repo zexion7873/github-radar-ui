@@ -67,7 +67,7 @@ export default function TrendingList({ rows }: { rows: TrendingRow[] }) {
             className="rounded-none border border-border bg-surface px-3 py-1.5 text-sm focus:border-accent focus:ring-2 focus:ring-accent/30 focus:outline-none"
           >
             <option value="recent">最新優先</option>
-            <option value="stars">⭐/週 最高</option>
+            <option value="stars">★/週 最高</option>
           </select>
         </div>
 
@@ -125,7 +125,7 @@ export default function TrendingList({ rows }: { rows: TrendingRow[] }) {
 
             <div className="flex flex-wrap items-center gap-1.5 text-xs text-muted">
               {r.starsPerWeek != null && (
-                <span>⭐ {r.starsPerWeek.toLocaleString()}</span>
+                <span>★ <span className="font-mono tabular-nums">{r.starsPerWeek.toLocaleString()}</span></span>
               )}
               {r.language && <span>{r.language}</span>}
               {r.category && (
@@ -141,7 +141,7 @@ export default function TrendingList({ rows }: { rows: TrendingRow[] }) {
               </p>
             )}
             {r.comment && (
-              <p className="line-clamp-3 border-l-2 border-border pl-3 text-sm leading-relaxed text-muted italic">
+              <p className="line-clamp-3 border-l-2 border-border pl-3 text-sm leading-relaxed text-muted font-serif-text italic">
                 {r.comment}
               </p>
             )}

@@ -59,7 +59,7 @@ export default async function Page() {
       <StatsBar
         stats={[
           { label: "本週在榜", value: onChartThisWeek },
-          { label: "🆕 本週新上榜", value: newThisWeek, featured: true },
+          { label: "本週新上榜", value: newThisWeek, featured: true },
           { label: "Claude 待處理", value: pendingCount(lootClaude) },
           { label: "Copilot 待處理", value: pendingCount(lootCopilot) },
         ]}

@@ -60,9 +60,9 @@ export default function LootStatusControl({
               if (pending || s === active) return;
               commit(s);
             }}
-            className={`flex-1 cursor-pointer rounded-none px-3 py-2 text-sm font-medium transition focus-visible:ring-2 focus-visible:ring-accent/30 focus-visible:outline-none ${
+            className={`flex-1 cursor-pointer rounded-none px-3 py-2 text-sm font-medium transition-colors focus-visible:ring-2 focus-visible:ring-accent/30 focus-visible:outline-none ${
               s === active
-                ? `${ACTIVE[s]}${failed === s ? " ring-2 ring-red-400" : ""} cursor-default`
+                ? `${ACTIVE[s]}${failed === s ? " ring-2 ring-danger/60" : ""} cursor-default`
                 : "border border-border text-muted hover:text-foreground"
             }`}
           >
@@ -71,12 +71,12 @@ export default function LootStatusControl({
         ))}
       </div>
       {failed && (
-        <p role="status" aria-live="polite" className="text-xs text-red-500">
+        <p role="status" aria-live="polite" className="text-xs text-danger">
           更新失敗 ——{" "}
           <button
             type="button"
             onClick={() => commit(failed)}
-            className="font-medium underline focus-visible:ring-2 focus-visible:ring-red-400 focus-visible:outline-none"
+            className="font-medium underline focus-visible:ring-2 focus-visible:ring-danger/60 focus-visible:outline-none"
           >
             重試
           </button>

@@ -21,7 +21,7 @@ export default function Nav() {
             key={l.href}
             href={l.href}
             aria-current={active ? "page" : undefined}
-            className={`-mb-px whitespace-nowrap border-b-2 px-1 pb-1.5 font-mono text-[11px] tracking-wide uppercase transition-colors ${
+            className={`-mb-px whitespace-nowrap border-b-2 px-1 pb-1.5 font-mono text-[11px] tracking-[0.14em] uppercase transition-colors ${
               active
                 ? "border-accent text-foreground"
                 : "border-transparent text-muted hover:text-foreground"

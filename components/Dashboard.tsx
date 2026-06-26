@@ -14,7 +14,7 @@ function SectionHeader({
 }) {
   return (
     <div className="mb-3 flex items-center justify-between">
-      <h2 className="font-serif text-base font-semibold text-foreground">
+      <h2 className="font-serif text-xl tracking-tight text-foreground">
         {title}
       </h2>
       {href && (
@@ -111,7 +111,7 @@ export default function Dashboard({
                   </a>
                   <span className="flex shrink-0 items-center gap-2 text-xs text-muted">
                     {r.starsPerWeek != null && (
-                      <span>⭐ {r.starsPerWeek.toLocaleString()}</span>
+                      <span>★ <span className="font-mono tabular-nums">{r.starsPerWeek.toLocaleString()}</span></span>
                     )}
                     {r.category && (
                       <Badge tone={CATEGORY_TONE[r.category] ?? "gray"}>
@@ -126,7 +126,7 @@ export default function Dashboard({
                   </p>
                 )}
                 {r.comment && (
-                  <p className="line-clamp-3 border-l-2 border-border pl-2 text-xs leading-relaxed text-muted italic">
+                  <p className="line-clamp-3 border-l-2 border-border pl-2 text-xs leading-relaxed text-muted font-serif-text italic">
                     {r.comment}
                   </p>
                 )}
@@ -136,7 +136,7 @@ export default function Dashboard({
         )}
       </section>
 
-      <section>
+      <section className="border-t border-border pt-8">
         <SectionHeader
           title="📚 最新文章"
           href="/blog"
@@ -173,7 +173,7 @@ export default function Dashboard({
                   </p>
                 )}
                 {b.comment && (
-                  <p className="line-clamp-3 border-l-2 border-border pl-2 text-xs leading-relaxed text-muted italic">
+                  <p className="line-clamp-3 border-l-2 border-border pl-2 text-xs leading-relaxed text-muted font-serif-text italic">
                     {b.comment}
                   </p>
                 )}
@@ -188,7 +188,7 @@ export default function Dashboard({
         )}
       </section>
 
-      <section>
+      <section className="border-t border-border pt-8">
         <SectionHeader title="📦 待處理 Loot" />
         <div className="grid gap-3 sm:grid-cols-2">
           {(Object.keys(LOOT_TARGETS) as LootTarget[]).map((target) => (

@@ -13,7 +13,7 @@ export default function StatsBar({ stats }: { stats: Stat[] }) {
           }`}
         >
           <div className="font-serif text-4xl tabular-nums">{s.value ?? "—"}</div>
-          <div className="mt-1 font-mono text-[11px] tracking-wide text-muted uppercase">
+          <div className="mt-1 font-mono text-[11px] tracking-[0.14em] text-muted uppercase">
             {s.label}
           </div>
         </div>

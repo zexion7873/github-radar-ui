@@ -2,7 +2,7 @@ import { notFound } from "next/navigation";
 import Link from "next/link";
 import { fetchTrending } from "@/lib/data";
 import { TABLES } from "@/lib/config";
-import { Badge, CATEGORY_TONE, DataError, cardClass, formatWeek } from "@/components/ui";
+import { Badge, CATEGORY_TONE, DataError, formatWeek } from "@/components/ui";
 import StarsTrend from "@/components/StarsTrend";
 
 export const dynamic = "force-dynamic";
@@ -32,7 +32,7 @@ export default async function Page({
       : null;
 
   return (
-    <div className="flex flex-col gap-6">
+    <div className="mx-auto flex max-w-2xl flex-col gap-8">
       <Link
         href="/trending"
         className="font-mono text-[11px] tracking-wide text-muted uppercase transition-colors hover:text-foreground"
@@ -51,7 +51,7 @@ export default async function Page({
         </a>
         <div className="flex flex-wrap items-center gap-2 font-mono text-[11px] tracking-wide text-muted uppercase">
           {latest.starsPerWeek != null && (
-            <span>⭐ {latest.starsPerWeek.toLocaleString()} / 週</span>
+            <span>★ {latest.starsPerWeek.toLocaleString()} / 週</span>
           )}
           {latest.language && <span>{latest.language}</span>}
           {latest.category && (
@@ -64,12 +64,12 @@ export default async function Page({
         </div>
       </header>
 
-      <section className={`flex flex-col gap-3 p-4 ${cardClass}`}>
+      <section className="flex flex-col gap-3 border-y border-border py-6">
         <div className="flex items-baseline justify-between gap-2">
-          <h2 className="font-serif text-lg">每週 stars / 週</h2>
+          <h2 className="font-serif text-xl">每週 stars / 週</h2>
           {delta != null && (
             <span
-              className={`font-mono text-sm ${delta >= 0 ? "text-pos" : "text-neg"}`}
+              className={`font-mono text-sm ${delta >= 0 ? "text-pos" : "text-muted"}`}
             >
               {delta >= 0 ? "▲" : "▼"} {Math.abs(delta).toLocaleString()} vs 上週
             </span>
@@ -86,7 +86,7 @@ export default async function Page({
 
       {latest.description && (
         <section className="flex flex-col gap-2">
-          <h2 className="font-serif text-lg">描述</h2>
+          <h2 className="font-serif text-xl">描述</h2>
           <p className="text-sm leading-relaxed whitespace-pre-line text-foreground">
             {latest.description}
           </p>
@@ -94,8 +94,8 @@ export default async function Page({
       )}
       {latest.comment && (
         <section className="flex flex-col gap-2">
-          <h2 className="font-serif text-lg">點評</h2>
-          <p className="border-l-2 border-border pl-3 text-sm leading-relaxed whitespace-pre-line text-muted italic">
+          <h2 className="font-serif text-xl">點評</h2>
+          <p className="border-l-[3px] border-accent pl-4 font-serif-text italic text-lg leading-relaxed whitespace-pre-line text-foreground">
             {latest.comment}
           </p>
         </section>
