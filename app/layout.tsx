@@ -1,5 +1,5 @@
 import type { Metadata } from "next";
-import { Geist, Geist_Mono, DM_Serif_Display, Newsreader } from "next/font/google";
+import { Geist, Geist_Mono, DM_Serif_Display, Source_Serif_4 } from "next/font/google";
 import "./globals.css";
 import Nav from "@/components/Nav";
 import StickyHeader from "@/components/StickyHeader";
@@ -19,11 +19,12 @@ const dmSerif = DM_Serif_Display({
   subsets: ["latin"],
   weight: "400",
 });
-// Newsreader is a variable text serif WITH a true italic — the editorial reading
-// face. DM Serif Display stays display-only (masthead, section heads, numerals,
-// drop-cap); pull-quotes and the AI 點評 voice render in Newsreader italic.
-const newsreader = Newsreader({
-  variable: "--font-newsreader",
+// Source Serif 4 is a variable text serif with a sober, near-sloped-roman italic
+// (legible, not calligraphic) — the editorial reading face. DM Serif Display stays
+// display-only (masthead, section heads, numerals, drop-cap); pull-quotes and the
+// AI 點評 voice render in its italic.
+const sourceSerif = Source_Serif_4({
+  variable: "--font-source-serif",
   subsets: ["latin"],
   style: ["normal", "italic"],
 });
@@ -54,7 +55,7 @@ export default async function RootLayout({
     <html
       lang="en"
       suppressHydrationWarning
-      className={`${geistSans.variable} ${geistMono.variable} ${dmSerif.variable} ${newsreader.variable} h-full antialiased${theme === "dark" ? " dark" : ""}`}
+      className={`${geistSans.variable} ${geistMono.variable} ${dmSerif.variable} ${sourceSerif.variable} h-full antialiased${theme === "dark" ? " dark" : ""}`}
     >
       <head>
         <script dangerouslySetInnerHTML={{ __html: themeScript }} />

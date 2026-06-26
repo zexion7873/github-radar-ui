@@ -126,7 +126,7 @@ export default function Dashboard({
                   </p>
                 )}
                 {r.comment && (
-                  <p className="line-clamp-3 border-l-2 border-border pl-2 text-xs leading-relaxed text-muted">
+                  <p className="line-clamp-3 border-l-2 border-border pl-2 text-xs leading-relaxed text-muted font-serif-text italic">
                     {r.comment}
                   </p>
                 )}
@@ -173,7 +173,7 @@ export default function Dashboard({
                   </p>
                 )}
                 {b.comment && (
-                  <p className="line-clamp-3 border-l-2 border-border pl-2 text-xs leading-relaxed text-muted">
+                  <p className="line-clamp-3 border-l-2 border-border pl-2 text-xs leading-relaxed text-muted font-serif-text italic">
                     {b.comment}
                   </p>
                 )}

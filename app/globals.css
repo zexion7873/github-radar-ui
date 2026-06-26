@@ -65,7 +65,7 @@
   --font-sans: var(--font-geist-sans), "PingFang TC", "Microsoft JhengHei", "Noto Sans TC", sans-serif;
   --font-mono: var(--font-geist-mono), "PingFang TC", "Microsoft JhengHei", "Noto Sans TC", monospace;
   --font-serif: var(--font-dm-serif), "PingFang TC", "Microsoft JhengHei", "Noto Sans TC", serif;
-  --font-serif-text: var(--font-newsreader), "PingFang TC", "Microsoft JhengHei", "Noto Sans TC", serif;
+  --font-serif-text: var(--font-source-serif), "PingFang TC", "Microsoft JhengHei", "Noto Sans TC", serif;
 }
 
 body {

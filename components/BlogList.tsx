@@ -107,7 +107,7 @@ export default function BlogList({ rows }: { rows: BlogRow[] }) {
           </p>
         )}
         {r.comment && (
-          <p className="line-clamp-3 border-l-2 border-border pl-3 text-sm leading-relaxed text-muted">
+          <p className="line-clamp-3 border-l-2 border-border pl-3 text-sm leading-relaxed text-muted font-serif-text italic">
             {r.comment}
           </p>
         )}
