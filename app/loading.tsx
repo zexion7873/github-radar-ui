@@ -1,5 +1,3 @@
-import { cardClass } from "@/components/ui";
-
 // Shown instantly on every navigation while the dynamic page fetches Notion, so
 // switching tabs reads as "loading" rather than a frozen blank screen. Kept
 // layout-neutral (a controls bar + stacked blocks) so it doesn't promise a
@@ -7,9 +5,9 @@ import { cardClass } from "@/components/ui";
 export default function Loading() {
   return (
     <div className="animate-pulse space-y-3">
-      <div className={`h-10 w-full ${cardClass}`} />
+      <div className="h-10 w-full rounded-none bg-border/60" />
       {Array.from({ length: 4 }).map((_, i) => (
-        <div key={i} className={`h-24 ${cardClass}`} />
+        <div key={i} className="h-24 rounded-none bg-border/60" />
       ))}
     </div>
   );

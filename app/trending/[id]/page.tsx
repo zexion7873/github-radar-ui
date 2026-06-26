@@ -35,7 +35,7 @@ export default async function Page({
     <div className="flex flex-col gap-6">
       <Link
         href="/trending"
-        className="text-sm text-blue-600 hover:underline dark:text-blue-400"
+        className="font-mono text-[11px] tracking-wide text-muted uppercase transition-colors hover:text-foreground"
       >
         ← Trending
       </Link>
@@ -45,17 +45,17 @@ export default async function Page({
           href={latest.link ?? "#"}
           target="_blank"
           rel="noopener noreferrer"
-          className="text-xl font-semibold break-all text-blue-600 hover:underline dark:text-blue-400"
+          className="font-serif text-2xl break-all text-foreground transition-colors hover:text-accent"
         >
           {latest.repo} ↗
         </a>
-        <div className="flex flex-wrap items-center gap-2 text-sm text-zinc-500">
+        <div className="flex flex-wrap items-center gap-2 font-mono text-[11px] tracking-wide text-muted uppercase">
           {latest.starsPerWeek != null && (
             <span>⭐ {latest.starsPerWeek.toLocaleString()} / 週</span>
           )}
           {latest.language && <span>{latest.language}</span>}
           {latest.category && (
-            <Badge tone={CATEGORY_TONE[latest.category] ?? "gray"}>
+            <Badge tone={CATEGORY_TONE[latest.category] ?? "muted"}>
               {latest.category}
             </Badge>
           )}
@@ -66,10 +66,10 @@ export default async function Page({
 
       <section className={`flex flex-col gap-3 p-4 ${cardClass}`}>
         <div className="flex items-baseline justify-between gap-2">
-          <h2 className="text-base font-semibold">每週 stars / 週</h2>
+          <h2 className="font-serif text-lg">每週 stars / 週</h2>
           {delta != null && (
             <span
-              className={`text-sm ${delta >= 0 ? "text-green-600 dark:text-green-400" : "text-amber-600 dark:text-amber-400"}`}
+              className={`font-mono text-sm ${delta >= 0 ? "text-pos" : "text-neg"}`}
             >
               {delta >= 0 ? "▲" : "▼"} {Math.abs(delta).toLocaleString()} vs 上週
             </span>
@@ -80,22 +80,22 @@ export default async function Page({
             points={history.map((r) => ({ week: r.week, stars: r.starsPerWeek }))}
           />
         ) : (
-          <p className="text-sm text-zinc-500">本週首次上榜，尚無歷史趨勢。</p>
+          <p className="text-sm text-muted">本週首次上榜，尚無歷史趨勢。</p>
         )}
       </section>
 
       {latest.description && (
         <section className="flex flex-col gap-2">
-          <h2 className="text-base font-semibold">描述</h2>
-          <p className="text-sm leading-relaxed whitespace-pre-line text-zinc-700 dark:text-zinc-300">
+          <h2 className="font-serif text-lg">描述</h2>
+          <p className="text-sm leading-relaxed whitespace-pre-line text-foreground">
             {latest.description}
           </p>
         </section>
       )}
       {latest.comment && (
         <section className="flex flex-col gap-2">
-          <h2 className="text-base font-semibold">點評</h2>
-          <p className="border-l-2 border-zinc-200 pl-3 text-sm leading-relaxed whitespace-pre-line text-zinc-600 italic dark:border-zinc-700 dark:text-zinc-400">
+          <h2 className="font-serif text-lg">點評</h2>
+          <p className="border-l-2 border-border pl-3 text-sm leading-relaxed whitespace-pre-line text-muted italic">
             {latest.comment}
           </p>
         </section>

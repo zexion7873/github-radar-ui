@@ -9,6 +9,9 @@ export default async function LoginPage({
   return (
     <div className="flex min-h-[60vh] items-center justify-center">
       <form action={login} className="flex w-full max-w-xs flex-col gap-3">
+        <h1 className="mb-2 font-serif text-2xl tracking-tight">
+          📡 GitHub <span className="text-accent">Radar</span>
+        </h1>
         <input type="hidden" name="from" value={from ?? "/"} />
         <input
           type="password"
@@ -19,7 +22,7 @@ export default async function LoginPage({
           placeholder="輸入密碼"
           autoFocus
           autoComplete="current-password"
-          className="rounded-lg border border-zinc-300 bg-white px-3 py-2 text-sm dark:border-zinc-700 dark:bg-zinc-900"
+          className="rounded-none border border-border bg-surface px-3 py-2 text-sm placeholder:text-muted focus:border-accent focus:ring-2 focus:ring-accent/30 focus:outline-none"
         />
         {error && (
           <p
@@ -32,7 +35,7 @@ export default async function LoginPage({
         )}
         <button
           type="submit"
-          className="rounded-lg bg-zinc-900 px-3 py-2 text-sm font-medium text-white dark:bg-white dark:text-black"
+          className="rounded-none bg-foreground px-3 py-2 text-sm font-medium text-background transition-colors hover:bg-accent"
         >
           進入
         </button>
