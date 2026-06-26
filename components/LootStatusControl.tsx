@@ -8,9 +8,9 @@ import { STATUS_LABEL } from "./ui";
 const STATUSES = LOOT_STATUSES;
 
 const ACTIVE: Record<string, string> = {
-  new: "bg-blue-100 text-blue-700 dark:bg-blue-950 dark:text-blue-300",
-  adopted: "bg-green-100 text-green-700 dark:bg-green-950 dark:text-green-300",
-  skipped: "bg-zinc-200 text-zinc-700 dark:bg-zinc-700 dark:text-zinc-200",
+  new: "bg-accent/10 text-accent",
+  adopted: "bg-pos/10 text-pos",
+  skipped: "bg-border text-foreground",
 };
 
 export default function LootStatusControl({
@@ -60,10 +60,10 @@ export default function LootStatusControl({
               if (pending || s === active) return;
               commit(s);
             }}
-            className={`flex-1 cursor-pointer rounded-md px-3 py-2 text-sm font-medium transition focus-visible:ring-2 focus-visible:ring-zinc-400 focus-visible:outline-none dark:focus-visible:ring-zinc-500 ${
+            className={`flex-1 cursor-pointer rounded-none px-3 py-2 text-sm font-medium transition-colors focus-visible:ring-2 focus-visible:ring-accent/30 focus-visible:outline-none ${
               s === active
-                ? `${ACTIVE[s]}${failed === s ? " ring-2 ring-red-400" : ""} cursor-default`
-                : "text-zinc-400 hover:bg-zinc-100 dark:text-zinc-500 dark:hover:bg-zinc-800"
+                ? `${ACTIVE[s]}${failed === s ? " ring-2 ring-danger/60" : ""} cursor-default`
+                : "border border-border text-muted hover:text-foreground"
             }`}
           >
             {STATUS_LABEL[s] ?? s}
@@ -71,12 +71,12 @@ export default function LootStatusControl({
         ))}
       </div>
       {failed && (
-        <p role="status" aria-live="polite" className="text-xs text-red-500">
+        <p role="status" aria-live="polite" className="text-xs text-danger">
           更新失敗 ——{" "}
           <button
             type="button"
             onClick={() => commit(failed)}
-            className="font-medium underline focus-visible:ring-2 focus-visible:ring-red-400 focus-visible:outline-none"
+            className="font-medium underline focus-visible:ring-2 focus-visible:ring-danger/60 focus-visible:outline-none"
           >
             重試
           </button>

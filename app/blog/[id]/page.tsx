@@ -19,10 +19,10 @@ export default async function Page({
   if (!post) notFound();
 
   return (
-    <div className="flex flex-col gap-6">
+    <div className="mx-auto flex max-w-2xl flex-col gap-8">
       <Link
         href="/blog"
-        className="text-sm text-blue-600 hover:underline dark:text-blue-400"
+        className="font-mono text-[11px] tracking-wide text-muted uppercase transition-colors hover:text-foreground"
       >
         ← Blog
       </Link>
@@ -32,34 +32,34 @@ export default async function Page({
           href={post.url ?? "#"}
           target="_blank"
           rel="noopener noreferrer"
-          className="text-xl font-semibold break-words text-blue-600 hover:underline dark:text-blue-400"
+          className="font-serif text-2xl break-words text-foreground transition-colors hover:text-accent"
         >
           {post.title} ↗
         </a>
-        <div className="flex flex-wrap items-center gap-2 text-sm text-zinc-500">
-          {post.source && <Badge tone="blue">{post.source}</Badge>}
+        <div className="flex flex-wrap items-center gap-2 font-mono text-[11px] tracking-wide text-muted uppercase">
+          {post.source && <Badge tone="muted">{post.source}</Badge>}
           {post.author && <span>{post.author}</span>}
           {post.published && <span>{formatWeek(post.published)}</span>}
         </div>
       </header>
 
       {post.brief && (
-        <p className="text-sm leading-relaxed text-zinc-600 dark:text-zinc-400">
+        <p className="text-sm leading-relaxed text-muted first-letter:float-left first-letter:mr-2 first-letter:font-serif first-letter:text-5xl first-letter:leading-[0.8] first-letter:text-accent">
           {post.brief}
         </p>
       )}
       {post.summary && (
         <section className="flex flex-col gap-2">
-          <h2 className="text-base font-semibold">摘要</h2>
-          <p className="text-sm leading-relaxed whitespace-pre-line text-zinc-700 dark:text-zinc-300">
+          <h2 className="font-serif text-xl">摘要</h2>
+          <p className="text-sm leading-relaxed whitespace-pre-line text-foreground">
             {post.summary}
           </p>
         </section>
       )}
       {post.comment && (
         <section className="flex flex-col gap-2">
-          <h2 className="text-base font-semibold">點評</h2>
-          <p className="border-l-2 border-zinc-200 pl-3 text-sm leading-relaxed whitespace-pre-line text-zinc-600 italic dark:border-zinc-700 dark:text-zinc-400">
+          <h2 className="font-serif text-xl">點評</h2>
+          <p className="border-l-[3px] border-accent pl-4 font-serif-text italic text-lg leading-relaxed whitespace-pre-line text-foreground">
             {post.comment}
           </p>
         </section>

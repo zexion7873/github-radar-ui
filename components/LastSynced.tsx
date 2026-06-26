@@ -24,7 +24,7 @@ export default function LastSynced({ iso }: { iso: string }) {
 
   return (
     <p
-      className={`text-xs ${stale ? "text-amber-600 dark:text-amber-400" : "text-zinc-500"}`}
+      className={`text-xs ${stale ? "text-accent" : "text-muted"}`}
     >
       {stale && "⚠ "}資料最新到 {formatWeek(iso)}
       {stale && "（來源可能已停更）"}
