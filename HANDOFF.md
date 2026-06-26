@@ -22,7 +22,7 @@ What works:
 
 ## Architecture (read path)
 
-`lib/config.ts` — the three Notion data-source UUIDs (`TABLES`), `LOOT_TARGETS`, and
+`lib/config.ts` — the four Notion data-source UUIDs (`TABLES`), `LOOT_TARGETS`, and
 `NOTION_VERSION = "2025-09-03"` (the version that introduced data sources).
 
 `lib/notion.ts` — server-only Notion REST client with its OWN internal integration token

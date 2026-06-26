@@ -1,6 +1,8 @@
 "use client";
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
+import { useRouter } from "next/navigation";
 import type { LootRow } from "@/lib/data";
+import { LOOT_STATUSES } from "@/lib/config";
 import {
   Badge,
   Chip,
@@ -12,9 +14,21 @@ import {
 import LootStatusControl from "./LootStatusControl";
 import LootRating from "./LootRating";
 
-const STATUS_ORDER = ["new", "adopted", "skipped"];
+const STATUS_ORDER: readonly string[] = LOOT_STATUSES;
 
 export default function LootBoard({ rows }: { rows: LootRow[] }) {
+  const router = useRouter();
+  // Loot is editable from any device/tab; last-write-wins on Notion means a
+  // backgrounded tab can hold stale optimistic state. Refresh on return to
+  // reconcile with the server (the order-freeze below survives — no remount).
+  useEffect(() => {
+    function onVisible() {
+      if (document.visibilityState === "visible") router.refresh();
+    }
+    document.addEventListener("visibilitychange", onVisible);
+    return () => document.removeEventListener("visibilitychange", onVisible);
+  }, [router]);
+
   const types = useMemo(
     () =>
       Array.from(new Set(rows.map((r) => r.type).filter((t): t is string => !!t))),
@@ -149,24 +163,24 @@ export default function LootBoard({ rows }: { rows: LootRow[] }) {
                     {r.type && <Badge>{r.type}</Badge>}
                   </div>
                   {r.intro && (
-                    <p className="text-sm text-zinc-600 dark:text-zinc-400">
+                    <p className="line-clamp-3 text-sm text-zinc-600 dark:text-zinc-400">
                       {r.intro}
                     </p>
                   )}
                   {r.asset && (
-                    <p className="text-sm">
+                    <p className="line-clamp-3 text-sm">
                       <span className="font-medium text-zinc-500 dark:text-zinc-400">偷什麼 </span>
                       {r.asset}
                     </p>
                   )}
                   {r.why && (
-                    <p className="text-sm">
+                    <p className="line-clamp-3 text-sm">
                       <span className="font-medium text-zinc-500 dark:text-zinc-400">為何 </span>
                       {r.why}
                     </p>
                   )}
                   {r.how && (
-                    <p className="text-sm">
+                    <p className="line-clamp-3 text-sm">
                       <span className="font-medium text-zinc-500 dark:text-zinc-400">怎麼搬 </span>
                       {r.how}
                     </p>

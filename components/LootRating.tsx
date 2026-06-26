@@ -24,6 +24,14 @@ export default function LootRating({
   // to the adjacent star (clamped 1-5), set it, and follow focus there. The
   // current value is the single tab stop (the first star when unrated).
   function onStarKey(e: React.KeyboardEvent, n: number) {
+    // Backspace/Delete clears to unrated, so the keyboard radiogroup can reach the
+    // same null state the ✕ button gives mouse users (arrows clamp at 1, never 0).
+    if (e.key === "Backspace" || e.key === "Delete") {
+      e.preventDefault();
+      rate(0);
+      starRefs.current[0]?.focus();
+      return;
+    }
     let next: number;
     if (e.key === "ArrowRight" || e.key === "ArrowUp") next = Math.min(5, n + 1);
     else if (e.key === "ArrowLeft" || e.key === "ArrowDown")
