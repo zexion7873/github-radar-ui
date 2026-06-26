@@ -190,6 +190,26 @@ export function latestPerRepo(rows: TrendingRow[]): TrendingRow[] {
   return [...byRepo.values()];
 }
 
+export type WeekPoint = { week: string | null; stars: number | null };
+
+// Each repo's full weekly stars/wk history, ascending by week — the series behind
+// the trending list's inline sparkline and ▲▼ delta. Built from the RAW archive
+// (every weekly row), NOT latestPerRepo, which keeps only one week per repo. A
+// plain object (not a Map) so it serialises across the server→client boundary;
+// keyed by repo so the already-deduped list rows look up their own history by name.
+export function weeklySeriesByRepo(
+  rows: TrendingRow[],
+): Record<string, WeekPoint[]> {
+  const byRepo: Record<string, WeekPoint[]> = {};
+  for (const r of rows) {
+    (byRepo[r.repo] ??= []).push({ week: r.week, stars: r.starsPerWeek });
+  }
+  for (const repo in byRepo) {
+    byRepo[repo].sort((a, b) => (a.week ?? "").localeCompare(b.week ?? ""));
+  }
+  return byRepo;
+}
+
 // Loot is one row per candidate per week (config.ts). Collapse to each repo's
 // most recent week so the board shows distinct assets, not the same repo repeated
 // across weeks — mirrors latestPerRepo for trending. The detail page re-reads the

@@ -1,12 +1,12 @@
 "use client";
 import { useMemo, useState } from "react";
 import Link from "next/link";
-import type { TrendingRow } from "@/lib/data";
+import type { TrendingRow, WeekPoint } from "@/lib/data";
+import StarsTrend from "./StarsTrend";
 import {
   Badge,
   Chip,
   ChipScroller,
-  cardInteractive,
   formatWeek,
   CATEGORY_TONE,
   FRESH_TONE,
@@ -14,7 +14,13 @@ import {
 
 type Sort = "recent" | "stars";
 
-export default function TrendingList({ rows }: { rows: TrendingRow[] }) {
+export default function TrendingList({
+  rows,
+  series,
+}: {
+  rows: TrendingRow[];
+  series: Record<string, WeekPoint[]>;
+}) {
   const categories = useMemo(
     () =>
       Array.from(
@@ -89,69 +95,108 @@ export default function TrendingList({ rows }: { rows: TrendingRow[] }) {
         </p>
       </div>
 
-      <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
-        {shown.map((r) => (
-          <article
-            key={r.id}
-            className={`relative flex flex-col gap-2 p-4 ${cardInteractive}`}
-          >
-            {/* Whole-card link to the detail/trend page; the repo link below sits
-                above it (z-10) so a tap on the name still opens the repo directly. */}
-            <Link
-              href={`/trending/${r.id}`}
-              aria-label={`${r.repo} 詳情與趨勢`}
-              className="absolute inset-0"
-            />
-            <div className="flex items-start justify-between gap-2">
-              <a
-                href={r.link ?? "#"}
-                target="_blank"
-                rel="noopener noreferrer"
-                className="relative z-10 font-medium break-all text-foreground hover:text-accent"
+      {/* Ranked ledger — the rank gutter turns the flat grid into a leaderboard.
+          Single column (not a card grid) so the gutter's border-r reads as one
+          continuous rule down the page, the way a league table does. Rank is the
+          row's position in `shown`, so flipping the sort live-renumbers; it means
+          "place in the current view", not an absolute score. */}
+      {shown.length > 0 && (
+        <ol className="list-none divide-y divide-border border-y border-border">
+          {shown.map((r, i) => {
+            // Week-over-week change in ★/wk, from this repo's full series. Up wears
+            // the positive green, down/flat the muted ink — never --danger, which
+            // is reserved for a write failure. Null when there's no prior week.
+            const pts = series[r.repo] ?? [];
+            const last = pts[pts.length - 1]?.stars;
+            const prev = pts[pts.length - 2]?.stars;
+            const delta =
+              last != null && prev != null ? last - prev : null;
+            return (
+              <li
+                key={r.id}
+                className="group relative grid grid-cols-[2.75rem_1fr] transition-colors duration-[var(--dur-ink)] ease-[var(--ease-ink)] hover:bg-surface sm:grid-cols-[3.5rem_1fr_auto]"
               >
-                {r.repo}
-              </a>
-              {/* 🆕 only for newcomers in the latest week; 🔁 for returnees; a
-                  newcomer whose latest week isn't the newest shows neither —
-                  rare after latestPerRepo, and intentional. NOTE: this is a
-                  UI-local re-derivation of the skill's flag (github-trending
-                  SKILL.md step 8 = "no prior archived row"); the two rules can
-                  drift — change them together. */}
-              {r.week === latestWeek && (r.weeksOnChart ?? 1) <= 1 ? (
-                <Badge tone={FRESH_TONE}>🆕 新上榜</Badge>
-              ) : r.weeksOnChart != null && r.weeksOnChart > 1 ? (
-                <Badge tone="muted">🔁 {r.weeksOnChart} 週</Badge>
-              ) : null}
-            </div>
+                {/* Whole-row link to the detail/trend page; the repo link below sits
+                    above it (z-10) so a tap on the name still opens the repo directly. */}
+                <Link
+                  href={`/trending/${r.id}`}
+                  aria-label={`${r.repo} 詳情與趨勢`}
+                  className="absolute inset-0"
+                />
+                {/* Rank gutter: the page's signature element. Mono tabular figures so
+                    the column stays vertically aligned; darkens to ink on row hover,
+                    on-doctrine (depth from ink, not a shadow lift). */}
+                <div className="flex justify-center border-r border-border pt-4 font-mono text-sm tabular-nums text-muted transition-colors group-hover:border-ink-2 group-hover:text-foreground">
+                  <span className="text-muted/50">#</span>
+                  {String(i + 1).padStart(2, "0")}
+                </div>
+                <div className="flex flex-col gap-2 px-4 py-4">
+                  <div className="flex items-start justify-between gap-2">
+                    <a
+                      href={r.link ?? "#"}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="relative z-10 font-medium break-all text-foreground hover:text-accent"
+                    >
+                      {r.repo}
+                    </a>
+                    {/* 🆕 only for newcomers in the latest week; 🔁 for returnees; a
+                        newcomer whose latest week isn't the newest shows neither —
+                        rare after latestPerRepo, and intentional. NOTE: this is a
+                        UI-local re-derivation of the skill's flag (github-trending
+                        SKILL.md step 8 = "no prior archived row"); the two rules can
+                        drift — change them together. */}
+                    {r.week === latestWeek && (r.weeksOnChart ?? 1) <= 1 ? (
+                      <Badge tone={FRESH_TONE}>🆕 新上榜</Badge>
+                    ) : r.weeksOnChart != null && r.weeksOnChart > 1 ? (
+                      <Badge tone="muted">🔁 {r.weeksOnChart} 週</Badge>
+                    ) : null}
+                  </div>
 
-            <div className="flex flex-wrap items-center gap-1.5 text-xs text-muted">
-              {r.starsPerWeek != null && (
-                <span>★ <span className="font-mono tabular-nums">{r.starsPerWeek.toLocaleString()}</span></span>
-              )}
-              {r.language && <span>{r.language}</span>}
-              {r.category && (
-                <Badge tone={CATEGORY_TONE[r.category] ?? "muted"}>
-                  {r.category}
-                </Badge>
-              )}
-            </div>
+                  <div className="flex flex-wrap items-center gap-1.5 text-xs text-muted">
+                    {r.starsPerWeek != null && (
+                      <span>★ <span className="font-mono tabular-nums">{r.starsPerWeek.toLocaleString()}</span></span>
+                    )}
+                    {delta != null && delta !== 0 && (
+                      <span className={delta > 0 ? "text-pos" : "text-danger"}>
+                        {delta > 0 ? "▲" : "▼"}{" "}
+                        <span className="font-mono tabular-nums">
+                          {Math.abs(delta).toLocaleString()}
+                        </span>
+                      </span>
+                    )}
+                    {r.language && <span>{r.language}</span>}
+                    {r.category && (
+                      <Badge tone={CATEGORY_TONE[r.category] ?? "muted"}>
+                        {r.category}
+                      </Badge>
+                    )}
+                  </div>
 
-            {r.description && (
-              <p className="line-clamp-3 text-sm leading-relaxed text-foreground">
-                {r.description}
-              </p>
-            )}
-            {r.comment && (
-              <p className="line-clamp-3 border-l-2 border-border pl-3 text-sm leading-relaxed text-muted font-serif-text italic">
-                {r.comment}
-              </p>
-            )}
-            {r.week && (
-              <p className="mt-auto text-xs text-muted">{formatWeek(r.week)}</p>
-            )}
-          </article>
-        ))}
-      </div>
+                  {r.description && (
+                    <p className="line-clamp-3 text-sm leading-relaxed text-foreground">
+                      {r.description}
+                    </p>
+                  )}
+                  {r.comment && (
+                    <p className="line-clamp-3 border-l-2 border-border pl-3 text-sm leading-relaxed text-muted font-serif-text italic">
+                      {r.comment}
+                    </p>
+                  )}
+                  {r.week && (
+                    <p className="mt-auto text-xs text-muted">{formatWeek(r.week)}</p>
+                  )}
+                </div>
+                {/* Sparkline rail (sm+): the trajectory at a glance beside the row.
+                    Hidden on mobile, where the rank + figures already carry it. */}
+                <div className="hidden items-start py-4 pr-4 sm:flex">
+                  {pts.length > 1 && <StarsTrend points={pts} compact />}
+                </div>
+              </li>
+            );
+          })}
+        </ol>
+      )}
 
       {shown.length === 0 && (
         <p className="py-12 text-center text-sm text-muted">
