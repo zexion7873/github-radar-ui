@@ -146,6 +146,11 @@ async function load<T>(
   }
 }
 
+// Returns the RAW weekly archive — one row per repo per week, NOT deduped — so
+// the detail page ([id]) can draw each repo's full per-week history. Callers that
+// want distinct repos (Dashboard, trending list) call latestPerRepo() themselves.
+// Do NOT move dedup in here: it would collapse every repo to its latest week and
+// silently blank the detail chart, with nothing pointing back to this change.
 export function fetchTrending(uuid: string): Promise<Result<TrendingRow>> {
   const P = TRENDING_PROPS;
   return load(

@@ -16,14 +16,14 @@ export default function StarsTrend({
   return (
     <div>
       <div
-        className="flex h-32 items-end gap-1"
+        className="flex h-32 items-stretch gap-1"
         role="img"
         aria-label={`每週 stars/週 趨勢，共 ${points.length} 週，最高 ${max.toLocaleString()}`}
       >
         {points.map((p, i) => (
           <div
             key={p.week ?? i}
-            className="group flex-1"
+            className="group flex flex-1 flex-col justify-end"
             title={`${formatWeek(p.week)}：${p.stars?.toLocaleString() ?? "—"}`}
           >
             <div
