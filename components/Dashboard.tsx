@@ -91,17 +91,24 @@ export default function Dashboard({
         ) : (
           <div className="flex flex-col gap-2">
             {topTrending.map((r) => (
-              <a
+              <article
                 key={r.id}
-                href={r.link ?? "#"}
-                target="_blank"
-                rel="noopener noreferrer"
-                className={`flex flex-col gap-1 p-3 ${cardInteractive}`}
+                className={`relative flex flex-col gap-1 p-3 ${cardInteractive}`}
               >
+                <Link
+                  href={`/trending/${r.id}`}
+                  aria-label={`${r.repo} 詳情與趨勢`}
+                  className="absolute inset-0"
+                />
                 <div className="flex items-center justify-between gap-3">
-                  <span className="truncate font-medium text-blue-600 dark:text-blue-400">
+                  <a
+                    href={r.link ?? "#"}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="relative z-10 truncate font-medium text-blue-600 hover:underline dark:text-blue-400"
+                  >
                     {r.repo}
-                  </span>
+                  </a>
                   <span className="flex shrink-0 items-center gap-2 text-xs text-zinc-500">
                     {r.starsPerWeek != null && (
                       <span>⭐ {r.starsPerWeek.toLocaleString()}</span>
@@ -123,7 +130,7 @@ export default function Dashboard({
                     {r.comment}
                   </p>
                 )}
-              </a>
+              </article>
             ))}
           </div>
         )}
@@ -140,17 +147,24 @@ export default function Dashboard({
         ) : (
           <div className="flex flex-col gap-2">
             {topBlog.map((b) => (
-              <a
+              <article
                 key={b.id}
-                href={b.url ?? "#"}
-                target="_blank"
-                rel="noopener noreferrer"
-                className={`flex flex-col gap-1 p-3 ${cardInteractive}`}
+                className={`relative flex flex-col gap-1 p-3 ${cardInteractive}`}
               >
+                <Link
+                  href={`/blog/${b.id}`}
+                  aria-label={`${b.title} 詳情`}
+                  className="absolute inset-0"
+                />
                 <div className="flex items-center justify-between gap-3">
-                  <span className="truncate font-medium text-blue-600 dark:text-blue-400">
+                  <a
+                    href={b.url ?? "#"}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="relative z-10 truncate font-medium text-blue-600 hover:underline dark:text-blue-400"
+                  >
                     {b.title}
-                  </span>
+                  </a>
                   {b.source && <Badge tone="blue">{b.source}</Badge>}
                 </div>
                 {(b.brief || b.summary) && (
@@ -168,7 +182,7 @@ export default function Dashboard({
                     {formatWeek(b.published)}
                   </p>
                 )}
-              </a>
+              </article>
             ))}
           </div>
         )}

@@ -1,5 +1,6 @@
 "use client";
 import { useMemo, useState } from "react";
+import Link from "next/link";
 import type { BlogRow } from "@/lib/data";
 import { Badge, Chip, cardInteractive, formatWeek, FRESH_TONE } from "./ui";
 
@@ -68,18 +69,27 @@ export default function BlogList({ rows }: { rows: BlogRow[] }) {
   function card(r: BlogRow) {
     const isNew =
       !!r.archived && latestArchived - Date.parse(r.archived) < WEEK_MS;
-    const body = r.summary || r.brief;
+    // List shows the short brief, not the full-paragraph summary (matches the
+    // dashboard). Summary stays a fallback only when a post has no brief.
+    const body = r.brief || r.summary;
     return (
       <article
         key={r.id}
-        className={`flex flex-col gap-2 p-4 ${cardInteractive}`}
+        className={`relative flex flex-col gap-2 p-4 ${cardInteractive}`}
       >
+        {/* Whole-card link to the post detail (full summary + comment); the title
+            link below sits above it (z-10) so a tap on it still opens the source. */}
+        <Link
+          href={`/blog/${r.id}`}
+          aria-label={`${r.title} 詳情`}
+          className="absolute inset-0"
+        />
         <div className="flex items-start justify-between gap-2">
           <a
             href={r.url ?? "#"}
             target="_blank"
             rel="noopener noreferrer"
-            className="font-medium break-words text-blue-600 hover:underline dark:text-blue-400"
+            className="relative z-10 font-medium break-words text-blue-600 hover:underline dark:text-blue-400"
           >
             {r.title}
           </a>
