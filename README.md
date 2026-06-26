@@ -10,12 +10,13 @@ triage state back to Notion in place:
 | `/` | Trending + Loot + Blog | **Dashboard** — top-5 hot repos + latest blog posts (each with a blurb) + one summary card per loot ledger |
 | `/trending` | Trending Archive | Weekly trending AI repos, filterable by category, with 🆕 / 🔁 weeks-on-chart |
 | `/blog` | Blog Archive | AI/agent blog posts grouped 官方 / 個人, each with a one-paragraph summary + 點評, newest first |
-| `/loot/claude` | Loot Ledger (Claude Code) | Loot grouped by status (new / adopted / skipped), with editable status + rating |
+| `/loot/claude` | Loot Ledger (Claude Code) | Loot grouped by status (new / adopted / skipped), with editable status and a read-only rating |
 | `/loot/copilot` | Loot Ledger (Copilot) | Same, for the Copilot target |
 
-Loot **status and rating are editable from the UI** and persist straight back to
-Notion (`PATCH /v1/pages/{id}`); the reads use `POST /v1/data_sources/{id}/query`.
-Both run server-side only — the Notion token never reaches the browser.
+Loot **status is editable from the UI** and persists straight back to Notion
+(`PATCH /v1/pages/{id}`); the rating is read-only display. Reads use
+`POST /v1/data_sources/{id}/query`. Both run server-side only — the Notion token
+never reaches the browser.
 
 ## Stack
 
