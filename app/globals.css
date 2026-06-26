@@ -5,8 +5,18 @@
 @custom-variant dark (&:where(.dark, .dark *));
 
 :root {
-  --background: #ffffff;
-  --foreground: #171717;
+  /* The Broadsheet — ink on warm paper. Components read these only through the
+     semantic utilities wired in @theme inline (bg-surface, text-muted,
+     text-accent, …), so a restyle is a token edit here, not a component sweep. */
+  --background: #f7f4ef;
+  --surface: #ffffff;
+  --border: #d9d3c8;
+  --foreground: #1a1714;
+  --muted: #7a7268;
+  --accent: #b84e2b;
+  --pos: #2d7d4f;
+  --neg: #b84e2b;
+
   /* Sticky header height, measured at runtime by StickyHeader; the page filter
      bars pin at this offset so they sit just below the header instead of under
      it. Seeded near the real two-row height so the first paint (before the
@@ -14,11 +24,29 @@
   --header-h: 7rem;
 }
 
+.dark {
+  --background: #111010;
+  --surface: #1a1917;
+  --border: #2e2c29;
+  --foreground: #ede8e0;
+  --muted: #8a8278;
+  --accent: #d4643f;
+  --pos: #5bb87e;
+  --neg: #d4643f;
+}
+
 @theme inline {
   --color-background: var(--background);
+  --color-surface: var(--surface);
+  --color-border: var(--border);
   --color-foreground: var(--foreground);
+  --color-muted: var(--muted);
+  --color-accent: var(--accent);
+  --color-pos: var(--pos);
+  --color-neg: var(--neg);
   --font-sans: var(--font-geist-sans);
   --font-mono: var(--font-geist-mono);
+  --font-serif: var(--font-dm-serif);
 }
 
 body {

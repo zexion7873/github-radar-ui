@@ -1,5 +1,5 @@
 import type { Metadata } from "next";
-import { Geist, Geist_Mono } from "next/font/google";
+import { Geist, Geist_Mono, DM_Serif_Display } from "next/font/google";
 import "./globals.css";
 import Nav from "@/components/Nav";
 import StickyHeader from "@/components/StickyHeader";
@@ -10,6 +10,13 @@ import { isAuthed } from "@/lib/auth";
 
 const geistSans = Geist({ variable: "--font-geist-sans", subsets: ["latin"] });
 const geistMono = Geist_Mono({ variable: "--font-geist-mono", subsets: ["latin"] });
+// DM Serif Display is non-variable — only ships weight 400 — so the weight is
+// required. It's the editorial voice: masthead, section heads, and big numerals.
+const dmSerif = DM_Serif_Display({
+  variable: "--font-dm-serif",
+  subsets: ["latin"],
+  weight: "400",
+});
 
 export const metadata: Metadata = {
   title: "GitHub Radar",
@@ -34,16 +41,16 @@ export default async function RootLayout({
     <html
       lang="en"
       suppressHydrationWarning
-      className={`${geistSans.variable} ${geistMono.variable} h-full antialiased${theme === "dark" ? " dark" : ""}`}
+      className={`${geistSans.variable} ${geistMono.variable} ${dmSerif.variable} h-full antialiased${theme === "dark" ? " dark" : ""}`}
     >
       <head>
         <script dangerouslySetInnerHTML={{ __html: themeScript }} />
       </head>
-      <body className="min-h-full bg-zinc-50 text-zinc-900 dark:bg-black dark:text-zinc-100">
+      <body className="min-h-full bg-background text-foreground">
         {authed && (
           <a
             href="#main"
-            className="sr-only focus:not-sr-only focus:absolute focus:top-4 focus:left-4 focus:z-50 focus:rounded-lg focus:bg-zinc-900 focus:px-3 focus:py-2 focus:text-sm focus:text-white dark:focus:bg-white dark:focus:text-black"
+            className="sr-only focus:not-sr-only focus:absolute focus:top-4 focus:left-4 focus:z-50 focus:rounded-none focus:bg-foreground focus:px-3 focus:py-2 focus:text-sm focus:text-background"
           >
             跳到主要內容
           </a>
@@ -52,13 +59,15 @@ export default async function RootLayout({
           {authed && (
             <StickyHeader>
               <div className="flex items-center justify-between gap-3">
-                <h1 className="text-lg font-semibold">📡 GitHub Radar</h1>
+                <h1 className="font-serif text-xl tracking-tight">
+                  📡 GitHub <span className="text-accent">Radar</span>
+                </h1>
                 <div className="flex shrink-0 items-center gap-1">
                   <ThemeToggle />
                   <form action={logout} className="shrink-0">
                     <button
                       type="submit"
-                      className="rounded-full px-3 py-1.5 text-sm font-medium text-zinc-500 transition-colors hover:bg-zinc-100 hover:text-zinc-900 dark:text-zinc-400 dark:hover:bg-zinc-800 dark:hover:text-zinc-100"
+                      className="rounded-none px-3 py-1.5 font-mono text-[11px] tracking-wide text-muted uppercase transition-colors hover:text-foreground"
                     >
                       登出
                     </button>
