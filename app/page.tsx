@@ -1,4 +1,11 @@
-import { fetchTrending, fetchLoot, fetchBlog, latestPerRepo } from "@/lib/data";
+import {
+  fetchTrending,
+  fetchLoot,
+  fetchBlog,
+  latestPerRepo,
+  latestLootPerRepo,
+  type LootRow,
+} from "@/lib/data";
 import { TABLES } from "@/lib/config";
 import StatsBar from "@/components/StatsBar";
 import Dashboard from "@/components/Dashboard";
@@ -7,12 +14,10 @@ import { DataError } from "@/components/ui";
 
 export const dynamic = "force-dynamic";
 
-const pendingCount = (
-  result: Awaited<ReturnType<typeof fetchLoot>>,
-): number | null =>
-  result.ok
-    ? result.rows.filter((r) => (r.status ?? "new") === "new").length
-    : null;
+// Distinct repos still 'new'. The caller dedups per repo (latest week) first, so
+// a repo shortlisted across multiple weeks counts once — matching the loot board.
+const pendingCount = (rows: LootRow[] | null): number | null =>
+  rows ? rows.filter((r) => (r.status ?? "new") === "new").length : null;
 
 export default async function Page() {
   // All four tables in parallel; loot and blog failures degrade to "—" / null
@@ -25,6 +30,14 @@ export default async function Page() {
     fetchBlog(TABLES.blog),
   ]);
   if (!trending.ok) return <DataError error={trending.error} />;
+
+  // Dedup loot per repo (latest week) BEFORE any count/summary — a repo
+  // shortlisted across multiple weeks must count once, matching the loot board.
+  // Without this Copilot (the table with cross-week repeats) over-counts pending.
+  const lootClaudeRows = lootClaude.ok ? latestLootPerRepo(lootClaude.rows) : null;
+  const lootCopilotRows = lootCopilot.ok
+    ? latestLootPerRepo(lootCopilot.rows)
+    : null;
 
   const repos = latestPerRepo(trending.rows);
   const latestWeek = repos.reduce(
@@ -41,10 +54,7 @@ export default async function Page() {
 
   // Freshest source date across every table — the dashboard's "is the pipeline
   // still alive" signal. Loot/blog failures just contribute nothing here.
-  const lootRows = [
-    ...(lootClaude.ok ? lootClaude.rows : []),
-    ...(lootCopilot.ok ? lootCopilot.rows : []),
-  ];
+  const lootRows = [...(lootClaudeRows ?? []), ...(lootCopilotRows ?? [])];
   const latestSync = [
     ...repos.map((r) => r.week),
     ...lootRows.map((r) => r.week),
@@ -60,15 +70,15 @@ export default async function Page() {
         stats={[
           { label: "本週在榜", value: onChartThisWeek },
           { label: "本週新上榜", value: newThisWeek, featured: true },
-          { label: "Claude 待處理", value: pendingCount(lootClaude) },
-          { label: "Copilot 待處理", value: pendingCount(lootCopilot) },
+          { label: "Claude 待處理", value: pendingCount(lootClaudeRows) },
+          { label: "Copilot 待處理", value: pendingCount(lootCopilotRows) },
         ]}
       />
       <Dashboard
         trending={repos}
         loot={{
-          claude: lootClaude.ok ? lootClaude.rows : null,
-          copilot: lootCopilot.ok ? lootCopilot.rows : null,
+          claude: lootClaudeRows,
+          copilot: lootCopilotRows,
         }}
         blog={blog.ok ? blog.rows : null}
       />

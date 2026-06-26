@@ -1,8 +1,9 @@
 "use client";
 import { useEffect, useMemo, useState } from "react";
 import { useRouter } from "next/navigation";
+import Link from "next/link";
 import type { LootRow } from "@/lib/data";
-import { LOOT_STATUSES } from "@/lib/config";
+import { LOOT_STATUSES, type LootTarget } from "@/lib/config";
 import {
   Badge,
   Chip,
@@ -16,7 +17,13 @@ import LootRating from "./LootRating";
 
 const STATUS_ORDER: readonly string[] = LOOT_STATUSES;
 
-export default function LootBoard({ rows }: { rows: LootRow[] }) {
+export default function LootBoard({
+  rows,
+  target,
+}: {
+  rows: LootRow[];
+  target: LootTarget;
+}) {
   const router = useRouter();
   // Loot is editable from any device/tab; last-write-wins on Notion means a
   // backgrounded tab can hold stale optimistic state. Refresh on return to
@@ -151,45 +158,41 @@ export default function LootBoard({ rows }: { rows: LootRow[] }) {
                   key={r.id}
                   className={`flex flex-col gap-1.5 p-4 ${cardInteractive}`}
                 >
-                  <div className="flex items-start justify-between gap-2">
-                    <a
-                      href={r.link ?? "#"}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      className="font-medium break-all text-foreground hover:text-accent"
-                    >
-                      {r.repo}
-                    </a>
-                    {r.type && <Badge>{r.type}</Badge>}
+                  {/* The detail link covers the content box only; the controls
+                      below sit OUTSIDE this relative box so the absolute link
+                      can't swallow taps on the rating stars / status buttons.
+                      The repo link rides above it (z-10) so its tap still opens
+                      the repo directly — same two-anchor trick as TrendingList. */}
+                  <div className="relative flex flex-col gap-1.5">
+                    <Link
+                      href={`/loot/${target}/${r.id}`}
+                      aria-label={`${r.repo} 明細`}
+                      className="absolute inset-0"
+                    />
+                    <div className="flex items-start justify-between gap-2">
+                      <a
+                        href={r.link ?? "#"}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="relative z-10 font-medium break-all text-foreground hover:text-accent"
+                      >
+                        {r.repo}
+                      </a>
+                      {r.type && <Badge>{r.type}</Badge>}
+                    </div>
+                    {r.intro && (
+                      <p className="line-clamp-3 text-sm text-muted">{r.intro}</p>
+                    )}
+                    {r.why && (
+                      <p className="line-clamp-3 text-sm">
+                        <span className="font-medium text-muted">為何 </span>
+                        {r.why}
+                      </p>
+                    )}
+                    {r.week && (
+                      <p className="mt-1 text-xs text-muted">{formatWeek(r.week)}</p>
+                    )}
                   </div>
-                  {r.intro && (
-                    <p className="line-clamp-3 text-sm text-muted">
-                      {r.intro}
-                    </p>
-                  )}
-                  {r.asset && (
-                    <p className="line-clamp-3 text-sm">
-                      <span className="font-medium text-muted">偷什麼 </span>
-                      {r.asset}
-                    </p>
-                  )}
-                  {r.why && (
-                    <p className="line-clamp-3 text-sm">
-                      <span className="font-medium text-muted">為何 </span>
-                      {r.why}
-                    </p>
-                  )}
-                  {r.how && (
-                    <p className="line-clamp-3 text-sm">
-                      <span className="font-medium text-muted">怎麼搬 </span>
-                      {r.how}
-                    </p>
-                  )}
-                  {r.week && (
-                    <p className="mt-1 text-xs text-muted">
-                      {formatWeek(r.week)}
-                    </p>
-                  )}
                   <div className="mt-auto flex flex-col gap-3 border-t border-border pt-3">
                     <LootRating pageId={r.id} value={r.recommendation} />
                     <LootStatusControl pageId={r.id} status={r.status ?? "new"} />

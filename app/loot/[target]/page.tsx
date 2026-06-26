@@ -1,5 +1,5 @@
 import { notFound } from "next/navigation";
-import { fetchLoot } from "@/lib/data";
+import { fetchLoot, latestLootPerRepo } from "@/lib/data";
 import { LOOT_TARGETS, type LootTarget } from "@/lib/config";
 import LootBoard from "@/components/LootBoard";
 import { DataError } from "@/components/ui";
@@ -16,5 +16,12 @@ export default async function Page({
   const { uuid } = LOOT_TARGETS[target as LootTarget];
   const result = await fetchLoot(uuid);
   if (!result.ok) return <DataError error={result.error} />;
-  return <LootBoard rows={result.rows} />;
+  // Collapse to one card per repo (latest week); the detail page gathers the
+  // earlier weeks for its 歷次點評 section.
+  return (
+    <LootBoard
+      rows={latestLootPerRepo(result.rows)}
+      target={target as LootTarget}
+    />
+  );
 }
