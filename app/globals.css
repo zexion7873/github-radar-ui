@@ -18,6 +18,10 @@
   /* danger is a cooler, deeper red than the accent so a write failure never
      reads as "hot" — accent stays scarce, reserved for hot/fresh/featured. */
   --danger: #9e2b1e;
+  /* info is the editorial blue — only the CC-BY-SA license badge uses it. A muted
+     steel blue tuned to sit on warm paper, not a loud UI blue, so it joins the
+     palette without competing with the scarce accent. */
+  --info: #2f5d8d;
   /* ink-2 is the card hover border: ink-toned, not full foreground, so the lift
      reads as ink pressing in rather than a selection outline. */
   --ink-2: #4a443c;
@@ -43,6 +47,7 @@
   --accent: #d4643f;
   --pos: #5bb87e;
   --danger: #e0574a;
+  --info: #6f9fd4;
   --ink-2: #ccc3b6;
 }
 
@@ -55,6 +60,7 @@
   --color-accent: var(--accent);
   --color-pos: var(--pos);
   --color-danger: var(--danger);
+  --color-info: var(--info);
   --color-ink-2: var(--ink-2);
   /* Latin face first, then a curated 繁中 fallback (PingFang on Mac, JhengHei on
      Windows, Noto on Linux/Android). The UI is bilingual and Geist/DM Serif carry

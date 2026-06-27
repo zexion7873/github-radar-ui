@@ -13,6 +13,7 @@ import {
   STATUS_TONE,
   STATUS_SPINE,
   MAINTAINED_BADGE,
+  licenseTone,
 } from "./ui";
 import LootStatusControl from "./LootStatusControl";
 import LootRating from "./LootRating";
@@ -213,6 +214,11 @@ export default function LootBoard({
                             {r.type && <Badge>{r.type}</Badge>}
                             {r.maintained && MAINTAINED_BADGE[r.maintained] && (
                               <Badge>{MAINTAINED_BADGE[r.maintained]}</Badge>
+                            )}
+                            {r.license && (
+                              <Badge className={licenseTone(r.license)}>
+                                {r.license}
+                              </Badge>
                             )}
                             {r.week && (
                               <span className="font-mono text-[11px] text-muted">

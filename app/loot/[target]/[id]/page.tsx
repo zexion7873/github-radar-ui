@@ -10,6 +10,7 @@ import {
   STATUS_SPINE,
   formatWeek,
   MAINTAINED_BADGE,
+  licenseTone,
 } from "@/components/ui";
 import LootRating from "@/components/LootRating";
 import LootStatusControl from "@/components/LootStatusControl";
@@ -85,6 +86,11 @@ export default async function Page({
           </Badge>
           {current.maintained && MAINTAINED_BADGE[current.maintained] && (
             <Badge>{MAINTAINED_BADGE[current.maintained]}</Badge>
+          )}
+          {current.license && (
+            <Badge className={licenseTone(current.license)}>
+              {current.license}
+            </Badge>
           )}
           {current.week && <span>最新 {formatWeek(current.week)}</span>}
         </div>
