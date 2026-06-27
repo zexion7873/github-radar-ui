@@ -33,9 +33,11 @@ function SectionHeader({
 function LootSummaryCard({
   target,
   rows,
+  authed,
 }: {
   target: LootTarget;
   rows: LootRow[] | null;
+  authed: boolean;
 }) {
   const pending = rows?.filter((r) => (r.status ?? "new") === "new") ?? [];
   return (
@@ -49,16 +51,21 @@ function LootSummaryCard({
           {rows == null ? "—" : `${pending.length} 待處理`}
         </Badge>
       </div>
-      {pending.slice(0, 3).map((r) => (
-        <p
-          key={r.id}
-          className="truncate text-sm text-muted"
-        >
-          {r.repo}
-        </p>
-      ))}
-      {rows != null && pending.length === 0 && (
-        <p className="text-sm text-muted">沒有待處理</p>
+      {/* The pending count above is public; the repo names are gated — logged-out
+          visitors get a login prompt instead of the shortlist. */}
+      {authed ? (
+        <>
+          {pending.slice(0, 3).map((r) => (
+            <p key={r.id} className="truncate text-sm text-muted">
+              {r.repo}
+            </p>
+          ))}
+          {rows != null && pending.length === 0 && (
+            <p className="text-sm text-muted">沒有待處理</p>
+          )}
+        </>
+      ) : (
+        <p className="text-sm text-muted">🔒 登入查看明細</p>
       )}
     </Link>
   );
@@ -69,11 +76,13 @@ export default function Dashboard({
   loot,
   blog,
   series,
+  authed,
 }: {
   trending: TrendingRow[];
   loot: Record<LootTarget, LootRow[] | null>;
   blog: BlogRow[] | null;
   series: Record<string, WeekPoint[]>;
+  authed: boolean;
 }) {
   const topTrending = [...trending]
     .sort((a, b) => (b.starsPerWeek ?? 0) - (a.starsPerWeek ?? 0))
@@ -244,7 +253,12 @@ export default function Dashboard({
         <SectionHeader title="📦 待處理 Loot" />
         <div className="grid gap-3 sm:grid-cols-2">
           {(Object.keys(LOOT_TARGETS) as LootTarget[]).map((target) => (
-            <LootSummaryCard key={target} target={target} rows={loot[target]} />
+            <LootSummaryCard
+              key={target}
+              target={target}
+              rows={loot[target]}
+              authed={authed}
+            />
           ))}
         </div>
       </section>
