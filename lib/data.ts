@@ -23,6 +23,8 @@ export type TrendingRow = {
   description: string;
   comment: string;
   weeksOnChart: number | null;
+  maintained: string | null;
+  risk: string | null;
 };
 
 export type LootRow = {
@@ -37,6 +39,7 @@ export type LootRow = {
   how: string;
   status: string | null;
   recommendation: number | null;
+  maintained: string | null;
 };
 
 export type BlogRow = {
@@ -71,6 +74,8 @@ const TRENDING_PROPS = {
   description: "Description",
   comment: "Comment",
   weeksOnChart: "Weeks on chart",
+  maintained: "Maintained",
+  risk: "Risk",
 } as const;
 
 export const LOOT_PROPS = {
@@ -84,6 +89,7 @@ export const LOOT_PROPS = {
   how: "How",
   status: "Status",
   recommendation: "Recommendation",
+  maintained: "Maintained",
 } as const;
 
 const BLOG_PROPS = {
@@ -173,6 +179,8 @@ export function fetchTrending(uuid: string): Promise<Result<TrendingRow>> {
         description: text(p, P.description),
         comment: text(p, P.comment),
         weeksOnChart: num(p, P.weeksOnChart),
+        maintained: sel(p, P.maintained),
+        risk: sel(p, P.risk),
       };
     },
     "notion:trending",
@@ -269,6 +277,7 @@ export function fetchLoot(uuid: string): Promise<Result<LootRow>> {
         how: text(p, P.how),
         status: sel(p, P.status),
         recommendation: num(p, P.recommendation),
+        maintained: sel(p, P.maintained),
       };
     },
     "notion:loot",

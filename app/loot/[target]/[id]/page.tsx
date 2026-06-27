@@ -9,6 +9,7 @@ import {
   STATUS_TONE,
   STATUS_SPINE,
   formatWeek,
+  MAINTAINED_BADGE,
 } from "@/components/ui";
 import LootRating from "@/components/LootRating";
 import LootStatusControl from "@/components/LootStatusControl";
@@ -82,6 +83,9 @@ export default async function Page({
           <Badge tone={STATUS_TONE[status] ?? "muted"}>
             {STATUS_LABEL[status] ?? status}
           </Badge>
+          {current.maintained && MAINTAINED_BADGE[current.maintained] && (
+            <Badge>{MAINTAINED_BADGE[current.maintained]}</Badge>
+          )}
           {current.week && <span>最新 {formatWeek(current.week)}</span>}
         </div>
       </header>
