@@ -13,7 +13,7 @@ const noopSubscribe = () => () => {};
 // the same escape hatch ThemeToggle uses: getSnapshot reads Date.now() on the
 // client and returns a STABLE boolean (no resnapshot loop), the server snapshot
 // is always false. Past STALE_DAYS the upstream routines have probably stalled;
-// the amber warning stops dead data from masquerading as fresh and the 🆕 badge
+// the amber warning stops dead data from masquerading as fresh and the ✨ badge
 // from vouching for it silently.
 export default function LastSynced({ iso }: { iso: string }) {
   const stale = useSyncExternalStore(

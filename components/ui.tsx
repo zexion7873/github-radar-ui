@@ -130,7 +130,7 @@ export const STATUS_SPINE: Record<string, string> = {
   skipped: "border-l-border",
 };
 
-// One fixed tone for every "fresh this week" 🆕 badge (trending + blog): the
+// One fixed tone for every "fresh this week" ✨ badge (trending + blog): the
 // same accent as pending, so freshness reads as "hot" everywhere.
 export const FRESH_TONE: Tone = "accent";
 

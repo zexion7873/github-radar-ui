@@ -12,14 +12,20 @@ import {
   FRESH_TONE,
 } from "./ui";
 
-type Sort = "recent" | "stars";
+type Sort = "recent" | "stars" | "momentum";
+
+// A repo whose latest week runs >=50% above its own prior-week average is
+// "heating up" and earns the 🚀 badge. Tuned to flag a genuine spike, not noise.
+const MOMENTUM_HOT = 1.5;
 
 export default function TrendingList({
   rows,
   series,
+  momentum,
 }: {
   rows: TrendingRow[];
   series: Record<string, WeekPoint[]>;
+  momentum: Record<string, number | null>;
 }) {
   const categories = useMemo(
     () =>
@@ -45,11 +51,17 @@ export default function TrendingList({
     // "recent" keeps the server order (Week desc, then Stars/wk desc).
     if (sort === "stars") {
       r = [...r].sort((a, b) => (b.starsPerWeek ?? 0) - (a.starsPerWeek ?? 0));
+    } else if (sort === "momentum") {
+      // Heating-up first; repos with no momentum (only one week) sink to the end.
+      r = [...r].sort(
+        (a, b) =>
+          (momentum[b.repo] ?? -Infinity) - (momentum[a.repo] ?? -Infinity),
+      );
     }
     return r;
-  }, [rows, active, query, sort]);
+  }, [rows, active, query, sort, momentum]);
 
-  // Latest week across all repos — drives the 🆕 badge so it means the SAME
+  // Latest week across all repos — drives the ✨ badge so it means the SAME
   // thing as the dashboard's "本週新上榜" stat (newcomer in the most recent week),
   // not just "any repo with ≤1 week on chart" regardless of when.
   const latestWeek = useMemo(
@@ -75,6 +87,7 @@ export default function TrendingList({
           >
             <option value="recent">最新優先</option>
             <option value="stars">★/週 最高</option>
+            <option value="momentum">🚀 竄升中</option>
           </select>
         </div>
 
@@ -111,6 +124,7 @@ export default function TrendingList({
             const prev = pts[pts.length - 2]?.stars;
             const delta =
               last != null && prev != null ? last - prev : null;
+            const mo = momentum[r.repo] ?? null;
             return (
               <li
                 key={r.id}
@@ -140,17 +154,24 @@ export default function TrendingList({
                     >
                       {r.repo}
                     </a>
-                    {/* 🆕 only for newcomers in the latest week; 🔁 for returnees; a
-                        newcomer whose latest week isn't the newest shows neither —
-                        rare after latestPerRepo, and intentional. NOTE: this is a
+                    {/* Right rail of badges. 🚀 (relative-momentum spike) is
+                        orthogonal to ✨/🏆 and can stack with either. ✨ only for
+                        newcomers in the latest week; 🏆 for returnees; a newcomer
+                        whose latest week isn't the newest shows neither — rare after
+                        latestPerRepo, and intentional. NOTE: the ✨/🏆 rule is a
                         UI-local re-derivation of the skill's flag (github-trending
-                        SKILL.md step 8 = "no prior archived row"); the two rules can
-                        drift — change them together. */}
-                    {r.week === latestWeek && (r.weeksOnChart ?? 1) <= 1 ? (
-                      <Badge tone={FRESH_TONE}>🆕 新上榜</Badge>
-                    ) : r.weeksOnChart != null && r.weeksOnChart > 1 ? (
-                      <Badge tone="muted">🔁 {r.weeksOnChart} 週</Badge>
-                    ) : null}
+                        SKILL.md step 8 = "no prior archived row"); change them
+                        together. */}
+                    <div className="flex shrink-0 items-center gap-1.5">
+                      {mo != null && mo >= MOMENTUM_HOT && (
+                        <Badge tone="accent">🚀 竄升中</Badge>
+                      )}
+                      {r.week === latestWeek && (r.weeksOnChart ?? 1) <= 1 ? (
+                        <Badge tone={FRESH_TONE}>✨ 新上榜</Badge>
+                      ) : r.weeksOnChart != null && r.weeksOnChart > 1 ? (
+                        <Badge tone="muted">🏆 {r.weeksOnChart} 週</Badge>
+                      ) : null}
+                    </div>
                   </div>
 
                   <div className="flex flex-wrap items-center gap-1.5 text-xs text-muted">

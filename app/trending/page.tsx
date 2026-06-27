@@ -2,6 +2,7 @@ import {
   fetchTrending,
   latestPerRepo,
   weeklySeriesByRepo,
+  momentumByRepo,
 } from "@/lib/data";
 import { TABLES } from "@/lib/config";
 import TrendingList from "@/components/TrendingList";
@@ -14,11 +15,14 @@ export default async function Page() {
   if (!result.ok) return <DataError error={result.error} />;
   // Collapse the weekly archive to one row per repo (latest week) so the list
   // shows distinct repos rather than the same repo repeated across weeks. The
-  // full archive also feeds the per-repo series behind each row's sparkline/delta.
+  // full archive also feeds the per-repo series behind each row's sparkline/delta
+  // and the relative-momentum score (computed server-side, passed to the list).
+  const series = weeklySeriesByRepo(result.rows);
   return (
     <TrendingList
       rows={latestPerRepo(result.rows)}
-      series={weeklySeriesByRepo(result.rows)}
+      series={series}
+      momentum={momentumByRepo(series)}
     />
   );
 }
