@@ -69,10 +69,18 @@ export default async function Page() {
       {latestSync && <LastSynced iso={latestSync} />}
       <StatsBar
         stats={[
-          { label: "本週在榜", value: onChartThisWeek },
-          { label: "本週新上榜", value: newThisWeek },
-          { label: "Claude 待處理", value: pendingCount(lootClaudeRows) },
-          { label: "Copilot 待處理", value: pendingCount(lootCopilotRows) },
+          { label: "本週在榜", value: onChartThisWeek, href: "/trending" },
+          { label: "本週新上榜", value: newThisWeek, href: "/trending" },
+          {
+            label: "Claude 待處理",
+            value: pendingCount(lootClaudeRows),
+            href: "/loot/claude",
+          },
+          {
+            label: "Copilot 待處理",
+            value: pendingCount(lootCopilotRows),
+            href: "/loot/copilot",
+          },
         ]}
       />
       <Dashboard
