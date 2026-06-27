@@ -9,9 +9,9 @@ export default async function LoginPage({
   return (
     <div className="flex min-h-[60vh] items-center justify-center">
       <form action={login} className="flex w-full max-w-xs flex-col gap-3">
-        <h1 className="mb-2 font-serif text-2xl tracking-tight">
-          📡 GitHub <span className="text-accent">Radar</span>
-        </h1>
+        <p className="mb-2 font-mono text-[11px] tracking-[0.14em] text-muted uppercase">
+          🔒 Loot 需要密碼
+        </p>
         <input type="hidden" name="from" value={from ?? "/"} />
         <input
           type="password"

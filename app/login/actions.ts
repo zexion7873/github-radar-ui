@@ -65,5 +65,7 @@ export async function login(formData: FormData) {
 
 export async function logout() {
   (await cookies()).delete("gh_radar");
-  redirect("/login");
+  // Home is public now, so land there after logout rather than bouncing to the
+  // login screen (only /loot/* is gated).
+  redirect("/");
 }

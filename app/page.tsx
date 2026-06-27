@@ -12,6 +12,8 @@ import StatsBar from "@/components/StatsBar";
 import Dashboard from "@/components/Dashboard";
 import LastSynced from "@/components/LastSynced";
 import { DataError } from "@/components/ui";
+import { cookies } from "next/headers";
+import { isAuthed } from "@/lib/auth";
 
 export const dynamic = "force-dynamic";
 
@@ -21,6 +23,7 @@ const pendingCount = (rows: LootRow[] | null): number | null =>
   rows ? rows.filter((r) => (r.status ?? "new") === "new").length : null;
 
 export default async function Page() {
+  const authed = isAuthed((await cookies()).get("gh_radar")?.value);
   // All four tables in parallel; loot and blog failures degrade to "—" / null
   // in their cards rather than failing the page. Only a trending failure (the
   // page's backbone — stat counts and the hot list) shows the error notice.
@@ -84,6 +87,7 @@ export default async function Page() {
         ]}
       />
       <Dashboard
+        authed={authed}
         trending={repos}
         series={weeklySeriesByRepo(trending.rows)}
         loot={{

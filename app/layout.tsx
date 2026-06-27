@@ -44,9 +44,9 @@ export default async function RootLayout({
 }: Readonly<{ children: React.ReactNode }>) {
   const cookieStore = await cookies();
   const theme = cookieStore.get("theme")?.value;
-  // Only logged-in pages wear the chrome (title + nav + 登出). On /login the user
-  // has no session, so showing nav tabs (every one bounces back to /login) and a
-  // 登出 button is just a confusing dead-loop — render the bare page instead.
+  // Loot is the only gated area now, so the chrome (title + nav) is always shown —
+  // public visitors need it to navigate. `authed` only toggles the top-right
+  // control: 登出 for a live session, 登入 link otherwise.
   const authed = isAuthed(cookieStore.get("gh_radar")?.value);
   // Masthead dateline — today's edition date. Distinct from LastSynced's "資料最新
   // 到" (the data-freshness date); a broadsheet's masthead carries the print date.
@@ -61,30 +61,28 @@ export default async function RootLayout({
         <script dangerouslySetInnerHTML={{ __html: themeScript }} />
       </head>
       <body className="min-h-full bg-background text-foreground">
-        {authed && (
-          <a
-            href="#main"
-            className="sr-only focus:not-sr-only focus:absolute focus:top-4 focus:left-4 focus:z-50 focus:rounded-none focus:bg-foreground focus:px-3 focus:py-2 focus:text-sm focus:text-background"
-          >
-            跳到主要內容
-          </a>
-        )}
+        <a
+          href="#main"
+          className="sr-only focus:not-sr-only focus:absolute focus:top-4 focus:left-4 focus:z-50 focus:rounded-none focus:bg-foreground focus:px-3 focus:py-2 focus:text-sm focus:text-background"
+        >
+          跳到主要內容
+        </a>
         <div className="mx-auto w-full max-w-5xl px-4 py-6">
-          {authed && (
-            <StickyHeader>
-              <div className="flex items-center justify-between gap-3">
-                <div className="flex flex-col">
-                  <h1 className="font-serif text-2xl leading-none tracking-tight">
-                    <Link href="/" className="transition-colors hover:text-accent">
-                      📡 GitHub <span className="text-accent">Radar</span>
-                    </Link>
-                  </h1>
-                  <p className="mt-1.5 font-mono text-[10px] tracking-[0.18em] text-muted uppercase">
-                    {today} · Weekly Radar
-                  </p>
-                </div>
-                <div className="flex shrink-0 items-center gap-1">
-                  <ThemeToggle />
+          <StickyHeader>
+            <div className="flex items-center justify-between gap-3">
+              <div className="flex flex-col">
+                <h1 className="font-serif text-2xl leading-none tracking-tight">
+                  <Link href="/" className="transition-colors hover:text-accent">
+                    📡 GitHub <span className="text-accent">Radar</span>
+                  </Link>
+                </h1>
+                <p className="mt-1.5 font-mono text-[10px] tracking-[0.18em] text-muted uppercase">
+                  {today} · Weekly Radar
+                </p>
+              </div>
+              <div className="flex shrink-0 items-center gap-1">
+                <ThemeToggle />
+                {authed ? (
                   <form action={logout} className="shrink-0">
                     <button
                       type="submit"
@@ -93,11 +91,18 @@ export default async function RootLayout({
                       登出
                     </button>
                   </form>
-                </div>
+                ) : (
+                  <Link
+                    href="/login"
+                    className="rounded-none px-3 py-1.5 font-mono text-[11px] tracking-wide text-muted uppercase transition-colors hover:text-foreground"
+                  >
+                    登入
+                  </Link>
+                )}
               </div>
-              <Nav />
-            </StickyHeader>
-          )}
+            </div>
+            <Nav />
+          </StickyHeader>
           <main id="main">{children}</main>
         </div>
       </body>
