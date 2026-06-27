@@ -2,7 +2,14 @@ import { notFound } from "next/navigation";
 import Link from "next/link";
 import { fetchTrending } from "@/lib/data";
 import { TABLES } from "@/lib/config";
-import { Badge, CATEGORY_TONE, DataError, formatWeek } from "@/components/ui";
+import {
+  Badge,
+  CATEGORY_TONE,
+  DataError,
+  formatWeek,
+  MAINTAINED_BADGE,
+  RISK_BADGE,
+} from "@/components/ui";
 import StarsTrend from "@/components/StarsTrend";
 
 export const dynamic = "force-dynamic";
@@ -55,6 +62,12 @@ export default async function Page({
             <Badge tone={CATEGORY_TONE[latest.category] ?? "muted"}>
               {latest.category}
             </Badge>
+          )}
+          {latest.maintained && MAINTAINED_BADGE[latest.maintained] && (
+            <Badge>{MAINTAINED_BADGE[latest.maintained]}</Badge>
+          )}
+          {latest.risk && RISK_BADGE[latest.risk] && (
+            <Badge>{RISK_BADGE[latest.risk]}</Badge>
           )}
           {latest.week && <span>最新 {formatWeek(latest.week)}</span>}
         </div>

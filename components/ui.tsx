@@ -130,6 +130,22 @@ export const STATUS_SPINE: Record<string, string> = {
   skipped: "border-l-border",
 };
 
+// Health-signal badges from the ai-assistant enrichment. Only the EXCEPTION
+// states render — `active` / `none` are the healthy default and stay unbadged, so
+// a clean repo shows nothing and a flag actually means something. Severity rides
+// the emoji, not a new colour: the 3-tone palette is deliberate (see Tone above),
+// so these stay `muted` and never spend the scarce accent.
+export const MAINTAINED_BADGE: Record<string, string> = {
+  stale: "💤 停更",
+  archived: "🗄️ 封存",
+};
+export const RISK_BADGE: Record<string, string> = {
+  // `watch` (30–180d) is the norm for trending repos, not an exception — badging
+  // it on every row reads as wallpaper, so only `high` (archived / <30d flash
+  // risk) earns a flag.
+  high: "🛑 高風險",
+};
+
 // One fixed tone for every "fresh this week" ✨ badge (trending + blog): the
 // same accent as pending, so freshness reads as "hot" everywhere.
 export const FRESH_TONE: Tone = "accent";

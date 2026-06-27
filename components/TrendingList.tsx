@@ -10,6 +10,8 @@ import {
   formatWeek,
   CATEGORY_TONE,
   FRESH_TONE,
+  MAINTAINED_BADGE,
+  RISK_BADGE,
 } from "./ui";
 
 type Sort = "recent" | "stars" | "momentum";
@@ -191,6 +193,12 @@ export default function TrendingList({
                       <Badge tone={CATEGORY_TONE[r.category] ?? "muted"}>
                         {r.category}
                       </Badge>
+                    )}
+                    {r.maintained && MAINTAINED_BADGE[r.maintained] && (
+                      <Badge>{MAINTAINED_BADGE[r.maintained]}</Badge>
+                    )}
+                    {r.risk && RISK_BADGE[r.risk] && (
+                      <Badge>{RISK_BADGE[r.risk]}</Badge>
                     )}
                   </div>
 

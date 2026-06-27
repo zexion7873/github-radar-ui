@@ -12,6 +12,7 @@ import {
   STATUS_LABEL,
   STATUS_TONE,
   STATUS_SPINE,
+  MAINTAINED_BADGE,
 } from "./ui";
 import LootStatusControl from "./LootStatusControl";
 import LootRating from "./LootRating";
@@ -210,6 +211,9 @@ export default function LootBoard({
                           </span>
                           <span className="flex shrink-0 items-center gap-2">
                             {r.type && <Badge>{r.type}</Badge>}
+                            {r.maintained && MAINTAINED_BADGE[r.maintained] && (
+                              <Badge>{MAINTAINED_BADGE[r.maintained]}</Badge>
+                            )}
                             {r.week && (
                               <span className="font-mono text-[11px] text-muted">
                                 {formatWeek(r.week)}
