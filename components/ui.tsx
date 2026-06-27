@@ -21,13 +21,17 @@ const TONE: Record<Tone, string> = {
 export function Badge({
   children,
   tone = "muted",
+  className,
 }: {
   children: ReactNode;
   tone?: Tone;
+  // Escape hatch for colours outside the 3-tone set (license badges mirror the
+  // Notion SELECT palette); when set it replaces the tone classes.
+  className?: string;
 }) {
   return (
     <span
-      className={`inline-flex shrink-0 items-center whitespace-nowrap rounded-none border px-1.5 py-0 font-mono text-[11px] tracking-[0.08em] uppercase ${TONE[tone]}`}
+      className={`inline-flex shrink-0 items-center whitespace-nowrap rounded-none border px-1.5 py-0 font-mono text-[11px] tracking-[0.08em] uppercase ${className ?? TONE[tone]}`}
     >
       {children}
     </span>
@@ -145,6 +149,20 @@ export const RISK_BADGE: Record<string, string> = {
   // risk) earns a flag.
   high: "🛑 高風險",
 };
+
+// License → badge colour, mirroring the Notion SELECT palette onto THIS app's
+// semantic tokens — so license green/red are the SAME green/red the ▲▼ delta uses,
+// keeping the app coherent instead of importing Notion's exact hues. Pattern-
+// matched, not an enum: renders any SPDX id Notion adds over time; an unrecognised
+// one falls back to muted rather than guessing a colour.
+export function licenseTone(license: string): string {
+  if (/GPL/i.test(license)) return "border-danger text-danger"; // copyleft: GPL/AGPL/LGPL
+  if (/CC-BY-SA/i.test(license)) return "border-info text-info"; // share-alike
+  if (/elastic|bu?sl/i.test(license)) return "border-accent text-accent"; // source-available
+  if (/MIT|Apache|BSD|MPL|ISC|CC0|Unlicense|0BSD|Zlib|Artistic|Python|PostgreSQL/i.test(license))
+    return "border-pos text-pos"; // permissive
+  return "border-border text-muted"; // unknown → neutral
+}
 
 // One fixed tone for every "fresh this week" ✨ badge (trending + blog): the
 // same accent as pending, so freshness reads as "hot" everywhere.

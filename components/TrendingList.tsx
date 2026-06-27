@@ -12,6 +12,7 @@ import {
   FRESH_TONE,
   MAINTAINED_BADGE,
   RISK_BADGE,
+  licenseTone,
 } from "./ui";
 
 type Sort = "recent" | "stars" | "momentum";
@@ -199,6 +200,9 @@ export default function TrendingList({
                     )}
                     {r.risk && RISK_BADGE[r.risk] && (
                       <Badge>{RISK_BADGE[r.risk]}</Badge>
+                    )}
+                    {r.license && (
+                      <Badge className={licenseTone(r.license)}>{r.license}</Badge>
                     )}
                   </div>
 

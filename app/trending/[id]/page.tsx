@@ -9,6 +9,7 @@ import {
   formatWeek,
   MAINTAINED_BADGE,
   RISK_BADGE,
+  licenseTone,
 } from "@/components/ui";
 import StarsTrend from "@/components/StarsTrend";
 
@@ -68,6 +69,9 @@ export default async function Page({
           )}
           {latest.risk && RISK_BADGE[latest.risk] && (
             <Badge>{RISK_BADGE[latest.risk]}</Badge>
+          )}
+          {latest.license && (
+            <Badge className={licenseTone(latest.license)}>{latest.license}</Badge>
           )}
           {latest.week && <span>最新 {formatWeek(latest.week)}</span>}
         </div>
