@@ -100,7 +100,7 @@ export default function BlogList({ rows }: { rows: BlogRow[] }) {
             >
               {r.title}
             </a>
-            {isNew && <Badge tone={FRESH_TONE}>🆕 新</Badge>}
+            {isNew && <Badge tone={FRESH_TONE}>✨ 新</Badge>}
           </div>
           <div className="flex flex-wrap items-center gap-1.5 font-mono text-[11px] tracking-wide text-muted uppercase">
             <Badge tone="muted">{r.source}</Badge>

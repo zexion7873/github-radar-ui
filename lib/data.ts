@@ -210,6 +210,32 @@ export function weeklySeriesByRepo(
   return byRepo;
 }
 
+// Relative momentum: the latest week's stars/wk against the mean of its prior
+// weeks. >1 = accelerating past its own baseline, <1 = cooling. RELATIVE (not the
+// absolute week-over-week ▲ delta the list already shows) so a small repo spiking
+// outranks a big steady one — the ROSS-Index spirit of surfacing newcomers over
+// established champions. Null when there's no prior week to compare (needs >=2
+// weeks) or the baseline is zero.
+export function repoMomentum(points: WeekPoint[]): number | null {
+  const v = points.map((p) => p.stars).filter((s): s is number => s != null);
+  if (v.length < 2) return null;
+  const latest = v[v.length - 1];
+  const prior = v.slice(0, -1);
+  const base = prior.reduce((sum, n) => sum + n, 0) / prior.length;
+  return base > 0 ? latest / base : null;
+}
+
+// Per-repo momentum map, built from the same series the sparklines use so the
+// trending list's 🚀 sort and badge share one computation. Lives in this
+// server-only module; computed in the page and passed to the client list as a prop.
+export function momentumByRepo(
+  series: Record<string, WeekPoint[]>,
+): Record<string, number | null> {
+  const m: Record<string, number | null> = {};
+  for (const repo in series) m[repo] = repoMomentum(series[repo]);
+  return m;
+}
+
 // Loot is one row per candidate per week (config.ts). Collapse to each repo's
 // most recent week so the board shows distinct assets, not the same repo repeated
 // across weeks — mirrors latestPerRepo for trending. The detail page re-reads the

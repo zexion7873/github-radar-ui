@@ -129,7 +129,7 @@ export default function Dashboard({
                 {lead.category}
               </Badge>
             )}
-            {lead.weeksOnChart != null && <span>🔁 {lead.weeksOnChart} 週</span>}
+            {lead.weeksOnChart != null && <span>🏆 {lead.weeksOnChart} 週</span>}
             {lead.week && <span>{formatWeek(lead.week)}</span>}
           </div>
           {(lead.comment || lead.description) && (
