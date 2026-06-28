@@ -113,10 +113,32 @@ export async function queryAll(
   return rows;
 }
 
+// The routines write Traditional-Chinese prose but the model flip-flops between
+// half- and full-width punctuation: it emits half-width , ; : ! ? when the mark
+// hugs an ASCII token (model names, version strings, ratios) and full-width in
+// pure-Chinese spans, so one summary reads inconsistently. Normalize at read
+// time: a half-width , ; : ! ? becomes its full-width form ONLY when a Han
+// character sits immediately on either side. Code, URLs, decimals and
+// thousands-separators are digit/Latin-flanked, so they're untouched; parens and
+// periods are skipped entirely — （中文） vs (english) is context-dependent.
+const HAN = /[㐀-䶿一-鿿]/;
+const HALF_TO_FULL: Record<string, string> = {
+  ",": "，",
+  ";": "；",
+  ":": "：",
+  "!": "！",
+  "?": "？",
+};
+function normalizeCJKPunct(s: string): string {
+  return s.replace(/[,;:!?]/g, (m, i) =>
+    HAN.test(s[i - 1] ?? "") || HAN.test(s[i + 1] ?? "") ? HALF_TO_FULL[m] : m,
+  );
+}
+
 // Property extractors — each guards the empty-cell shape its type returns.
 const runs = (rt?: RichText[]) => (rt ?? []).map((t) => t.plain_text).join("");
 export const text = (p: Record<string, NProp>, k: string): string =>
-  runs(p[k]?.title ?? p[k]?.rich_text);
+  normalizeCJKPunct(runs(p[k]?.title ?? p[k]?.rich_text));
 export const num = (p: Record<string, NProp>, k: string): number | null =>
   p[k]?.number ?? null;
 export const sel = (p: Record<string, NProp>, k: string): string | null =>
