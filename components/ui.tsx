@@ -158,9 +158,9 @@ export const RISK_BADGE: Record<string, string> = {
 export function licenseTone(license: string): string {
   if (/GPL/i.test(license)) return "border-danger text-danger"; // copyleft: GPL/AGPL/LGPL
   if (/CC-BY-SA/i.test(license)) return "border-info text-info"; // share-alike
-  if (/elastic|bu?sl/i.test(license)) return "border-accent text-accent"; // source-available
-  if (/MIT|Apache|BSD|MPL|ISC|CC0|Unlicense|0BSD|Zlib|Artistic|Python|PostgreSQL/i.test(license))
-    return "border-pos text-pos"; // permissive
+  if (/elastic|busl/i.test(license)) return "border-accent text-accent"; // source-available (Elastic, BUSL — NOT Boost's BSL-1.0)
+  if (/MIT|Apache|BSD|MPL|ISC|CC0|Unlicense|0BSD|Zlib|Artistic|Python|PostgreSQL|BSL-1\.0/i.test(license))
+    return "border-pos text-pos"; // permissive (incl. Boost BSL-1.0)
   return "border-border text-muted"; // unknown → neutral
 }
 
