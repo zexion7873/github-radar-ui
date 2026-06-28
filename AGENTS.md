@@ -23,3 +23,13 @@ Gotchas that will bite you:
   `momentum` reach `TrendingList`.
 - Next 16 specifics (incl. `middleware.ts` → `proxy.ts`) are distilled in
   [`NEXT16-BREAKING-CHANGES.md`](NEXT16-BREAKING-CHANGES.md).
+
+## Commits
+
+Set the git **author** to Claude on commits Claude wrote —
+`git commit --author="Claude <noreply@anthropic.com>"`; the human stays the
+committer. GitHub's repo Contributors sidebar credits the commit **author**, not
+`Co-Authored-By` co-authors (those only count toward the Insights graph + the
+account's profile), so authoring as Claude is what surfaces @claude in the
+contributor list. This replaces the `Co-Authored-By: Claude` trailer for this
+repo — don't use both.
