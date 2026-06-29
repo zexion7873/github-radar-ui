@@ -26,6 +26,18 @@
      reads as ink pressing in rather than a selection outline. */
   --ink-2: #4a443c;
 
+  /* Category hues — the ONE place categories carry colour: the dashboard's
+     本週分類 distribution bar. Every category badge elsewhere stays flat muted
+     (see CATEGORY_TONE); these earthy, paper-tuned tones are scoped to that one
+     stacked bar. All steer clear of the accent terracotta so a category segment
+     never reads as "hot" and the scarce accent keeps its meaning. */
+  --cat-agents: #6d5d8c;
+  --cat-models: #2f7d75;
+  --cat-infra: #3f6699;
+  --cat-tooling: #a9791f;
+  --cat-apps: #a8527a;
+  --cat-other: #857c70;
+
   /* Motion: one easing curve (fast out, settled in — ink hitting paper, no
      overshoot) and one duration, so components stop improvising. */
   --ease-ink: cubic-bezier(0.2, 0, 0, 1);
@@ -49,6 +61,12 @@
   --danger: #e0574a;
   --info: #6f9fd4;
   --ink-2: #ccc3b6;
+  --cat-agents: #9a89c4;
+  --cat-models: #5bb8aa;
+  --cat-infra: #7aa3d6;
+  --cat-tooling: #d4a64f;
+  --cat-apps: #d181a6;
+  --cat-other: #928a7d;
 }
 
 @theme inline {
@@ -62,6 +80,12 @@
   --color-danger: var(--danger);
   --color-info: var(--info);
   --color-ink-2: var(--ink-2);
+  --color-cat-agents: var(--cat-agents);
+  --color-cat-models: var(--cat-models);
+  --color-cat-infra: var(--cat-infra);
+  --color-cat-tooling: var(--cat-tooling);
+  --color-cat-apps: var(--cat-apps);
+  --color-cat-other: var(--cat-other);
   /* Latin face first, then a curated 繁中 fallback (PingFang on Mac, JhengHei on
      Windows, Noto on Linux/Android). The UI is bilingual and Geist/DM Serif carry
      no CJK glyphs, so this pins the Chinese fallback instead of leaving it to the

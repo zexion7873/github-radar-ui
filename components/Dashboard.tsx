@@ -1,7 +1,14 @@
 import Link from "next/link";
 import type { TrendingRow, LootRow, BlogRow, WeekPoint } from "@/lib/data";
 import { LOOT_TARGETS, type LootTarget } from "@/lib/config";
-import { Badge, cardInteractive, CATEGORY_TONE, formatWeek } from "./ui";
+import {
+  Badge,
+  cardInteractive,
+  CATEGORY_TONE,
+  CATEGORY_HUE,
+  MOMENTUM_HOT,
+  formatWeek,
+} from "./ui";
 import StarsTrend from "./StarsTrend";
 
 function SectionHeader({
@@ -76,12 +83,16 @@ export default function Dashboard({
   loot,
   blog,
   series,
+  momentum,
+  categoryMix,
   authed,
 }: {
   trending: TrendingRow[];
   loot: Record<LootTarget, LootRow[] | null>;
   blog: BlogRow[] | null;
   series: Record<string, WeekPoint[]>;
+  momentum: Record<string, number | null>;
+  categoryMix: { category: string; count: number }[];
   authed: boolean;
 }) {
   const topTrending = [...trending]
@@ -94,8 +105,77 @@ export default function Dashboard({
   // Already Published-desc from fetchBlog; just take the freshest few.
   const topBlog = (blog ?? []).slice(0, 3);
 
+  // 本週竄升 — repos accelerating past their own baseline (momentum > 1), ranked
+  // by that relative spike, NOT by absolute stars/wk like the 熱門 list. The two
+  // sit side by side so the front page shows both lenses: big-and-steady vs
+  // small-and-surging. Capped at five; >= MOMENTUM_HOT wears the accent.
+  const surging = [...trending]
+    .filter((r) => (momentum[r.repo] ?? 0) > 1)
+    .sort((a, b) => (momentum[b.repo] ?? 0) - (momentum[a.repo] ?? 0))
+    .slice(0, 5);
+
+  const mixTotal = categoryMix.reduce((sum, m) => sum + m.count, 0);
+
+  // An unmapped category falls back to bg-cat-other and would collide with a real
+  // `other` segment. Mirror assertProps' "make silent drift loud" — but warn,
+  // don't throw (a bar colour isn't worth crashing the page), and only in dev, so
+  // the next dev sees it in the server log and adds a --cat-* token. The Notion
+  // Category list lives in the routine, so an unmapped value is only knowable here
+  // at read time, never statically.
+  if (process.env.NODE_ENV !== "production") {
+    const unmapped = categoryMix
+      .map((m) => m.category)
+      .filter((c) => !(c in CATEGORY_HUE));
+    if (unmapped.length > 0) {
+      console.warn(
+        `[Dashboard] 本週分類 has no --cat-* hue for: ${unmapped.join(", ")} — falling back to bg-cat-other. Add a token in globals.css + CATEGORY_HUE.`,
+      );
+    }
+  }
+
   return (
     <div className="flex flex-col gap-10">
+      {/* 本週分類 — the mix behind the stat cards above, as one stacked bar. The
+          ONE surface that spends category hues (CATEGORY_HUE); a 1px gap reveals
+          the border ink between segments, and a swatch legend names each. */}
+      {mixTotal > 0 && (
+        <section>
+          <div className="mb-2 font-mono text-[11px] tracking-[0.14em] text-muted uppercase">
+            本週分類 · {mixTotal} 在榜
+          </div>
+          <div
+            className="flex h-7 w-full gap-px overflow-hidden border border-border bg-border"
+            role="img"
+            aria-label={`本週分類分佈：${categoryMix
+              .map((m) => `${m.category} ${m.count}`)
+              .join("、")}`}
+          >
+            {categoryMix.map((m) => (
+              <div
+                key={m.category}
+                className={CATEGORY_HUE[m.category] ?? "bg-cat-other"}
+                style={{ width: `${(m.count / mixTotal) * 100}%` }}
+                title={`${m.category}：${m.count}`}
+              />
+            ))}
+          </div>
+          <div className="mt-2 flex flex-wrap gap-x-4 gap-y-1">
+            {categoryMix.map((m) => (
+              <span
+                key={m.category}
+                className="flex items-center gap-1.5 font-mono text-[11px] text-muted"
+              >
+                <span
+                  className={`inline-block h-2.5 w-2.5 ${CATEGORY_HUE[m.category] ?? "bg-cat-other"}`}
+                  aria-hidden="true"
+                />
+                {m.category} · {m.count}
+              </span>
+            ))}
+          </div>
+        </section>
+      )}
+
       {/* LEAD — above the fold: the week's hottest repo at front-page weight. The
           one place the dashboard spends a display headline and renders the 點評 as
           a full-ink deck (everywhere else it's a muted-italic aside). */}
@@ -139,11 +219,99 @@ export default function Dashboard({
           )}
           {leadPts.length > 1 && (
             <div className="mt-4">
-              <StarsTrend points={leadPts} compact />
+              <StarsTrend points={leadPts} />
             </div>
           )}
         </section>
       )}
+
+      {/* 本週竄升 — the relative-momentum lens, the front page's missing piece:
+          who is accelerating fastest vs their own baseline, distinct from the
+          absolute-stars 熱門 list below. The ×N.N badge is the momentum multiple;
+          it wears the accent only past MOMENTUM_HOT, muted ink below. */}
+      <section>
+        <SectionHeader
+          title="🚀 本週竄升"
+          href="/trending"
+          linkText="看全部 Trending"
+        />
+        <p className="-mt-2 mb-3 text-xs text-muted">
+          相對自身前幾週均值的加速度，不是絕對成長
+        </p>
+        {surging.length === 0 ? (
+          <p className="text-sm text-muted">本週沒有明顯竄升的 repo</p>
+        ) : (
+          <ol className="divide-y divide-border border-t border-border">
+            {surging.map((r, i) => {
+              const pts = series[r.repo] ?? [];
+              const last = pts[pts.length - 1]?.stars;
+              const prev = pts[pts.length - 2]?.stars;
+              const delta = last != null && prev != null ? last - prev : null;
+              const mo = momentum[r.repo];
+              return (
+                <li
+                  key={r.id}
+                  className="relative grid grid-cols-[2rem_minmax(0,1fr)_auto] items-center gap-2 py-3"
+                >
+                  <Link
+                    href={`/trending/${r.id}`}
+                    aria-label={`${r.repo} 詳情與趨勢`}
+                    className="absolute inset-0"
+                  />
+                  <span className="pt-0.5 font-mono text-xs tabular-nums text-muted">
+                    {String(i + 1).padStart(2, "0")}
+                  </span>
+                  <div className="flex min-w-0 flex-col gap-1">
+                    <div className="flex items-center gap-2">
+                      <a
+                        href={r.link ?? "#"}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="relative z-10 min-w-0 truncate font-medium text-foreground hover:text-accent"
+                      >
+                        {r.repo}
+                      </a>
+                      {mo != null && (
+                        <Badge tone={mo >= MOMENTUM_HOT ? "accent" : "muted"}>
+                          ×{mo.toFixed(1)}
+                        </Badge>
+                      )}
+                    </div>
+                    <div className="flex flex-wrap items-center gap-1.5 text-xs text-muted">
+                      {r.starsPerWeek != null && (
+                        <span>
+                          ★{" "}
+                          <span className="font-mono tabular-nums">
+                            {r.starsPerWeek.toLocaleString()}
+                          </span>
+                        </span>
+                      )}
+                      {delta != null && delta !== 0 && (
+                        <span className={delta > 0 ? "text-pos" : "text-danger"}>
+                          {delta > 0 ? "▲" : "▼"}{" "}
+                          <span className="font-mono tabular-nums">
+                            {Math.abs(delta).toLocaleString()}
+                          </span>
+                        </span>
+                      )}
+                      {r.category && (
+                        <Badge tone={CATEGORY_TONE[r.category] ?? "muted"}>
+                          {r.category}
+                        </Badge>
+                      )}
+                    </div>
+                  </div>
+                  {pts.length > 1 && (
+                    <div className="hidden sm:block">
+                      <StarsTrend points={pts} compact />
+                    </div>
+                  )}
+                </li>
+              );
+            })}
+          </ol>
+        )}
+      </section>
 
       <section>
         <SectionHeader

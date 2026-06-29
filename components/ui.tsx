@@ -116,6 +116,26 @@ export const CATEGORY_TONE: Record<string, Tone> = {
   other: "muted",
 };
 
+// The deliberate exception to the flat-category rule above: the dashboard's
+// 本週分類 distribution bar is the ONE surface where categories carry a hue, so
+// the stacked segments read apart at a glance. Maps each Notion Category SELECT
+// value to its --cat-* token (globals.css); an unmapped value falls back to the
+// neutral `other` ink. Used ONLY by the bar — badges everywhere else stay muted.
+export const CATEGORY_HUE: Record<string, string> = {
+  agents: "bg-cat-agents",
+  models: "bg-cat-models",
+  infra: "bg-cat-infra",
+  tooling: "bg-cat-tooling",
+  apps: "bg-cat-apps",
+  other: "bg-cat-other",
+};
+
+// A repo whose latest week runs >=50% above its own prior-week average is
+// "heating up" and earns the 🚀 accent. Tuned to flag a genuine spike, not noise.
+// Lives here (not in server-only data.ts) so both the client TrendingList and the
+// server Dashboard can share the one threshold without a build-poison import.
+export const MOMENTUM_HOT = 1.5;
+
 // Loot status → outline tone. Pending wears the accent (it's the call to
 // action), adopted the positive green, skipped stays neutral.
 export const STATUS_TONE: Record<string, Tone> = {
