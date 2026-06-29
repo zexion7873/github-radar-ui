@@ -105,12 +105,12 @@ export default function Dashboard({
   // Already Published-desc from fetchBlog; just take the freshest few.
   const topBlog = (blog ?? []).slice(0, 3);
 
-  // 本週竄升 — repos accelerating past their own baseline (momentum > 1), ranked
-  // by that relative spike, NOT by absolute stars/wk like the 熱門 list. The two
-  // sit side by side so the front page shows both lenses: big-and-steady vs
-  // small-and-surging. Capped at five; >= MOMENTUM_HOT wears the accent.
+  // 本週竄升 — repos genuinely heating up: momentum >= MOMENTUM_HOT, the SAME bar as
+  // the 🚀 badge, so "shown here" and "hot enough to flag" are one definition. Ranked
+  // by that relative spike, NOT by absolute stars/wk like the 熱門 list, so the front
+  // page shows both lenses: big-and-steady vs small-and-surging. Top five.
   const surging = [...trending]
-    .filter((r) => (momentum[r.repo] ?? 0) > 1)
+    .filter((r) => (momentum[r.repo] ?? 0) >= MOMENTUM_HOT)
     .sort((a, b) => (momentum[b.repo] ?? 0) - (momentum[a.repo] ?? 0))
     .slice(0, 5);
 
@@ -225,94 +225,10 @@ export default function Dashboard({
         </section>
       )}
 
-      {/* 本週竄升 — the relative-momentum lens, the front page's missing piece:
-          who is accelerating fastest vs their own baseline, distinct from the
-          absolute-stars 熱門 list below. The ×N.N badge is the momentum multiple;
-          it wears the accent only past MOMENTUM_HOT, muted ink below. */}
-      <section>
-        <SectionHeader
-          title="🚀 本週竄升"
-          href="/trending"
-          linkText="看全部 Trending"
-        />
-        <p className="-mt-2 mb-3 text-xs text-muted">
-          相對自身前幾週均值的加速度，不是絕對成長
-        </p>
-        {surging.length === 0 ? (
-          <p className="text-sm text-muted">本週沒有明顯竄升的 repo</p>
-        ) : (
-          <ol className="divide-y divide-border border-t border-border">
-            {surging.map((r, i) => {
-              const pts = series[r.repo] ?? [];
-              const last = pts[pts.length - 1]?.stars;
-              const prev = pts[pts.length - 2]?.stars;
-              const delta = last != null && prev != null ? last - prev : null;
-              const mo = momentum[r.repo];
-              return (
-                <li
-                  key={r.id}
-                  className="relative grid grid-cols-[2rem_minmax(0,1fr)_auto] items-center gap-2 py-3"
-                >
-                  <Link
-                    href={`/trending/${r.id}`}
-                    aria-label={`${r.repo} 詳情與趨勢`}
-                    className="absolute inset-0"
-                  />
-                  <span className="pt-0.5 font-mono text-xs tabular-nums text-muted">
-                    {String(i + 1).padStart(2, "0")}
-                  </span>
-                  <div className="flex min-w-0 flex-col gap-1">
-                    <div className="flex items-center gap-2">
-                      <a
-                        href={r.link ?? "#"}
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        className="relative z-10 min-w-0 truncate font-medium text-foreground hover:text-accent"
-                      >
-                        {r.repo}
-                      </a>
-                      {mo != null && (
-                        <Badge tone={mo >= MOMENTUM_HOT ? "accent" : "muted"}>
-                          ×{mo.toFixed(1)}
-                        </Badge>
-                      )}
-                    </div>
-                    <div className="flex flex-wrap items-center gap-1.5 text-xs text-muted">
-                      {r.starsPerWeek != null && (
-                        <span>
-                          ★{" "}
-                          <span className="font-mono tabular-nums">
-                            {r.starsPerWeek.toLocaleString()}
-                          </span>
-                        </span>
-                      )}
-                      {delta != null && delta !== 0 && (
-                        <span className={delta > 0 ? "text-pos" : "text-danger"}>
-                          {delta > 0 ? "▲" : "▼"}{" "}
-                          <span className="font-mono tabular-nums">
-                            {Math.abs(delta).toLocaleString()}
-                          </span>
-                        </span>
-                      )}
-                      {r.category && (
-                        <Badge tone={CATEGORY_TONE[r.category] ?? "muted"}>
-                          {r.category}
-                        </Badge>
-                      )}
-                    </div>
-                  </div>
-                  {pts.length > 1 && (
-                    <div className="hidden sm:block">
-                      <StarsTrend points={pts} compact />
-                    </div>
-                  )}
-                </li>
-              );
-            })}
-          </ol>
-        )}
-      </section>
-
+      {/* 🔥 熱門 repo — absolute ★/wk leaderboard, the LEAD's own list continued:
+          the LEAD is #01, these are #02… So it sits directly under the LEAD (the
+          relative-momentum 本週竄升 list follows below) to keep the numbering one
+          unbroken leaderboard. */}
       <section>
         <SectionHeader
           title="🔥 熱門 repo"
@@ -365,6 +281,92 @@ export default function Dashboard({
                 </div>
               </li>
             ))}
+          </ol>
+        )}
+      </section>
+
+      {/* 🚀 本週竄升 — the relative-momentum lens: who is accelerating fastest vs their
+          own prior-week mean, distinct from the absolute-stars 熱門 list above, so the
+          front page shows both lenses. Membership is momentum >= MOMENTUM_HOT (the same
+          bar as the 🚀 badge), so every ×N.N here is genuinely hot — always accent. */}
+      <section>
+        <SectionHeader
+          title="🚀 本週竄升"
+          href="/trending"
+          linkText="看全部 Trending"
+        />
+        <p className="-mt-2 mb-3 text-xs text-muted">
+          相對自身前幾週均值的加速度，不是絕對成長
+        </p>
+        {surging.length === 0 ? (
+          <p className="text-sm text-muted">本週沒有明顯竄升的 repo</p>
+        ) : (
+          <ol className="divide-y divide-border border-t border-border">
+            {surging.map((r, i) => {
+              const pts = series[r.repo] ?? [];
+              const last = pts[pts.length - 1]?.stars;
+              const prev = pts[pts.length - 2]?.stars;
+              const delta = last != null && prev != null ? last - prev : null;
+              const mo = momentum[r.repo];
+              return (
+                <li
+                  key={r.id}
+                  className="relative grid grid-cols-[2rem_minmax(0,1fr)_auto] items-center gap-2 py-3"
+                >
+                  <Link
+                    href={`/trending/${r.id}`}
+                    aria-label={`${r.repo} 詳情與趨勢`}
+                    className="absolute inset-0"
+                  />
+                  <span className="pt-0.5 font-mono text-xs tabular-nums text-muted">
+                    {String(i + 1).padStart(2, "0")}
+                  </span>
+                  <div className="flex min-w-0 flex-col gap-1">
+                    <div className="flex items-center gap-2">
+                      <a
+                        href={r.link ?? "#"}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="relative z-10 min-w-0 truncate font-medium text-foreground hover:text-accent"
+                      >
+                        {r.repo}
+                      </a>
+                      {mo != null && (
+                        <Badge tone="accent">×{mo.toFixed(1)}</Badge>
+                      )}
+                    </div>
+                    <div className="flex flex-wrap items-center gap-1.5 text-xs text-muted">
+                      {r.starsPerWeek != null && (
+                        <span>
+                          ★{" "}
+                          <span className="font-mono tabular-nums">
+                            {r.starsPerWeek.toLocaleString()}
+                          </span>
+                        </span>
+                      )}
+                      {delta != null && delta !== 0 && (
+                        <span className={delta > 0 ? "text-pos" : "text-danger"}>
+                          {delta > 0 ? "▲" : "▼"}{" "}
+                          <span className="font-mono tabular-nums">
+                            {Math.abs(delta).toLocaleString()}
+                          </span>
+                        </span>
+                      )}
+                      {r.category && (
+                        <Badge tone={CATEGORY_TONE[r.category] ?? "muted"}>
+                          {r.category}
+                        </Badge>
+                      )}
+                    </div>
+                  </div>
+                  {pts.length > 1 && (
+                    <div className="hidden sm:block">
+                      <StarsTrend points={pts} compact />
+                    </div>
+                  )}
+                </li>
+              );
+            })}
           </ol>
         )}
       </section>
