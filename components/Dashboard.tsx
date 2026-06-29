@@ -176,69 +176,65 @@ export default function Dashboard({
         </section>
       )}
 
-      {/* LEAD — above the fold: the week's hottest repo at front-page weight. The
-          one place the dashboard spends a display headline and renders the 點評 as
-          a full-ink deck (everywhere else it's a muted-italic aside). */}
-      {lead && (
-        <section className="relative border-y-2 border-foreground py-5">
-          <Link
-            href={`/trending/${lead.id}`}
-            aria-label={`${lead.repo} 詳情與趨勢`}
-            className="absolute inset-0"
-          />
-          <div className="flex items-center justify-between gap-2">
-            <span className="font-mono text-[11px] tracking-[0.18em] text-muted uppercase">
-              本週頭條
-            </span>
-            {lead.starsPerWeek != null && (
-              <Badge tone="accent">★ {lead.starsPerWeek.toLocaleString()} / 週</Badge>
-            )}
-          </div>
-          <a
-            href={lead.link ?? "#"}
-            target="_blank"
-            rel="noopener noreferrer"
-            className="relative z-10 mt-2 block font-serif text-3xl leading-tight break-all text-foreground transition-colors hover:text-accent sm:text-4xl"
-          >
-            {lead.repo}
-          </a>
-          <div className="mt-2 flex flex-wrap items-center gap-2 font-mono text-[11px] tracking-wide text-muted uppercase">
-            {lead.language && <span>{lead.language}</span>}
-            {lead.category && (
-              <Badge tone={CATEGORY_TONE[lead.category] ?? "muted"}>
-                {lead.category}
-              </Badge>
-            )}
-            {lead.weeksOnChart != null && <span>🏆 {lead.weeksOnChart} 週</span>}
-            {lead.week && <span>{formatWeek(lead.week)}</span>}
-          </div>
-          {(lead.comment || lead.description) && (
-            <p className="mt-3 max-w-2xl font-serif-text text-lg leading-relaxed text-foreground">
-              {lead.comment || lead.description}
-            </p>
-          )}
-          {leadPts.length > 1 && (
-            <div className="mt-4">
-              <StarsTrend points={leadPts} />
-            </div>
-          )}
-        </section>
-      )}
-
-      {/* 🔥 熱門 repo — absolute ★/wk leaderboard, the LEAD's own list continued:
-          the LEAD is #01, these are #02… So it sits directly under the LEAD (the
-          relative-momentum 本週竄升 list follows below) to keep the numbering one
-          unbroken leaderboard. */}
+      {/* 🔥 熱門 repo — a newspaper section front: the masthead banner, then the
+          week's hottest repo as the hero #01 (display headline + full-ink 點評 deck +
+          full chart), then #02… as briefs. One banner over the whole absolute-★
+          leaderboard; the relative-momentum 本週竄升 list follows below. */}
       <section>
         <SectionHeader
           title="🔥 熱門 repo"
           href="/trending"
           linkText="看全部 Trending"
         />
+        {lead && (
+          <div className="relative border-b-2 border-foreground pb-5">
+            <Link
+              href={`/trending/${lead.id}`}
+              aria-label={`${lead.repo} 詳情與趨勢`}
+              className="absolute inset-0"
+            />
+            <div className="flex items-center justify-between gap-2">
+              <span className="font-mono text-[11px] tracking-[0.18em] text-muted uppercase tabular-nums">
+                01 · 本週頭條
+              </span>
+              {lead.starsPerWeek != null && (
+                <Badge tone="accent">★ {lead.starsPerWeek.toLocaleString()} / 週</Badge>
+              )}
+            </div>
+            <a
+              href={lead.link ?? "#"}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="relative z-10 mt-2 block font-serif text-3xl leading-tight break-all text-foreground transition-colors hover:text-accent sm:text-4xl"
+            >
+              {lead.repo}
+            </a>
+            <div className="mt-2 flex flex-wrap items-center gap-2 font-mono text-[11px] tracking-wide text-muted uppercase">
+              {lead.language && <span>{lead.language}</span>}
+              {lead.category && (
+                <Badge tone={CATEGORY_TONE[lead.category] ?? "muted"}>
+                  {lead.category}
+                </Badge>
+              )}
+              {lead.weeksOnChart != null && <span>🏆 {lead.weeksOnChart} 週</span>}
+              {lead.week && <span>{formatWeek(lead.week)}</span>}
+            </div>
+            {(lead.comment || lead.description) && (
+              <p className="mt-3 max-w-2xl font-serif-text text-lg leading-relaxed text-foreground">
+                {lead.comment || lead.description}
+              </p>
+            )}
+            {leadPts.length > 1 && (
+              <div className="mt-4">
+                <StarsTrend points={leadPts} />
+              </div>
+            )}
+          </div>
+        )}
         {rest.length === 0 ? (
           <p className="text-sm text-muted">目前沒有更多 trending 資料</p>
         ) : (
-          <ol className="divide-y divide-border border-t border-border">
+          <ol className="divide-y divide-border pt-1">
             {rest.map((r, i) => (
               <li
                 key={r.id}
