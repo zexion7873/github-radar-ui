@@ -5,6 +5,7 @@ import {
   latestPerRepo,
   latestLootPerRepo,
   weeklySeriesByRepo,
+  momentumByRepo,
   type LootRow,
 } from "@/lib/data";
 import { TABLES } from "@/lib/config";
@@ -54,7 +55,25 @@ export default async function Page() {
   // repos whose most recent week IS the latest week = this week's live chart.
   // Distinct from repos.length, which counts every repo ever archived (it only
   // ever grows — a repo that fell off weeks ago still has a row in the dedup).
-  const onChartThisWeek = repos.filter((r) => r.week === latestWeek).length;
+  const onChart = repos.filter((r) => r.week === latestWeek);
+  const onChartThisWeek = onChart.length;
+
+  // This week's category mix, sorted heaviest-first — feeds the dashboard's
+  // 本週分類 distribution bar. Built from the on-chart set so it sums to
+  // onChartThisWeek; a null category buckets to "other" (the bar's neutral hue).
+  const categoryMix = Object.entries(
+    onChart.reduce<Record<string, number>>((acc, r) => {
+      const c = r.category ?? "other";
+      acc[c] = (acc[c] ?? 0) + 1;
+      return acc;
+    }, {}),
+  )
+    .map(([category, count]) => ({ category, count }))
+    .sort((a, b) => b.count - a.count);
+
+  // Per-repo relative momentum, shared by the dashboard's 本週竄升 ranking — the
+  // same computation the /trending list uses for its 🚀 sort and badge.
+  const series = weeklySeriesByRepo(trending.rows);
 
   // Freshest source date across every table — the dashboard's "is the pipeline
   // still alive" signal. Loot/blog failures just contribute nothing here.
@@ -89,7 +108,9 @@ export default async function Page() {
       <Dashboard
         authed={authed}
         trending={repos}
-        series={weeklySeriesByRepo(trending.rows)}
+        series={series}
+        momentum={momentumByRepo(series)}
+        categoryMix={categoryMix}
         loot={{
           claude: lootClaudeRows,
           copilot: lootCopilotRows,

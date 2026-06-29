@@ -13,13 +13,10 @@ import {
   MAINTAINED_BADGE,
   RISK_BADGE,
   licenseTone,
+  MOMENTUM_HOT,
 } from "./ui";
 
 type Sort = "recent" | "stars" | "momentum";
-
-// A repo whose latest week runs >=50% above its own prior-week average is
-// "heating up" and earns the 🚀 badge. Tuned to flag a genuine spike, not noise.
-const MOMENTUM_HOT = 1.5;
 
 export default function TrendingList({
   rows,
