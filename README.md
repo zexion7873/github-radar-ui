@@ -63,5 +63,6 @@ The four data-source UUIDs (and the pinned `2025-09-03` Notion API version) live
 
 Push to a Git remote, import the repo at <https://vercel.com/new>, set all three
 environment variables (`NOTION_TOKEN`, `APP_PASSWORD`, `AUTH_SECRET`), and deploy.
-The in-app password gate covers every route, so no Vercel Deployment Protection is
-needed.
+The in-app password gate covers `/loot/*` only — the dashboard, `/trending`, and
+`/blog` are intentionally public (see `proxy.ts`). If you want to lock those down
+too, enable Vercel Deployment Protection.
