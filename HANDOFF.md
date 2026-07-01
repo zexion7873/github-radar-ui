@@ -14,10 +14,12 @@ and renders them as a browsable web UI.
 
 What works:
 - `/` — Trending Archive, category-filterable cards, 🆕/🔁 from `Weeks on chart`.
-- `/loot/claude`, `/loot/copilot` — loot grouped by `Status` (new / adopted / skipped), **read-only**.
-- App-level password gate (`proxy.ts`): every route except `/login` needs the `gh_radar`
-  cookie to equal `AUTH_SECRET`. (Vercel free can't password-protect production, so the gate
-  lives in the app.)
+- `/loot/claude`, `/loot/copilot` — loot grouped by `Status` (new / adopted / skipped), with
+  in-place Status write-back (see Phase 2).
+- App-level password gate (`proxy.ts`): the matcher is `["/loot/:path*"]`, so only `/loot/*`
+  needs the `gh_radar` cookie to equal `AUTH_SECRET`; the dashboard, `/trending`, and `/blog`
+  are intentionally public. (Vercel free can't password-protect production, so the gate lives
+  in the app.)
 - Notion reads cached 10 min via `unstable_cache` (tag `"notion"`); warm TTFB ~6ms.
 
 ## Architecture (read path)

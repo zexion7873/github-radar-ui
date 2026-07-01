@@ -94,6 +94,7 @@ archived；`pushed_at` 超過 90 天 → stale；否則 active。徽章定義在
 | Risk | `github-trending` | `Risk` | `fetchTrending` |
 | License | `github-trending` + `loot-radar` | `License` | `fetchTrending` / `fetchLoot` |
 
-渲染於 trending 列表 + 詳情、loot board + 詳情（不含 dashboard —— 它的 Front-Page
-方言維持精簡，訊號留在 Tape）。loot 的 `Maintained` / `License` 會空白，直到
-`loot-radar` 跑一次回填。
+Maintained / Risk / License 渲染於 trending 列表 + 詳情、loot board + 詳情（不含
+dashboard —— 它的 Front-Page 方言維持精簡，這三個訊號留在 Tape）。Momentum 例外：除了
+trending，也渲染於 dashboard 的 🚀 本週竄升 區。loot 的 `Maintained` / `License` 會空白，
+直到 `loot-radar` 跑一次回填。

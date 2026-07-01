@@ -118,6 +118,7 @@ export default function LootBoard({
             <select
               value={type ?? ""}
               onChange={(e) => setType(e.target.value || null)}
+              aria-label="類型篩選"
               className="rounded-none border border-border bg-surface px-3 py-1.5 text-sm focus:border-accent focus:ring-2 focus:ring-accent/30 focus:outline-none"
             >
               <option value="">全部類型</option>

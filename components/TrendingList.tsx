@@ -84,6 +84,7 @@ export default function TrendingList({
           <select
             value={sort}
             onChange={(e) => setSort(e.target.value as Sort)}
+            aria-label="排序方式"
             className="rounded-none border border-border bg-surface px-3 py-1.5 text-sm focus:border-accent focus:ring-2 focus:ring-accent/30 focus:outline-none"
           >
             <option value="recent">最新優先</option>

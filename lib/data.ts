@@ -152,6 +152,7 @@ async function load<T>(
   try {
     return { ok: true, rows: await read() };
   } catch (e) {
+    console.error("Notion read failed:", e);
     const error =
       e instanceof NotionError ? e.message : "Unexpected error reading Notion";
     return { ok: false, error };
