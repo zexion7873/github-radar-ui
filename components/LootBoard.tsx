@@ -110,6 +110,7 @@ export default function LootBoard({
             type="search"
             value={query}
             onChange={(e) => setQuery(e.target.value)}
+            aria-label="搜尋 repo、介紹或資產"
             placeholder="搜尋 repo / 介紹 / 資產…"
             className="w-full rounded-none border border-border bg-surface px-3 py-1.5 text-sm placeholder:text-muted focus:border-accent focus:ring-2 focus:ring-accent/30 focus:outline-none sm:w-64"
           />

@@ -63,9 +63,11 @@ export type Result<T> = { ok: true; rows: T[] } | { ok: false; error: string };
 type Sort = { property: string; direction: "ascending" | "descending" };
 
 // Notion DISPLAY names, declared once per table so the sort, the read, and the
-// schema assertion all reference the SAME string. A column rename then fails
-// loudly and consistently (see assertProps) instead of: sort renames → hard 400,
-// read renames → silent blank cell.
+// schema assertion all reference the SAME string. A column rename then fails loudly
+// either way instead of silently blanking a cell — but via two paths: a sort-key
+// rename trips a hard Notion 400 at query time (before assertProps runs), while a
+// non-sort-key rename trips assertProps' clearer "renamed or removed" message. Both
+// surface through load()'s catch.
 const TRENDING_PROPS = {
   repo: "Repo",
   week: "Week",

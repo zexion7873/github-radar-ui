@@ -133,6 +133,7 @@ export default function BlogList({ rows }: { rows: BlogRow[] }) {
             type="search"
             value={query}
             onChange={(e) => setQuery(e.target.value)}
+            aria-label="搜尋標題或摘要"
             placeholder="搜尋標題或摘要…"
             className={inputClass}
           />

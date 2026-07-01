@@ -143,8 +143,6 @@ export const num = (p: Record<string, NProp>, k: string): number | null =>
   p[k]?.number ?? null;
 export const sel = (p: Record<string, NProp>, k: string): string | null =>
   p[k]?.select?.name ?? null;
-export const multi = (p: Record<string, NProp>, k: string): string[] =>
-  (p[k]?.multi_select ?? []).map((o) => o.name);
 export const dateStart = (p: Record<string, NProp>, k: string): string | null =>
   p[k]?.date?.start ?? null;
 export const urlProp = (p: Record<string, NProp>, k: string): string | null =>
