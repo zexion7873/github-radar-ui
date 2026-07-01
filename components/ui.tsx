@@ -223,7 +223,7 @@ export function DataError({ error }: { error: string }) {
   }
   return (
     <Notice title="讀取 Notion 失敗">
-      <p className="font-mono text-xs">{error}</p>
+      <p>暫時無法讀取資料，請稍後再試。</p>
       <p className="mt-2">
         Common causes: the database is not shared with the integration, or the
         token / API version is wrong.
