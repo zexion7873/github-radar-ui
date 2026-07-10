@@ -18,6 +18,12 @@ Loot **status is editable from the UI** and persists straight back to Notion
 `POST /v1/data_sources/{id}/query`. Both run server-side only — the Notion token
 never reaches the browser.
 
+Optionally, when `RADAR_INTEL_URL` points at the sibling
+[radar-rag](../radar-intelligence-service) RAG service, the home page grows an
+authed **問問雷達** box: natural-language Q&A over the whole radar, answered from the
+retrieved rows with citations. It's owner-only (it spends Claude tokens per ask) and
+hidden entirely when the var is unset.
+
 ## Stack
 
 - Next.js 16 (App Router) + Tailwind CSS 4, deployed on Vercel
@@ -58,6 +64,9 @@ never reaches the browser.
 
 The four data-source UUIDs (and the pinned `2025-09-03` Notion API version) live in
 [`lib/config.ts`](lib/config.ts).
+
+To enable the **問問雷達** box, also set `RADAR_INTEL_URL` (see `.env.example`) to a
+running radar-rag instance. It's optional — leave it unset and nothing changes.
 
 ## Deploy
 

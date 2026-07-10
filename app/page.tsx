@@ -11,6 +11,7 @@ import {
 import { TABLES } from "@/lib/config";
 import StatsBar from "@/components/StatsBar";
 import Dashboard from "@/components/Dashboard";
+import AskRadar from "@/components/AskRadar";
 import LastSynced from "@/components/LastSynced";
 import { DataError } from "@/components/ui";
 import { cookies } from "next/headers";
@@ -86,9 +87,14 @@ export default async function Page() {
     .filter((d): d is string => !!d)
     .reduce((max, d) => (d > max ? d : max), "");
 
+  // The Ask box costs Claude tokens per question, so it's owner-only (authed) and
+  // only when the radar-rag service is wired up. Public visitors never see it.
+  const askEnabled = authed && !!process.env.RADAR_INTEL_URL;
+
   return (
     <div className="flex flex-col gap-6">
       {latestSync && <LastSynced iso={latestSync} />}
+      {askEnabled && <AskRadar />}
       <StatsBar
         stats={[
           { label: "本週在榜", value: onChartThisWeek, href: "/trending" },
