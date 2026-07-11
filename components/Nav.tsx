@@ -1,13 +1,18 @@
 "use client";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
+import { LOOT_TARGETS, type LootTarget } from "@/lib/config";
 
+// Loot tabs are derived from LOOT_TARGETS (the single source of truth) so a new
+// target shows up here automatically — no hand-maintained list to forget.
 const links = [
   { href: "/", label: "Dashboard" },
   { href: "/trending", label: "Trending" },
   { href: "/blog", label: "Blog" },
-  { href: "/loot/claude", label: "Loot · Claude" },
-  { href: "/loot/copilot", label: "Loot · Copilot" },
+  ...(Object.keys(LOOT_TARGETS) as LootTarget[]).map((t) => ({
+    href: `/loot/${t}`,
+    label: `Loot · ${LOOT_TARGETS[t].label}`,
+  })),
 ];
 
 export default function Nav() {
