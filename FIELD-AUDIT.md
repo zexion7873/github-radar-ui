@@ -22,6 +22,7 @@ renamed/removed column into a loud error instead of silent blank cards.
 | Trending Archive | Repo, Stars/wk, Description, Link, Language, Comment, Category(select), Week(date), Weeks on chart | TRENDING_PROPS | exact match |
 | Loot Ledger (Claude) | Repo, Intro, Asset, How, Why, Type(select), Status(select), Recommendation(number), Week(date), Link | LOOT_PROPS | exact match |
 | Loot Ledger (Copilot) | identical to Claude | LOOT_PROPS | exact match |
+| Loot Ledger (opencode) | identical to Claude (Type options differ: agent/command/plugin/mcp/prompt/convention/pattern) | LOOT_PROPS | exact match (added 2026-07-11) |
 | Blog Archive | Title, Type(select), Summary, Author, Brief, Comment, Source, Archived(date), Published(date), URL | BLOG_PROPS | exact match |
 
 `Recommendation` (number) **exists** in both Loot tables — the `ai-assistant/AGENTS.md`

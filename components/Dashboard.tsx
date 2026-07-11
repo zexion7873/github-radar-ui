@@ -417,7 +417,7 @@ export default function Dashboard({
       {/* Stop-press footer wire: the loot queue, set off by a heavy top rule. */}
       <section className="border-t-2 border-foreground pt-6">
         <SectionHeader title="📦 待處理 Loot" />
-        <div className="grid gap-3 sm:grid-cols-2">
+        <div className="grid gap-3 sm:grid-cols-3">
           {(Object.keys(LOOT_TARGETS) as LootTarget[]).map((target) => (
             <LootSummaryCard
               key={target}

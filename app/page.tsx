@@ -25,13 +25,14 @@ const pendingCount = (rows: LootRow[] | null): number | null =>
 
 export default async function Page() {
   const authed = isAuthed((await cookies()).get("gh_radar")?.value);
-  // All four tables in parallel; loot and blog failures degrade to "—" / null
+  // All five tables in parallel; loot and blog failures degrade to "—" / null
   // in their cards rather than failing the page. Only a trending failure (the
   // page's backbone — stat counts and the hot list) shows the error notice.
-  const [trending, lootClaude, lootCopilot, blog] = await Promise.all([
+  const [trending, lootClaude, lootCopilot, lootOpencode, blog] = await Promise.all([
     fetchTrending(TABLES.trending),
     fetchLoot(TABLES.lootClaude),
     fetchLoot(TABLES.lootCopilot),
+    fetchLoot(TABLES.lootOpencode),
     fetchBlog(TABLES.blog),
   ]);
   if (!trending.ok) return <DataError error={trending.error} />;
@@ -42,6 +43,9 @@ export default async function Page() {
   const lootClaudeRows = lootClaude.ok ? latestLootPerRepo(lootClaude.rows) : null;
   const lootCopilotRows = lootCopilot.ok
     ? latestLootPerRepo(lootCopilot.rows)
+    : null;
+  const lootOpencodeRows = lootOpencode.ok
+    ? latestLootPerRepo(lootOpencode.rows)
     : null;
 
   const repos = latestPerRepo(trending.rows);
@@ -77,7 +81,11 @@ export default async function Page() {
 
   // Freshest source date across every table — the dashboard's "is the pipeline
   // still alive" signal. Loot/blog failures just contribute nothing here.
-  const lootRows = [...(lootClaudeRows ?? []), ...(lootCopilotRows ?? [])];
+  const lootRows = [
+    ...(lootClaudeRows ?? []),
+    ...(lootCopilotRows ?? []),
+    ...(lootOpencodeRows ?? []),
+  ];
   const latestSync = [
     ...repos.map((r) => r.week),
     ...lootRows.map((r) => r.week),
@@ -103,6 +111,11 @@ export default async function Page() {
             value: pendingCount(lootCopilotRows),
             href: "/loot/copilot",
           },
+          {
+            label: "opencode 待處理",
+            value: pendingCount(lootOpencodeRows),
+            href: "/loot/opencode",
+          },
         ]}
       />
       <Dashboard
@@ -114,6 +127,7 @@ export default async function Page() {
         loot={{
           claude: lootClaudeRows,
           copilot: lootCopilotRows,
+          opencode: lootOpencodeRows,
         }}
         blog={blog.ok ? blog.rows : null}
       />

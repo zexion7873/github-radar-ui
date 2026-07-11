@@ -12,6 +12,7 @@ triage state back to Notion in place:
 | `/blog` | Blog Archive | AI/agent blog posts grouped 官方 / 個人, each with a one-paragraph summary + 點評, newest first |
 | `/loot/claude` | Loot Ledger (Claude Code) | Loot grouped by status (new / adopted / skipped), with editable status and a read-only rating |
 | `/loot/copilot` | Loot Ledger (Copilot) | Same, for the Copilot target |
+| `/loot/opencode` | Loot Ledger (opencode) | Same, for the opencode target |
 
 Loot **status is editable from the UI** and persists straight back to Notion
 (`PATCH /v1/pages/{id}`); the rating is read-only display. Reads use
@@ -33,9 +34,9 @@ never reaches the browser.
    <https://www.notion.so/profile/integrations> → New integration → Internal.
    Because the UI writes loot state back, give it **Read content** *and*
    **Update content** capability. Copy the secret (starts with `ntn_`).
-2. **Share the four databases into it.** Open each in Notion → `•••` →
+2. **Share the five databases into it.** Open each in Notion → `•••` →
    Connections → add the integration: Trending Archive, Blog Archive, Loot Ledger
-   (Claude Code), Loot Ledger (Copilot). Unshared tables return 404.
+   (Claude Code), Loot Ledger (Copilot), Loot Ledger (opencode). Unshared tables return 404.
 3. **Set the three env vars.** Copy `.env.example` to `.env.local` and fill in all
    three:
    ```
@@ -56,7 +57,7 @@ never reaches the browser.
    ```
    Open <http://localhost:3000> and log in with `APP_PASSWORD`.
 
-The four data-source UUIDs (and the pinned `2025-09-03` Notion API version) live in
+The five data-source UUIDs (and the pinned `2025-09-03` Notion API version) live in
 [`lib/config.ts`](lib/config.ts).
 
 ## Deploy
