@@ -1,21 +1,19 @@
 "use client";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { LOOT_TARGETS, type LootTarget } from "@/lib/config";
+import { DEFAULT_LOOT_TARGET } from "@/lib/config";
 
-// Loot tabs are derived from LOOT_TARGETS (the single source of truth) so a new
-// target shows up here automatically — no hand-maintained list to forget.
-const links = [
+// A per-target tab repeated "LOOT ·" once per LOOT_TARGETS entry — fine at
+// two targets, clumsy and unbounded at three-plus (and mobile just clips it
+// off overflow-x-auto). "Loot" is now a single tab that lands on the default
+// target; switching between targets happens on the loot pages themselves via
+// a Chip row (app/loot/[target]/page.tsx) — the same pattern already used for
+// every other filter in this app.
+const links: { href: string; label: string; prefix?: string }[] = [
   { href: "/", label: "Dashboard" },
   { href: "/trending", label: "Trending" },
   { href: "/blog", label: "Blog" },
-  // Short key (claude/copilot/opencode), not the full LOOT_TARGETS label — the
-  // nav renders uppercase, so the key keeps each tab compact (matches the
-  // original "LOOT · CLAUDE" width instead of the wider "CLAUDE CODE").
-  ...(Object.keys(LOOT_TARGETS) as LootTarget[]).map((t) => ({
-    href: `/loot/${t}`,
-    label: `Loot · ${t}`,
-  })),
+  { href: `/loot/${DEFAULT_LOOT_TARGET}`, label: "Loot", prefix: "/loot" },
 ];
 
 export default function Nav() {
@@ -23,7 +21,12 @@ export default function Nav() {
   return (
     <nav aria-label="主要導覽" className="-mx-1 flex gap-4 overflow-x-auto px-1">
       {links.map((l) => {
-        const active = pathname === l.href;
+        // "Loot" matches any target's URL (/loot/copilot, a detail page, …),
+        // not just the default one it links to — everything else keeps the
+        // exact match it already had.
+        const active = l.prefix
+          ? pathname.startsWith(l.prefix)
+          : pathname === l.href;
         return (
           <Link
             key={l.href}

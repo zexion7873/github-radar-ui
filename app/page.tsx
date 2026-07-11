@@ -8,7 +8,7 @@ import {
   momentumByRepo,
   type LootRow,
 } from "@/lib/data";
-import { TABLES } from "@/lib/config";
+import { TABLES, DEFAULT_LOOT_TARGET } from "@/lib/config";
 import StatsBar from "@/components/StatsBar";
 import Dashboard from "@/components/Dashboard";
 import LastSynced from "@/components/LastSynced";
@@ -47,6 +47,17 @@ export default async function Page() {
   const lootOpencodeRows = lootOpencode.ok
     ? latestLootPerRepo(lootOpencode.rows)
     : null;
+
+  // One combined pending count for the stat bar — StatsBar shows totals, not
+  // per-target detail (the dashboard's 📦 待處理 Loot footer already covers
+  // that), so this tile's count doesn't grow a new column every time a target
+  // is added. A target whose fetch failed contributes nothing rather than
+  // sinking the whole tile to "—".
+  const lootPending = [lootClaudeRows, lootCopilotRows, lootOpencodeRows]
+    .map(pendingCount)
+    .filter((n): n is number => n !== null);
+  const lootPendingTotal =
+    lootPending.length > 0 ? lootPending.reduce((a, b) => a + b, 0) : null;
 
   const repos = latestPerRepo(trending.rows);
   const latestWeek = repos.reduce(
@@ -102,19 +113,9 @@ export default async function Page() {
           { label: "本週在榜", value: onChartThisWeek, href: "/trending" },
           { label: "本週新上榜", value: newThisWeek, href: "/trending" },
           {
-            label: "Claude 待處理",
-            value: pendingCount(lootClaudeRows),
-            href: "/loot/claude",
-          },
-          {
-            label: "Copilot 待處理",
-            value: pendingCount(lootCopilotRows),
-            href: "/loot/copilot",
-          },
-          {
-            label: "opencode 待處理",
-            value: pendingCount(lootOpencodeRows),
-            href: "/loot/opencode",
+            label: "待處理 Loot",
+            value: lootPendingTotal,
+            href: `/loot/${DEFAULT_LOOT_TARGET}`,
           },
         ]}
       />

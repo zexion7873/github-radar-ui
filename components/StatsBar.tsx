@@ -4,7 +4,7 @@ export type Stat = { label: string; value: number | null; href?: string };
 
 export default function StatsBar({ stats }: { stats: Stat[] }) {
   return (
-    <div className="grid grid-cols-2 gap-3 md:grid-cols-4">
+    <div className="grid grid-cols-1 gap-3 sm:grid-cols-3">
       {stats.map((s) => {
         // Every tile is a headline metric, so each gets the accent top rule (the
         // print-masthead cue) — same call as the trending readout: when all cells

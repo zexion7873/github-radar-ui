@@ -1,4 +1,5 @@
 import { type ReactNode } from "react";
+import Link from "next/link";
 
 // Shared card surface so every card (trending / loot / stats) gets the same
 // border and hover treatment — change the look once, it propagates. Editorial:
@@ -39,8 +40,19 @@ export function Badge({
 }
 
 // Filter pill → editorial square chip. Active = solid ink block; inactive = a
-// hairline outline that darkens to ink on hover. `aria-pressed` lets AT announce
-// which filter is on; wrap a row of these in a role="group" with a label.
+// hairline outline that darkens to ink on hover. Shared by the in-page filter
+// button (Chip) and the cross-page nav variant (ChipLink, e.g. the loot target
+// switcher) so both stay pixel-identical.
+function chipClass(on: boolean): string {
+  return `shrink-0 rounded-none border px-3 py-1 font-mono text-[11px] tracking-[0.08em] uppercase transition-colors focus-visible:ring-2 focus-visible:ring-accent/30 focus-visible:outline-none active:scale-95 ${
+    on
+      ? "border-foreground bg-foreground text-background"
+      : "border-border text-muted hover:border-foreground hover:text-foreground"
+  }`;
+}
+
+// `aria-pressed` lets AT announce which filter is on; wrap a row of these in a
+// role="group" with a label (ChipScroller does this for you).
 export function Chip({
   on,
   onClick,
@@ -55,14 +67,33 @@ export function Chip({
       type="button"
       onClick={onClick}
       aria-pressed={on}
-      className={`shrink-0 rounded-none border px-3 py-1 font-mono text-[11px] tracking-[0.08em] uppercase transition-colors focus-visible:ring-2 focus-visible:ring-accent/30 focus-visible:outline-none active:scale-95 ${
-        on
-          ? "border-foreground bg-foreground text-background"
-          : "border-border text-muted hover:border-foreground hover:text-foreground"
-      }`}
+      className={chipClass(on)}
     >
       {children}
     </button>
+  );
+}
+
+// Same look as Chip, but a real navigation (Link) instead of in-page state —
+// for switching between pages that happen to be mutually exclusive, like the
+// loot target board. `aria-current` marks the active one, matching Nav.
+export function ChipLink({
+  href,
+  on,
+  children,
+}: {
+  href: string;
+  on: boolean;
+  children: ReactNode;
+}) {
+  return (
+    <Link
+      href={href}
+      aria-current={on ? "page" : undefined}
+      className={chipClass(on)}
+    >
+      {children}
+    </Link>
   );
 }
 

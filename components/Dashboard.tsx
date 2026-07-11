@@ -50,7 +50,7 @@ function LootSummaryCard({
   return (
     <Link
       href={`/loot/${target}`}
-      className={`flex flex-col gap-2 p-4 ${cardInteractive}`}
+      className={`flex grow basis-[15rem] flex-col gap-2 p-4 ${cardInteractive}`}
     >
       <div className="flex items-center justify-between">
         <span className="font-medium">{LOOT_TARGETS[target].label}</span>
@@ -417,7 +417,10 @@ export default function Dashboard({
       {/* Stop-press footer wire: the loot queue, set off by a heavy top rule. */}
       <section className="border-t-2 border-foreground pt-6">
         <SectionHeader title="📦 待處理 Loot" />
-        <div className="grid gap-3 sm:grid-cols-3">
+        {/* flex-wrap (not a fixed grid) so the card count can grow with
+            LOOT_TARGETS without ever orphaning a lone last card beside dead
+            tracks — each card grows from a 15rem basis to fill its row. */}
+        <div className="flex flex-wrap gap-3">
           {(Object.keys(LOOT_TARGETS) as LootTarget[]).map((target) => (
             <LootSummaryCard
               key={target}

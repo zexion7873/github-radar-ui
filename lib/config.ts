@@ -23,6 +23,14 @@ export const LOOT_TARGETS = {
 
 export type LootTarget = keyof typeof LOOT_TARGETS;
 
+// The single canonical "first" target — Nav's collapsed Loot tab and the
+// dashboard's combined pending-count stat both need one default landing spot.
+// Insertion order of LOOT_TARGETS decides it, so a newly added target only
+// ever appends and never reshuffles which one is default.
+export const DEFAULT_LOOT_TARGET: LootTarget = (
+  Object.keys(LOOT_TARGETS) as LootTarget[]
+)[0];
+
 // Loot Status select options, single source of truth for the read default, the
 // write-back whitelist, and the filter/toggle UI (imported by lib + components).
 export const LOOT_STATUSES = ["new", "adopted", "skipped"] as const;
