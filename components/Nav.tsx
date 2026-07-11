@@ -9,9 +9,12 @@ const links = [
   { href: "/", label: "Dashboard" },
   { href: "/trending", label: "Trending" },
   { href: "/blog", label: "Blog" },
+  // Short key (claude/copilot/opencode), not the full LOOT_TARGETS label — the
+  // nav renders uppercase, so the key keeps each tab compact (matches the
+  // original "LOOT · CLAUDE" width instead of the wider "CLAUDE CODE").
   ...(Object.keys(LOOT_TARGETS) as LootTarget[]).map((t) => ({
     href: `/loot/${t}`,
-    label: `Loot · ${LOOT_TARGETS[t].label}`,
+    label: `Loot · ${t}`,
   })),
 ];
 
