@@ -4,7 +4,7 @@ import { cookies } from "next/headers";
 import { updateTag } from "next/cache";
 import { updateSelect } from "@/lib/notion";
 import { fetchLoot, LOOT_PROPS } from "@/lib/data";
-import { TABLES, LOOT_STATUSES } from "@/lib/config";
+import { LOOT_TARGETS, LOOT_STATUSES } from "@/lib/config";
 import { isAuthed } from "@/lib/auth";
 
 // Notion's Status select options for loot rows. The action rejects anything else
@@ -21,17 +21,15 @@ async function assertAuthed() {
 
 // Constrain writes to actual loot rows. pageId arrives from the client, so without
 // this an authed user could PATCH any Notion page the integration token can reach.
-// Reuses the cached loot reads (same `notion:loot` tag), so it's a cache hit in the
-// common case rather than an extra Notion round-trip.
+// Iterates every LOOT_TARGETS table (not a hardcoded subset) so a newly added target
+// is covered automatically. Reuses the cached loot reads (same `notion:loot` tag), so
+// it's a cache hit in the common case rather than an extra Notion round-trip.
 async function assertLootPage(pageId: string) {
-  const [claude, copilot] = await Promise.all([
-    fetchLoot(TABLES.lootClaude),
-    fetchLoot(TABLES.lootCopilot),
-  ]);
+  const results = await Promise.all(
+    Object.values(LOOT_TARGETS).map((t) => fetchLoot(t.uuid)),
+  );
   const ids = new Set(
-    [...(claude.ok ? claude.rows : []), ...(copilot.ok ? copilot.rows : [])].map(
-      (r) => r.id,
-    ),
+    results.flatMap((r) => (r.ok ? r.rows.map((row) => row.id) : [])),
   );
   if (!ids.has(pageId)) throw new Error("unknown loot page");
 }
