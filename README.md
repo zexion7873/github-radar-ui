@@ -34,7 +34,8 @@ never reaches the browser.
    <https://www.notion.so/profile/integrations> → New integration → Internal.
    Because the UI writes loot state back, give it **Read content** *and*
    **Update content** capability. Copy the secret (starts with `ntn_`).
-2. **Share the five databases into it.** Open each in Notion → `•••` →
+2. **Share the archive databases into it** (every entry in `lib/config.ts`'s
+   `TABLES` — the authoritative list). Open each in Notion → `•••` →
    Connections → add the integration: Trending Archive, Blog Archive, Loot Ledger
    (Claude Code), Loot Ledger (Copilot), Loot Ledger (opencode). Unshared tables return 404.
 3. **Set the three env vars.** Copy `.env.example` to `.env.local` and fill in all
@@ -57,7 +58,7 @@ never reaches the browser.
    ```
    Open <http://localhost:3000> and log in with `APP_PASSWORD`.
 
-The five data-source UUIDs (and the pinned `2025-09-03` Notion API version) live in
+The data-source UUIDs (and the pinned `2025-09-03` Notion API version) live in
 [`lib/config.ts`](lib/config.ts).
 
 ## Deploy

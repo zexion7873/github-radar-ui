@@ -1,6 +1,9 @@
-// Notion data-source UUIDs for the GitHub/blog routines' four archive tables.
-// These are identifiers, not secrets (the same ids live in ai-assistant/AGENTS.md);
-// they are useless without NOTION_TOKEN and the integration shared into each table.
+// Notion data-source UUIDs for the GitHub/blog routines' archive tables — one
+// entry per table, TABLES below IS the authoritative list (prose elsewhere
+// deliberately avoids counting them; a hardcoded "four" survived one table past
+// its truth). These are identifiers, not secrets (the same ids live in
+// ai-assistant/AGENTS.md); they are useless without NOTION_TOKEN and the
+// integration shared into each table.
 export const NOTION_VERSION = "2025-09-03"; // version that introduced data sources
 
 export const TABLES = {

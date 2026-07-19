@@ -1,3 +1,8 @@
+> **歸檔快照** — 2026-07-19 移入 `docs/archive/`,停止維護。這是 2026-06-26
+> 那次全鏈路稽核的結果紀錄;其後 schema 已再演進(如 Maintained / Risk /
+> License 欄位與 opencode 表,本文的 ground-truth 表未涵蓋)。稽核方法仍可
+> 照文內重跑;現況以 `lib/data.ts` 的 `*_PROPS` 與程式碼為準。
+
 # Field Audit — full chain (ai-assistant skills → Notion → github-radar-ui)
 
 Date: 2026-06-26. Method: Notion MCP `notion-fetch` for ground-truth schema, live
