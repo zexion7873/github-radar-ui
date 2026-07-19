@@ -33,6 +33,9 @@ export default async function Page({
     .filter((r) => r.repo === target.repo)
     .sort((a, b) => (a.week ?? "").localeCompare(b.week ?? ""));
   const latest = history[history.length - 1];
+  // `prev` is the previous ARCHIVED week, which is not necessarily the calendar
+  // week before — a repo that fell off the chart and returned has a gap here.
+  // The readout label below says 前次, not 上週, for exactly that reason.
   const prev = history.length > 1 ? history[history.length - 2] : null;
   const delta =
     latest.starsPerWeek != null && prev?.starsPerWeek != null
@@ -111,7 +114,7 @@ export default async function Page({
               : `${delta >= 0 ? "▲" : "▼"}${Math.abs(delta).toLocaleString()}`}
           </div>
           <div className="mt-1 font-mono text-[10px] tracking-wide text-muted uppercase">
-            vs 上週
+            vs 前次
           </div>
         </div>
         <div className="border-t-[3px] border-t-accent px-3 py-3">

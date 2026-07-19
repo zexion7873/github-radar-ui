@@ -1,5 +1,5 @@
 import { notFound } from "next/navigation";
-import { fetchLoot, latestLootPerRepo } from "@/lib/data";
+import { fetchLoot, latestPerRepo } from "@/lib/data";
 import { LOOT_TARGETS, type LootTarget } from "@/lib/config";
 import LootBoard from "@/components/LootBoard";
 import { ChipLink, ChipScroller, DataError } from "@/components/ui";
@@ -30,7 +30,7 @@ export default async function Page({
       {/* Collapse to one card per repo (latest week); the detail page gathers
           the earlier weeks for its 歷次點評 section. */}
       <LootBoard
-        rows={latestLootPerRepo(result.rows)}
+        rows={latestPerRepo(result.rows)}
         target={target as LootTarget}
       />
     </div>

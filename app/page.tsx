@@ -3,7 +3,6 @@ import {
   fetchLoot,
   fetchBlog,
   latestPerRepo,
-  latestLootPerRepo,
   currentChart,
   weeklySeriesByRepo,
   momentumByRepo,
@@ -41,12 +40,12 @@ export default async function Page() {
   // Dedup loot per repo (latest week) BEFORE any count/summary — a repo
   // shortlisted across multiple weeks must count once, matching the loot board.
   // Without this Copilot (the table with cross-week repeats) over-counts pending.
-  const lootClaudeRows = lootClaude.ok ? latestLootPerRepo(lootClaude.rows) : null;
+  const lootClaudeRows = lootClaude.ok ? latestPerRepo(lootClaude.rows) : null;
   const lootCopilotRows = lootCopilot.ok
-    ? latestLootPerRepo(lootCopilot.rows)
+    ? latestPerRepo(lootCopilot.rows)
     : null;
   const lootOpencodeRows = lootOpencode.ok
-    ? latestLootPerRepo(lootOpencode.rows)
+    ? latestPerRepo(lootOpencode.rows)
     : null;
 
   // One combined pending count for the stat bar — StatsBar shows totals, not

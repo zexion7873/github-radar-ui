@@ -1,5 +1,5 @@
 "use client";
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
 import type { LootRow } from "@/lib/data";
@@ -31,9 +31,16 @@ export default function LootBoard({
   // Loot is editable from any device/tab; last-write-wins on Notion means a
   // backgrounded tab can hold stale optimistic state. Refresh on return to
   // reconcile with the server (the order-freeze below survives — no remount).
+  // Throttled to once a minute: reconciliation is worth one refresh, but every
+  // tab flick refetching a Notion-backed RSC tree under a 600s cache is not.
+  const lastRefresh = useRef(0);
   useEffect(() => {
     function onVisible() {
-      if (document.visibilityState === "visible") router.refresh();
+      if (document.visibilityState !== "visible") return;
+      const now = Date.now();
+      if (now - lastRefresh.current < 60_000) return;
+      lastRefresh.current = now;
+      router.refresh();
     }
     document.addEventListener("visibilitychange", onVisible);
     return () => document.removeEventListener("visibilitychange", onVisible);

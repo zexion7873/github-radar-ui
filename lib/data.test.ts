@@ -1,7 +1,6 @@
 import { describe, expect, it } from "vitest";
 import {
   currentChart,
-  latestLootPerRepo,
   latestPerRepo,
   repoMomentum,
   weeklySeriesByRepo,
@@ -97,9 +96,9 @@ describe("currentChart", () => {
   });
 });
 
-describe("latestLootPerRepo", () => {
+describe("latestPerRepo (loot rows — generic over the row shape)", () => {
   it("keeps the most recent week per repo", () => {
-    const out = latestLootPerRepo([
+    const out = latestPerRepo([
       loot("a/x", "2026-06-01"),
       loot("a/x", "2026-06-20"),
       loot("b/y", "2026-06-10"),
