@@ -2,11 +2,7 @@
 
 import { cookies, headers } from "next/headers";
 import { redirect } from "next/navigation";
-import { safeEqual } from "@/lib/auth";
-
-function safeRedirect(from: string): string {
-  return from.startsWith("/") && !from.startsWith("//") ? from : "/";
-}
+import { safeEqual, safeRedirect } from "@/lib/auth";
 
 // Best-effort brute-force throttle. The per-IP counter is module state, so on
 // serverless it's per-instance and leaky — a speed bump, not a guarantee; the

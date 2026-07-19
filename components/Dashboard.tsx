@@ -79,7 +79,7 @@ function LootSummaryCard({
 }
 
 export default function Dashboard({
-  trending,
+  onChart,
   loot,
   blog,
   series,
@@ -87,7 +87,10 @@ export default function Dashboard({
   categoryMix,
   authed,
 }: {
-  trending: TrendingRow[];
+  // THIS WEEK's live chart only (see currentChart in lib/data.ts), NOT every
+  // repo ever archived. 熱門/竄升 rank within this set, so their "本週" labels
+  // stay honest — a repo that fell off the chart can't headline from the grave.
+  onChart: TrendingRow[];
   loot: Record<LootTarget, LootRow[] | null>;
   blog: BlogRow[] | null;
   series: Record<string, WeekPoint[]>;
@@ -95,7 +98,7 @@ export default function Dashboard({
   categoryMix: { category: string; count: number }[];
   authed: boolean;
 }) {
-  const topTrending = [...trending]
+  const topTrending = [...onChart]
     .sort((a, b) => (b.starsPerWeek ?? 0) - (a.starsPerWeek ?? 0))
     .slice(0, 5);
   // The hottest repo is the front-page LEAD; the rest run as numbered briefs.
@@ -109,7 +112,7 @@ export default function Dashboard({
   // the 🚀 badge, so "shown here" and "hot enough to flag" are one definition. Ranked
   // by that relative spike, NOT by absolute stars/wk like the 熱門 list, so the front
   // page shows both lenses: big-and-steady vs small-and-surging. Top five.
-  const surging = [...trending]
+  const surging = [...onChart]
     .filter((r) => (momentum[r.repo] ?? 0) >= MOMENTUM_HOT)
     .sort((a, b) => (momentum[b.repo] ?? 0) - (momentum[a.repo] ?? 0))
     .slice(0, 5);

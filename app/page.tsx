@@ -4,6 +4,7 @@ import {
   fetchBlog,
   latestPerRepo,
   latestLootPerRepo,
+  currentChart,
   weeklySeriesByRepo,
   momentumByRepo,
   type LootRow,
@@ -59,18 +60,12 @@ export default async function Page() {
   const lootPendingTotal =
     lootPending.length > 0 ? lootPending.reduce((a, b) => a + b, 0) : null;
 
+  // repos = every repo ever archived (the dedup only grows); onChart = this
+  // week's live chart. Every "本週" surface below MUST rank within onChart —
+  // feeding it `repos` lets a repo that fell off weeks ago keep the headline.
   const repos = latestPerRepo(trending.rows);
-  const latestWeek = repos.reduce(
-    (max, r) => (r.week && r.week > max ? r.week : max),
-    "",
-  );
-  const newThisWeek = repos.filter(
-    (r) => r.week === latestWeek && (r.weeksOnChart ?? 1) <= 1,
-  ).length;
-  // repos whose most recent week IS the latest week = this week's live chart.
-  // Distinct from repos.length, which counts every repo ever archived (it only
-  // ever grows — a repo that fell off weeks ago still has a row in the dedup).
-  const onChart = repos.filter((r) => r.week === latestWeek);
+  const { onChart } = currentChart(repos);
+  const newThisWeek = onChart.filter((r) => (r.weeksOnChart ?? 1) <= 1).length;
   const onChartThisWeek = onChart.length;
 
   // This week's category mix, sorted heaviest-first — feeds the dashboard's
@@ -121,7 +116,7 @@ export default async function Page() {
       />
       <Dashboard
         authed={authed}
-        trending={repos}
+        onChart={onChart}
         series={series}
         momentum={momentumByRepo(series)}
         categoryMix={categoryMix}

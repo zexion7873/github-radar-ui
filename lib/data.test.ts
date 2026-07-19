@@ -1,5 +1,6 @@
 import { describe, expect, it } from "vitest";
 import {
+  currentChart,
   latestLootPerRepo,
   latestPerRepo,
   repoMomentum,
@@ -63,6 +64,36 @@ describe("latestPerRepo", () => {
     ]);
     expect(out).toHaveLength(1);
     expect(out[0].week).toBe("2026-06-01");
+  });
+});
+
+describe("currentChart", () => {
+  it("keeps only repos whose latest week is the newest week in the data", () => {
+    const rows = [
+      trending("live/a", "2026-06-15"),
+      trending("live/b", "2026-06-15"),
+      trending("stale/x", "2026-05-01"), // fell off the chart weeks ago
+    ];
+    const { latestWeek, onChart } = currentChart(rows);
+    expect(latestWeek).toBe("2026-06-15");
+    expect(onChart.map((r) => r.repo).sort()).toEqual(["live/a", "live/b"]);
+  });
+
+  it("excludes null-week rows from the chart", () => {
+    const { onChart } = currentChart([
+      trending("a/x", "2026-06-15"),
+      trending("b/y", null),
+    ]);
+    expect(onChart.map((r) => r.repo)).toEqual(["a/x"]);
+  });
+
+  it("returns an empty chart when no row has a week", () => {
+    const { latestWeek, onChart } = currentChart([
+      trending("a/x", null),
+      trending("b/y", null),
+    ]);
+    expect(latestWeek).toBe("");
+    expect(onChart).toEqual([]);
   });
 });
 
