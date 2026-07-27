@@ -60,4 +60,15 @@ describe("safeRedirect", () => {
     expect(safeRedirect("/\\evil.com")).toBe("/");
     expect(safeRedirect("/\\/evil.com")).toBe("/");
   });
+
+  // The URL parser removes tab/CR/LF before parsing, so each of these collapses
+  // to a protocol-relative "//evil.com" in the browser even though the raw
+  // string looks like a path. Verified: new URL("/\t/evil.com", origin).href is
+  // "https://evil.com/".
+  it("rejects the tab/newline bypass — the parser strips them, then sees //host", () => {
+    expect(safeRedirect("/\t/evil.com")).toBe("/");
+    expect(safeRedirect("/\r/evil.com")).toBe("/");
+    expect(safeRedirect("/\n/evil.com")).toBe("/");
+    expect(safeRedirect("/\t\\evil.com")).toBe("/");
+  });
 });
