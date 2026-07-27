@@ -43,7 +43,7 @@ never reaches the browser.
    ```
    NOTION_TOKEN=ntn_xxx   # the integration secret from step 1
    APP_PASSWORD=...        # the password you type to log in
-   AUTH_SECRET=...         # high-entropy random cookie secret
+   AUTH_SECRET=...         # high-entropy key that signs the session cookie
    ```
    Generate `AUTH_SECRET` with:
    ```bash
