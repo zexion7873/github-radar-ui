@@ -206,6 +206,23 @@ export function latestPerRepo(rows: TrendingRow[]): TrendingRow[] {
   return [...byRepo.values()];
 }
 
+// This week's live chart: the (already deduped) repos whose latest week IS the
+// newest week anywhere in the data. Distinct from the full dedup result, which
+// keeps every repo ever archived — a repo that fell off the chart weeks ago
+// still has a row there, and ranking THAT set by stars/wk lets a stale one-week
+// wonder headline a "本週" section forever. If every week is null, latestWeek is
+// "" and the chart is empty (nothing can honestly be called "this week").
+export function currentChart(repos: TrendingRow[]): {
+  latestWeek: string;
+  onChart: TrendingRow[];
+} {
+  const latestWeek = repos.reduce(
+    (max, r) => (r.week && r.week > max ? r.week : max),
+    "",
+  );
+  return { latestWeek, onChart: repos.filter((r) => r.week === latestWeek) };
+}
+
 export type WeekPoint = { week: string | null; stars: number | null };
 
 // Each repo's full weekly stars/wk history, ascending by week — the series behind
