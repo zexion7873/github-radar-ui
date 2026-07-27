@@ -50,9 +50,16 @@ export default async function RootLayout({
   // public visitors need it to navigate. `authed` only toggles the top-right
   // control: 登出 for a live session, 登入 link otherwise.
   const authed = isAuthed(cookieStore.get("gh_radar")?.value);
-  // Masthead dateline — today's edition date. Distinct from LastSynced's "資料最新
-  // 到" (the data-freshness date); a broadsheet's masthead carries the print date.
-  const today = formatWeek(new Date().toISOString());
+  // Masthead dateline — today's edition date, in the radar's home timezone.
+  // Distinct from LastSynced's "資料最新到" (the data-freshness date); a
+  // broadsheet's masthead carries the print date. NOT toISOString(): that's UTC,
+  // which prints yesterday's date on the masthead until 08:00 in Taipei. en-CA
+  // formats as YYYY-MM-DD, the shape formatWeek expects.
+  const today = formatWeek(
+    new Intl.DateTimeFormat("en-CA", { timeZone: "Asia/Taipei" }).format(
+      new Date(),
+    ),
+  );
   return (
     <html
       lang="en"

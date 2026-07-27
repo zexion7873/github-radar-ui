@@ -195,10 +195,15 @@ export function fetchTrending(uuid: string): Promise<Result<TrendingRow>> {
   );
 }
 
-// Trending Archive is one row per repo per week. Collapse to each repo's most
-// recent week so callers see distinct repos, not weekly snapshots.
-export function latestPerRepo(rows: TrendingRow[]): TrendingRow[] {
-  const byRepo = new Map<string, TrendingRow>();
+// Weekly archives (trending AND loot) are one row per repo per week. Collapse
+// to each repo's most recent week so callers see distinct repos, not weekly
+// snapshots. Generic over the row shape — the trending list/dashboard and the
+// loot board share the identical keep-latest-week rule; the detail pages
+// re-read the full archive for their history sections (每週趨勢 / 歷次點評).
+export function latestPerRepo<T extends { repo: string; week: string | null }>(
+  rows: T[],
+): T[] {
+  const byRepo = new Map<string, T>();
   for (const r of rows) {
     const prev = byRepo.get(r.repo);
     if (!prev || (r.week ?? "") > (prev.week ?? "")) byRepo.set(r.repo, r);
@@ -267,19 +272,6 @@ export function momentumByRepo(
   const m: Record<string, number | null> = {};
   for (const repo in series) m[repo] = repoMomentum(series[repo]);
   return m;
-}
-
-// Loot is one row per candidate per week (config.ts). Collapse to each repo's
-// most recent week so the board shows distinct assets, not the same repo repeated
-// across weeks — mirrors latestPerRepo for trending. The detail page re-reads the
-// full archive and regathers a repo's earlier weeks for its 歷次點評 section.
-export function latestLootPerRepo(rows: LootRow[]): LootRow[] {
-  const byRepo = new Map<string, LootRow>();
-  for (const r of rows) {
-    const prev = byRepo.get(r.repo);
-    if (!prev || (r.week ?? "") > (prev.week ?? "")) byRepo.set(r.repo, r);
-  }
-  return [...byRepo.values()];
 }
 
 export function fetchLoot(uuid: string): Promise<Result<LootRow>> {

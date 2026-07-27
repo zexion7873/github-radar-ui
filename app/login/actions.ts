@@ -21,8 +21,12 @@ const attempts = new Map<string, { count: number; resetAt: number }>();
 
 function tooMany(ip: string): boolean {
   const now = Date.now();
+  // Sweep expired windows first: serverless instances die young, but a
+  // long-lived `next start` would otherwise grow the map by one record per IP
+  // ever seen. Doubles as the old per-IP expiry reset.
+  for (const [k, rec] of attempts) if (now > rec.resetAt) attempts.delete(k);
   const rec = attempts.get(ip);
-  if (!rec || now > rec.resetAt) {
+  if (!rec) {
     attempts.set(ip, { count: 0, resetAt: now + WINDOW_MS });
     return false;
   }
@@ -53,6 +57,9 @@ export async function login(formData: FormData) {
     await sleep(FAIL_DELAY_MS);
     redirect(`/login?error=1&from=${encodeURIComponent(from)}`);
   }
+
+  // A successful login ends the failure window — the counter's job is done.
+  attempts.delete(ip);
 
   (await cookies()).set("gh_radar", createSessionToken(), {
     httpOnly: true,
