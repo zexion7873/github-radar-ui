@@ -1,3 +1,9 @@
+> **歸檔快照** — 2026-07-19 移入 `docs/archive/`,停止維護,並在此結案:
+> Tier 1 全數完成(見 2026-07-01 進度節);Tier 2 的 item 5/7 已落地,item 6
+> 僅 `latestPerRepo` 泛型合併後續補上(sharpen 系列 PR),`weekDelta` /
+> `CategoryBadge` helper 與 item 8(Dashboard 拆分)**正式棄單**——收益不抵
+> 攪動成本。現況以 README / AGENTS.md / 程式碼為準。
+
 # HANDOFF — roast-review fixes
 
 Self-contained work plan for whoever picks this up. You do **not** need the chat

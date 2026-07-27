@@ -1,3 +1,7 @@
+> **歸檔快照** — 2026-07-19 移入 `docs/archive/`,停止維護。內容反映 Phase 1/2
+> 交付當時的狀態,其後的變更(新的 loot target、測試、CI、auth 演進…)不再回寫
+> 本文件。現況一律以 README / AGENTS.md / 程式碼為準。
+
 # HANDOFF — github-radar-ui
 
 A single-user, mobile-friendly dashboard over the three GitHub-focused Claude Code

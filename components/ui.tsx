@@ -246,8 +246,10 @@ export function DataError({ error }: { error: string }) {
           NOTION_TOKEN=ntn_xxx
         </pre>
         <p className="mt-2">
-          Then share the three archive databases into the integration (Notion →
-          ••• → Connections) and reload.
+          Then share every archive database in{" "}
+          <code className="font-mono">lib/config.ts</code>&apos;s{" "}
+          <code className="font-mono">TABLES</code> into the integration (Notion
+          → ••• → Connections) and reload.
         </p>
       </Notice>
     );
