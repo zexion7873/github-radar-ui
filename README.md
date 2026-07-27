@@ -50,8 +50,10 @@ never reaches the browser.
    node -e "console.log(require('crypto').randomBytes(32).toString('hex'))"
    ```
    > **All three are required.** If `AUTH_SECRET` is unset the gate fails *safe*:
-   > every route redirects to `/login` and login can never succeed, so the app is
-   > unreachable. That is deliberate — an unset secret must not mean "open".
+   > every `/loot/*` route redirects to `/login` and login can never succeed, so
+   > the loot board is unreachable. That is deliberate — an unset secret must not
+   > mean "open". The public pages keep working; the gate only ever covered
+   > `/loot/*` (see the matcher in [`proxy.ts`](proxy.ts)).
 4. **Run it.**
    ```bash
    npm run dev
