@@ -2,7 +2,12 @@
 
 import { cookies, headers } from "next/headers";
 import { redirect } from "next/navigation";
-import { safeEqual, safeRedirect } from "@/lib/auth";
+import {
+  createSessionToken,
+  safeEqual,
+  safeRedirect,
+  SESSION_TTL_S,
+} from "@/lib/auth";
 
 // Best-effort brute-force throttle. The per-IP counter is module state, so on
 // serverless it's per-instance and leaky — a speed bump, not a guarantee; the
@@ -49,12 +54,12 @@ export async function login(formData: FormData) {
     redirect(`/login?error=1&from=${encodeURIComponent(from)}`);
   }
 
-  (await cookies()).set("gh_radar", secret, {
+  (await cookies()).set("gh_radar", createSessionToken(), {
     httpOnly: true,
     secure: process.env.NODE_ENV === "production",
     sameSite: "lax",
     path: "/",
-    maxAge: 60 * 60 * 24 * 30, // 30 days
+    maxAge: SESSION_TTL_S,
   });
   redirect(from);
 }

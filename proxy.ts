@@ -2,8 +2,9 @@ import { NextResponse } from "next/server";
 import type { NextRequest } from "next/server";
 import { isAuthed } from "@/lib/auth";
 
-// Single-password gate: a valid session cookie holds AUTH_SECRET verbatim, checked
-// constant-time in isAuthed (which also fails SAFE when AUTH_SECRET is unset).
+// Single-password gate: the session cookie holds an expiring HMAC token minted
+// at login (see lib/auth.ts), verified constant-time in isAuthed (which also
+// fails SAFE when AUTH_SECRET is unset).
 export function proxy(request: NextRequest) {
   if (isAuthed(request.cookies.get("gh_radar")?.value)) return NextResponse.next();
 
