@@ -106,7 +106,7 @@ export default function Dashboard({
   const rest = topTrending.slice(1);
   const leadPts = lead ? series[lead.repo] ?? [] : [];
   // Already Published-desc from fetchBlog; just take the freshest few.
-  const topBlog = (blog ?? []).slice(0, 3);
+  const topBlog = (blog ?? []).slice(0, 5);
 
   // 本週竄升 — repos genuinely heating up: momentum >= MOMENTUM_HOT, the SAME bar as
   // the 🚀 badge, so "shown here" and "hot enough to flag" are one definition. Ranked
