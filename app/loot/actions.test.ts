@@ -80,6 +80,11 @@ describe("setLootStatus", () => {
     expect(updateSelect).not.toHaveBeenCalled();
   });
 
+  it("accepts deferred (the watchlist state is part of the whitelist)", async () => {
+    await setLootStatus("page-1", "deferred");
+    expect(updateSelect).toHaveBeenCalledWith("page-1", "Status", "deferred");
+  });
+
   it("rejects a pageId that is not a loot row (arbitrary-page PATCH guard)", async () => {
     await expect(setLootStatus("not-a-loot-page", "adopted")).rejects.toThrow(
       "unknown loot page",

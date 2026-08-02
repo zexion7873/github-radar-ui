@@ -36,5 +36,8 @@ export const DEFAULT_LOOT_TARGET: LootTarget = (
 
 // Loot Status select options, single source of truth for the read default, the
 // write-back whitelist, and the filter/toggle UI (imported by lib + components).
-export const LOOT_STATUSES = ["new", "adopted", "skipped"] as const;
+// `deferred` is the verified-but-parked watchlist (triage verdict "trial"):
+// vetted good, no current need — kept out of the pending queue so 待處理 keeps
+// meaning "not yet triaged". Array order IS lane/button order on the board.
+export const LOOT_STATUSES = ["new", "deferred", "adopted", "skipped"] as const;
 export type LootStatus = (typeof LOOT_STATUSES)[number];

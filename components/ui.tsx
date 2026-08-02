@@ -126,11 +126,12 @@ export function ChipScroller({
   );
 }
 
-// Loot status enum → display label. The raw enum (new/adopted/skipped) stays the
-// stored/state value; translate only at render so the Chinese UI never shows the
-// schema. Shared by LootBoard (chips + group header) and LootStatusControl.
+// Loot status enum → display label. The raw enum (new/deferred/adopted/skipped)
+// stays the stored/state value; translate only at render so the Chinese UI never
+// shows the schema. Shared by LootBoard (chips + group header) and LootStatusControl.
 export const STATUS_LABEL: Record<string, string> = {
   new: "待處理",
+  deferred: "觀望",
   adopted: "已採用",
   skipped: "已略過",
 };
@@ -168,9 +169,11 @@ export const CATEGORY_HUE: Record<string, string> = {
 export const MOMENTUM_HOT = 1.5;
 
 // Loot status → outline tone. Pending wears the accent (it's the call to
-// action), adopted the positive green, skipped stays neutral.
+// action), adopted the positive green, deferred and skipped stay neutral —
+// a parked watchlist item is no more a call to action than an archived one.
 export const STATUS_TONE: Record<string, Tone> = {
   new: "accent",
+  deferred: "muted",
   adopted: "pos",
   skipped: "muted",
 };
@@ -181,6 +184,7 @@ export const STATUS_TONE: Record<string, Tone> = {
 // so a drained queue reads as all-neutral ink.
 export const STATUS_SPINE: Record<string, string> = {
   new: "border-l-accent",
+  deferred: "border-l-border",
   adopted: "border-l-pos",
   skipped: "border-l-border",
 };

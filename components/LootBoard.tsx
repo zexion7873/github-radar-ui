@@ -166,8 +166,8 @@ export default function LootBoard({
               (a, b) =>
                 (order.get(a.id) ?? Infinity) - (order.get(b.id) ?? Infinity),
             );
-          // 待處理 lane opens by default — it's the work; adopted/skipped collapse
-          // to keep the queue, not the archive, in front of you.
+          // 待處理 lane opens by default — it's the work; deferred/adopted/skipped
+          // collapse to keep the queue, not the archive/watchlist, in front of you.
           return (
             <details key={key} open={key === "new"} className="group/lane">
               <summary className="flex cursor-pointer list-none items-center gap-2 border-b-2 border-foreground pb-1.5 [&::-webkit-details-marker]:hidden">
