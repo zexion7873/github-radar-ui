@@ -8,7 +8,12 @@ import {
   momentumByRepo,
   type LootRow,
 } from "@/lib/data";
-import { TABLES, DEFAULT_LOOT_TARGET } from "@/lib/config";
+import {
+  TABLES,
+  LOOT_TARGETS,
+  DEFAULT_LOOT_TARGET,
+  type LootTarget,
+} from "@/lib/config";
 import StatsBar from "@/components/StatsBar";
 import Dashboard from "@/components/Dashboard";
 import LastSynced from "@/components/LastSynced";
@@ -25,35 +30,36 @@ const pendingCount = (rows: LootRow[] | null): number | null =>
 
 export default async function Page() {
   const authed = isAuthed((await cookies()).get("gh_radar")?.value);
-  // All five tables in parallel; loot and blog failures degrade to "—" / null
-  // in their cards rather than failing the page. Only a trending failure (the
-  // page's backbone — stat counts and the hot list) shows the error notice.
-  const [trending, lootClaude, lootCopilot, lootOpencode, blog] = await Promise.all([
+  // Trending, blog, and every LOOT_TARGETS table in parallel; loot and blog
+  // failures degrade to "—" / null in their cards rather than failing the page.
+  // Only a trending failure (the page's backbone — stat counts and the hot
+  // list) shows the error notice. The inner Promise.all still starts every loot
+  // fetch immediately, so nesting costs no round-trip.
+  const targets = Object.keys(LOOT_TARGETS) as LootTarget[];
+  const [trending, blog, lootResults] = await Promise.all([
     fetchTrending(TABLES.trending),
-    fetchLoot(TABLES.lootClaude),
-    fetchLoot(TABLES.lootCopilot),
-    fetchLoot(TABLES.lootOpencode),
     fetchBlog(TABLES.blog),
+    Promise.all(targets.map((t) => fetchLoot(LOOT_TARGETS[t].uuid))),
   ]);
   if (!trending.ok) return <DataError error={trending.error} />;
 
   // Dedup loot per repo (latest week) BEFORE any count/summary — a repo
   // shortlisted across multiple weeks must count once, matching the loot board.
   // Without this Copilot (the table with cross-week repeats) over-counts pending.
-  const lootClaudeRows = lootClaude.ok ? latestPerRepo(lootClaude.rows) : null;
-  const lootCopilotRows = lootCopilot.ok
-    ? latestPerRepo(lootCopilot.rows)
-    : null;
-  const lootOpencodeRows = lootOpencode.ok
-    ? latestPerRepo(lootOpencode.rows)
-    : null;
+  // Keyed off LOOT_TARGETS so adding a target needs no edit on this page.
+  const loot = Object.fromEntries(
+    targets.map((t, i) => {
+      const r = lootResults[i];
+      return [t, r.ok ? latestPerRepo(r.rows) : null];
+    }),
+  ) as Record<LootTarget, LootRow[] | null>;
 
   // One combined pending count for the stat bar — StatsBar shows totals, not
   // per-target detail (the dashboard's 📦 待處理 Loot footer already covers
   // that), so this tile's count doesn't grow a new column every time a target
   // is added. A target whose fetch failed contributes nothing rather than
   // sinking the whole tile to "—".
-  const lootPending = [lootClaudeRows, lootCopilotRows, lootOpencodeRows]
+  const lootPending = Object.values(loot)
     .map(pendingCount)
     .filter((n): n is number => n !== null);
   const lootPendingTotal =
@@ -86,11 +92,7 @@ export default async function Page() {
 
   // Freshest source date across every table — the dashboard's "is the pipeline
   // still alive" signal. Loot/blog failures just contribute nothing here.
-  const lootRows = [
-    ...(lootClaudeRows ?? []),
-    ...(lootCopilotRows ?? []),
-    ...(lootOpencodeRows ?? []),
-  ];
+  const lootRows = Object.values(loot).flatMap((rows) => rows ?? []);
   const latestSync = [
     ...repos.map((r) => r.week),
     ...lootRows.map((r) => r.week),
@@ -119,11 +121,7 @@ export default async function Page() {
         series={series}
         momentum={momentumByRepo(series)}
         categoryMix={categoryMix}
-        loot={{
-          claude: lootClaudeRows,
-          copilot: lootCopilotRows,
-          opencode: lootOpencodeRows,
-        }}
+        loot={loot}
         blog={blog.ok ? blog.rows : null}
       />
     </div>

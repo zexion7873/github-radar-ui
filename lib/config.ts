@@ -11,6 +11,7 @@ export const TABLES = {
   lootClaude: "8223d65e-4ed6-4a6e-b8ad-fb0c98c9a4ed",
   lootCopilot: "bafde792-70ff-4e07-9ffd-00ecf77f51be",
   lootOpencode: "12e402c0-8377-4449-b5fb-5b9798388dc3",
+  lootCodex: "5d19677c-6f3f-4ec8-a5c3-f7a85e3082e5",
   blog: "d8e442b5-17c1-4e6f-a665-feb49d6e3099",
 } as const;
 
@@ -22,6 +23,7 @@ export const LOOT_TARGETS = {
   claude: { uuid: TABLES.lootClaude, label: "Claude Code" },
   copilot: { uuid: TABLES.lootCopilot, label: "Copilot" },
   opencode: { uuid: TABLES.lootOpencode, label: "opencode" },
+  codex: { uuid: TABLES.lootCodex, label: "Codex" },
 } as const;
 
 export type LootTarget = keyof typeof LOOT_TARGETS;

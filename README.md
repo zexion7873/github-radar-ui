@@ -13,6 +13,7 @@ triage state back to Notion in place:
 | `/loot/claude` | Loot Ledger (Claude Code) | Loot grouped by status (new / adopted / skipped), with editable status and a read-only rating |
 | `/loot/copilot` | Loot Ledger (Copilot) | Same, for the Copilot target |
 | `/loot/opencode` | Loot Ledger (opencode) | Same, for the opencode target |
+| `/loot/codex` | Loot Ledger (Codex) | Same, for the Codex target |
 
 Loot **status is editable from the UI** and persists straight back to Notion
 (`PATCH /v1/pages/{id}`); the rating is read-only display. Reads use
@@ -37,7 +38,8 @@ never reaches the browser.
 2. **Share the archive databases into it** (every entry in `lib/config.ts`'s
    `TABLES` — the authoritative list). Open each in Notion → `•••` →
    Connections → add the integration: Trending Archive, Blog Archive, Loot Ledger
-   (Claude Code), Loot Ledger (Copilot), Loot Ledger (opencode). Unshared tables return 404.
+   (Claude Code), Loot Ledger (Copilot), Loot Ledger (opencode), Loot Ledger
+   (Codex). Unshared tables return 404.
 3. **Set the three env vars.** Copy `.env.example` to `.env.local` and fill in all
    three:
    ```
