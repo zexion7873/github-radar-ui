@@ -106,7 +106,11 @@ export default async function Page({
           我的評估
         </h2>
         <LootRating value={current.recommendation} />
-        <LootStatusControl pageId={current.id} status={status} />
+        <LootStatusControl
+          pageId={current.id}
+          status={status}
+          target={target as LootTarget}
+        />
       </section>
 
       {past.length > 0 && (

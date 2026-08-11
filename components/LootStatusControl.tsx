@@ -2,7 +2,7 @@
 
 import { useOptimistic, useState, useTransition } from "react";
 import { setLootStatus } from "@/app/loot/actions";
-import { LOOT_STATUSES } from "@/lib/config";
+import { LOOT_STATUSES, type LootTarget } from "@/lib/config";
 import { STATUS_LABEL } from "./ui";
 
 const STATUSES = LOOT_STATUSES;
@@ -15,9 +15,11 @@ const ACTIVE_CLASS = "bg-foreground/10 text-foreground";
 export default function LootStatusControl({
   pageId,
   status,
+  target,
 }: {
   pageId: string;
   status: string;
+  target: LootTarget;
 }) {
   // Optimistic flips the highlight instantly; once the action + updateTag resolve,
   // the server re-renders and the card moves to its new Status group with the real value.
@@ -35,7 +37,7 @@ export default function LootStatusControl({
       setOptimistic(s);
       setFailed(null);
       try {
-        await setLootStatus(pageId, s);
+        await setLootStatus(target, pageId, s);
       } catch {
         setFailed(s);
       }

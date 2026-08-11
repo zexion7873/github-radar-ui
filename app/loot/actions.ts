@@ -3,7 +3,7 @@
 import { cookies } from "next/headers";
 import { updateTag } from "next/cache";
 import { updateSelect } from "@/lib/notion";
-import { fetchLoot, LOOT_PROPS } from "@/lib/data";
+import { fetchLoot, lootCacheTag, LOOT_PROPS } from "@/lib/data";
 import { LOOT_TARGETS, LOOT_STATUSES } from "@/lib/config";
 import { isAuthed } from "@/lib/auth";
 
@@ -19,28 +19,35 @@ async function assertAuthed() {
   }
 }
 
-// Constrain writes to actual loot rows. pageId arrives from the client, so without
-// this an authed user could PATCH any Notion page the integration token can reach.
-// Iterates every LOOT_TARGETS table (not a hardcoded subset) so a newly added target
-// is covered automatically. Reuses the cached loot reads (same `notion:loot` tag), so
-// it's a cache hit in the common case rather than an extra Notion round-trip.
-async function assertLootPage(pageId: string) {
-  const results = await Promise.all(
-    Object.values(LOOT_TARGETS).map((t) => fetchLoot(t.uuid)),
-  );
-  const ids = new Set(
-    results.flatMap((r) => (r.ok ? r.rows.map((row) => row.id) : [])),
-  );
-  if (!ids.has(pageId)) throw new Error("unknown loot page");
+// Constrain writes to a row of the target the caller named. Both arguments arrive
+// from the client, so without this an authed user could PATCH any Notion page the
+// integration token can reach. Reading only the named ledger (rather than scanning
+// them all for one id) keeps the check at one cached read no matter how many
+// targets LOOT_TARGETS grows to. hasOwn, not `in`: `in` would accept "constructor".
+// Returns the resolved uuid so the caller busts exactly the tag it just dirtied.
+async function assertLootPage(target: string, pageId: string): Promise<string> {
+  if (!Object.hasOwn(LOOT_TARGETS, target)) {
+    throw new Error("unknown loot target");
+  }
+  const { uuid } = LOOT_TARGETS[target as keyof typeof LOOT_TARGETS];
+  const result = await fetchLoot(uuid);
+  if (!result.ok || !result.rows.some((row) => row.id === pageId)) {
+    throw new Error("unknown loot page");
+  }
+  return uuid;
 }
 
-export async function setLootStatus(pageId: string, status: string) {
+export async function setLootStatus(
+  target: string,
+  pageId: string,
+  status: string,
+) {
   await assertAuthed();
   if (!STATUSES.has(status)) throw new Error(`invalid status: ${status}`);
-  await assertLootPage(pageId);
+  const uuid = await assertLootPage(target, pageId);
 
   await updateSelect(pageId, LOOT_PROPS.status, status);
   // updateTag (not revalidateTag) gives read-your-writes: the next read waits for
   // fresh data instead of serving the stale cache, so a reload shows the new Status.
-  updateTag("notion:loot");
+  updateTag(lootCacheTag(uuid));
 }

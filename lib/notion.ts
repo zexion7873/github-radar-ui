@@ -3,7 +3,17 @@ import { NOTION_VERSION } from "./config";
 
 const BASE = "https://api.notion.com/v1";
 
-export class NotionError extends Error {}
+// `status` carries the HTTP code so a caller can tell "this id isn't a data
+// source" (404) apart from "the token is dead" (401) — see resolveDataSourceId.
+// Absent on errors we raise ourselves rather than receive from Notion.
+export class NotionError extends Error {
+  constructor(
+    message: string,
+    readonly status?: number,
+  ) {
+    super(message);
+  }
+}
 
 type RichText = { plain_text: string };
 export type NProp = {
@@ -48,13 +58,19 @@ async function notionFetch<T>(
   const json: unknown = await res.json();
   if (!res.ok) {
     const message = (json as { message?: string }).message;
-    throw new NotionError(message ?? `Notion API error ${res.status}`);
+    throw new NotionError(
+      message ?? `Notion API error ${res.status}`,
+      res.status,
+    );
   }
   return json as T;
 }
 
 // A `collection://<uuid>` handle may already be a data_source_id, or a database id
-// that holds one. Try it as a data source; on failure resolve via the database.
+// that holds one. Try it as a data source; only a definite 404 means "wrong kind of
+// id" and earns the fallback. A bare catch here made an expired token or a rate
+// limit surface as whatever the SECOND call returned, so the error named the
+// database endpoint while the real cause was the credentials.
 // Not memoised: the caller (lib/data.ts) already wraps the whole read in a 600s
 // unstable_cache, so the extra GET only runs on a cache miss — a module-level map
 // here would just add a never-invalidating staleness layer underneath it.
@@ -62,7 +78,8 @@ export async function resolveDataSourceId(uuid: string): Promise<string> {
   try {
     await notionFetch<unknown>(`/data_sources/${uuid}`, { method: "GET" });
     return uuid;
-  } catch {
+  } catch (error) {
+    if (!(error instanceof NotionError) || error.status !== 404) throw error;
     const db = await notionFetch<{ data_sources?: { id: string }[] }>(
       `/databases/${uuid}`,
       { method: "GET" },
