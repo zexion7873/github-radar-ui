@@ -274,6 +274,14 @@ export function momentumByRepo(
   return m;
 }
 
+// One cache tag per ledger, not one for all of them. A status write busts the tag
+// of the table it wrote to; a shared tag made every flip expire every target's
+// read, so the next write's allow-list check re-fetched all of them from Notion —
+// a cost that grew with each target added.
+export function lootCacheTag(uuid: string): string {
+  return `notion:loot:${uuid}`;
+}
+
 export function fetchLoot(uuid: string): Promise<Result<LootRow>> {
   const P = LOOT_PROPS;
   return load(
@@ -298,7 +306,7 @@ export function fetchLoot(uuid: string): Promise<Result<LootRow>> {
         license: sel(p, P.license),
       };
     },
-    "notion:loot",
+    lootCacheTag(uuid),
   );
 }
 

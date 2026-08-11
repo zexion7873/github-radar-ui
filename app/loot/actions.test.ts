@@ -59,7 +59,7 @@ describe("setLootStatus", () => {
 
   it("rejects when there is no session cookie", async () => {
     cookieJar.value = undefined;
-    await expect(setLootStatus("page-1", "adopted")).rejects.toThrow(
+    await expect(setLootStatus("claude", "page-1", "adopted")).rejects.toThrow(
       "unauthorized",
     );
     expect(updateSelect).not.toHaveBeenCalled();
@@ -67,41 +67,67 @@ describe("setLootStatus", () => {
 
   it("rejects a forged session token", async () => {
     cookieJar.value = "9999999999.deadbeef";
-    await expect(setLootStatus("page-1", "adopted")).rejects.toThrow(
+    await expect(setLootStatus("claude", "page-1", "adopted")).rejects.toThrow(
       "unauthorized",
     );
     expect(updateSelect).not.toHaveBeenCalled();
   });
 
   it("rejects a status outside the whitelist (no stray Notion select option)", async () => {
-    await expect(setLootStatus("page-1", "yolo")).rejects.toThrow(
+    await expect(setLootStatus("claude", "page-1", "yolo")).rejects.toThrow(
       "invalid status",
     );
     expect(updateSelect).not.toHaveBeenCalled();
   });
 
   it("accepts deferred (the watchlist state is part of the whitelist)", async () => {
-    await setLootStatus("page-1", "deferred");
+    await setLootStatus("claude", "page-1", "deferred");
     expect(updateSelect).toHaveBeenCalledWith("page-1", "Status", "deferred");
   });
 
   it("rejects a pageId that is not a loot row (arbitrary-page PATCH guard)", async () => {
-    await expect(setLootStatus("not-a-loot-page", "adopted")).rejects.toThrow(
-      "unknown loot page",
-    );
+    await expect(
+      setLootStatus("claude", "not-a-loot-page", "adopted"),
+    ).rejects.toThrow("unknown loot page");
     expect(updateSelect).not.toHaveBeenCalled();
   });
 
-  it("checks every loot target's table and writes + busts the cache on success", async () => {
-    await setLootStatus("page-1", "adopted");
-    expect(fetchLoot).toHaveBeenCalledTimes(Object.keys(LOOT_TARGETS).length);
+  it("rejects a target outside LOOT_TARGETS (the target also arrives from the client)", async () => {
+    await expect(setLootStatus("yolo", "page-1", "adopted")).rejects.toThrow(
+      "unknown loot target",
+    );
+    expect(fetchLoot).not.toHaveBeenCalled();
+    expect(updateSelect).not.toHaveBeenCalled();
+  });
+
+  it("rejects a prototype key masquerading as a target (hasOwn, not `in`)", async () => {
+    await expect(
+      setLootStatus("constructor", "page-1", "adopted"),
+    ).rejects.toThrow("unknown loot target");
+    expect(updateSelect).not.toHaveBeenCalled();
+  });
+
+  it("reads only the requested target's table and busts only that ledger's tag", async () => {
+    await setLootStatus("claude", "page-1", "adopted");
+    expect(fetchLoot).toHaveBeenCalledTimes(1);
+    expect(fetchLoot).toHaveBeenCalledWith(LOOT_TARGETS.claude.uuid);
     expect(updateSelect).toHaveBeenCalledWith("page-1", "Status", "adopted");
-    expect(updateTag).toHaveBeenCalledWith("notion:loot");
+    expect(updateTag).toHaveBeenCalledWith(
+      `notion:loot:${LOOT_TARGETS.claude.uuid}`,
+    );
+  });
+
+  it("leaves a sibling ledger's cache alone", async () => {
+    await setLootStatus("codex", "page-1", "adopted");
+    expect(fetchLoot).toHaveBeenCalledTimes(1);
+    expect(updateTag).not.toHaveBeenCalledWith(
+      `notion:loot:${LOOT_TARGETS.claude.uuid}`,
+    );
   });
 
   it("treats a failed table read as not containing the page (fail closed)", async () => {
     fetchLoot.mockResolvedValue({ ok: false, error: "boom" });
-    await expect(setLootStatus("page-1", "adopted")).rejects.toThrow(
+    await expect(setLootStatus("claude", "page-1", "adopted")).rejects.toThrow(
       "unknown loot page",
     );
     expect(updateSelect).not.toHaveBeenCalled();

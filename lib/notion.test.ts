@@ -1,5 +1,11 @@
-import { afterEach, describe, expect, it, vi } from "vitest";
-import { NotionError, queryAll, text, type NProp } from "./notion";
+import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
+import {
+  NotionError,
+  queryAll,
+  resolveDataSourceId,
+  text,
+  type NProp,
+} from "./notion";
 
 // normalizeCJKPunct is not exported; text() is its only reachable entry point.
 // text() reads p[k].rich_text (or .title) and joins the runs, then normalizes.
@@ -118,5 +124,66 @@ describe("queryAll (notionFetch behavior)", () => {
     } finally {
       if (original !== undefined) process.env.NOTION_TOKEN = original;
     }
+  });
+});
+
+// resolveDataSourceId tries the data-source endpoint first and falls back to the
+// database endpoint. A bare `catch` made every failure look like "not a data
+// source", so an expired token surfaced as whatever the SECOND call happened to
+// return — a wrong cause pointing at the wrong endpoint.
+describe("resolveDataSourceId fallback", () => {
+  beforeEach(() => {
+    vi.stubEnv("NOTION_TOKEN", "ntn_test");
+  });
+
+  afterEach(() => {
+    vi.unstubAllGlobals();
+    vi.unstubAllEnvs();
+  });
+
+  const stub = (...responses: Response[]) => {
+    const fetchMock = vi.fn();
+    for (const r of responses) fetchMock.mockResolvedValueOnce(r);
+    vi.stubGlobal("fetch", fetchMock);
+    return fetchMock;
+  };
+
+  it("falls back to the database endpoint after a data-source 404", async () => {
+    const fetchMock = stub(
+      new Response(JSON.stringify({ message: "not found" }), { status: 404 }),
+      new Response(JSON.stringify({ data_sources: [{ id: "resolved-source" }] })),
+    );
+    await expect(resolveDataSourceId("database-id")).resolves.toBe(
+      "resolved-source",
+    );
+    expect(fetchMock).toHaveBeenCalledTimes(2);
+  });
+
+  it("returns the id unchanged when it already is a data source", async () => {
+    const fetchMock = stub(new Response(JSON.stringify({ id: "ds-1" })));
+    await expect(resolveDataSourceId("ds-1")).resolves.toBe("ds-1");
+    expect(fetchMock).toHaveBeenCalledTimes(1);
+  });
+
+  it("rethrows an auth failure instead of masking it with the fallback", async () => {
+    const fetchMock = stub(
+      new Response(JSON.stringify({ message: "API token is invalid." }), {
+        status: 401,
+      }),
+    );
+    await expect(resolveDataSourceId("ds-1")).rejects.toThrow(
+      "API token is invalid.",
+    );
+    expect(fetchMock).toHaveBeenCalledTimes(1);
+  });
+
+  it("rethrows a server error instead of masking it with the fallback", async () => {
+    const fetchMock = stub(
+      new Response(JSON.stringify({ message: "internal error" }), {
+        status: 500,
+      }),
+    );
+    await expect(resolveDataSourceId("ds-1")).rejects.toThrow("internal error");
+    expect(fetchMock).toHaveBeenCalledTimes(1);
   });
 });
