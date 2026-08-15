@@ -22,6 +22,12 @@ const KNOWN_TYPES = new Set(GROUPS.map((g) => g.type));
 
 const WEEK_MS = 7 * 24 * 60 * 60 * 1000;
 
+// The archive grows daily and every row ships to the client for search, so
+// rendering all of it put ~300 cards in the DOM to read the newest few. Reveal a
+// batch per section instead; `shown` stays the full match set, so search and the
+// counter still see every row.
+const BATCH = 25;
+
 const inputClass =
   "w-full rounded-none border border-border bg-surface px-3 py-1.5 text-sm placeholder:text-muted focus:border-accent focus:ring-2 focus:ring-accent/30 focus:outline-none sm:w-64";
 
@@ -33,6 +39,17 @@ export default function BlogList({ rows }: { rows: BlogRow[] }) {
   );
   const [query, setQuery] = useState("");
   const [source, setSource] = useState<string | null>(null);
+  // Reset the reveal on every filter change — carrying a grown limit into a new
+  // result set would dump hundreds of cards back into the DOM on a stray keystroke.
+  const [limit, setLimit] = useState(BATCH);
+  const search = (q: string) => {
+    setQuery(q);
+    setLimit(BATCH);
+  };
+  const pickSource = (s: string | null) => {
+    setSource(s);
+    setLimit(BATCH);
+  };
 
   // "New" is relative to the latest archived date in the data, not the wall
   // clock — keeps the badge derived from row data (not the current time) and
@@ -71,6 +88,10 @@ export default function BlogList({ rows }: { rows: BlogRow[] }) {
       items: shown.filter((r) => !KNOWN_TYPES.has(r.type ?? "")),
     },
   ].filter((s) => s.items.length > 0);
+  const remaining = sections.reduce(
+    (n, s) => n + Math.max(0, s.items.length - limit),
+    0,
+  );
 
   function card(r: BlogRow) {
     const isNew =
@@ -132,7 +153,7 @@ export default function BlogList({ rows }: { rows: BlogRow[] }) {
           <input
             type="search"
             value={query}
-            onChange={(e) => setQuery(e.target.value)}
+            onChange={(e) => search(e.target.value)}
             aria-label="搜尋標題或摘要"
             placeholder="搜尋標題或摘要…"
             className={inputClass}
@@ -140,11 +161,11 @@ export default function BlogList({ rows }: { rows: BlogRow[] }) {
         </div>
         {sources.length > 0 && (
           <ChipScroller label="來源篩選">
-            <Chip on={source === null} onClick={() => setSource(null)}>
+            <Chip on={source === null} onClick={() => pickSource(null)}>
               全部
             </Chip>
             {sources.map((s) => (
-              <Chip key={s} on={source === s} onClick={() => setSource(s)}>
+              <Chip key={s} on={source === s} onClick={() => pickSource(s)}>
                 {s}
               </Chip>
             ))}
@@ -160,19 +181,34 @@ export default function BlogList({ rows }: { rows: BlogRow[] }) {
           {rows.length === 0 ? "還沒有文章" : "沒有符合的文章"}
         </p>
       ) : (
-        <div className="flex flex-col gap-10">
-          {sections.map(({ label, items }) => (
-            <section key={label}>
-              <h2 className="mb-1 flex items-baseline gap-2 border-b-2 border-foreground pb-1 font-serif text-2xl tracking-tight text-foreground">
-                {label}
-                <span className="font-mono text-xs font-normal tracking-wide text-muted">
-                  {items.length}
-                </span>
-              </h2>
-              <div className="divide-y divide-border">{items.map(card)}</div>
-            </section>
-          ))}
-        </div>
+        <>
+          <div className="flex flex-col gap-10">
+            {sections.map(({ label, items }) => (
+              <section key={label}>
+                <h2 className="mb-1 flex items-baseline gap-2 border-b-2 border-foreground pb-1 font-serif text-2xl tracking-tight text-foreground">
+                  {label}
+                  <span className="font-mono text-xs font-normal tracking-wide text-muted">
+                    {items.length}
+                  </span>
+                </h2>
+                {/* Each section head keeps its FULL match count above, so a
+                    truncated section still announces how much sits behind it. */}
+                <div className="divide-y divide-border">
+                  {items.slice(0, limit).map(card)}
+                </div>
+              </section>
+            ))}
+          </div>
+          {remaining > 0 && (
+            <button
+              type="button"
+              onClick={() => setLimit((n) => n + BATCH)}
+              className="mt-10 w-full rounded-none border border-border py-3 font-mono text-[11px] tracking-[0.08em] text-muted uppercase transition-colors hover:border-foreground hover:text-foreground focus-visible:ring-2 focus-visible:ring-accent/30 focus-visible:outline-none active:scale-[0.99]"
+            >
+              顯示更多（還有 {remaining} 篇）
+            </button>
+          )}
+        </>
       )}
     </div>
   );
