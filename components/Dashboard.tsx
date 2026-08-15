@@ -50,7 +50,7 @@ function LootSummaryCard({
   return (
     <Link
       href={`/loot/${target}`}
-      className={`flex grow basis-[15rem] flex-col gap-2 p-4 ${cardInteractive}`}
+      className={`flex flex-col gap-2 p-4 ${cardInteractive}`}
     >
       <div className="flex items-center justify-between">
         <span className="font-medium">{LOOT_TARGETS[target].label}</span>
@@ -420,10 +420,13 @@ export default function Dashboard({
       {/* Stop-press footer wire: the loot queue, set off by a heavy top rule. */}
       <section className="border-t-2 border-foreground pt-6">
         <SectionHeader title="📦 待處理 Loot" />
-        {/* flex-wrap (not a fixed grid) so the card count can grow with
-            LOOT_TARGETS without ever orphaning a lone last card beside dead
-            tracks — each card grows from a 15rem basis to fill its row. */}
-        <div className="flex flex-wrap gap-3">
+        {/* Explicit column counts, not flex-wrap or auto-fit: both size columns
+            from the container, so with four targets they land on three-across
+            and strand the last card (grown to a full row under flex-wrap, alone
+            in a short one under auto-fit). 1/2/4 divides four evenly at every
+            width. Revisit the counts when LOOT_TARGETS stops being a power of
+            two. */}
+        <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-4">
           {(Object.keys(LOOT_TARGETS) as LootTarget[]).map((target) => (
             <LootSummaryCard
               key={target}
