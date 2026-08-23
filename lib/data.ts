@@ -40,6 +40,7 @@ export type LootRow = {
   how: string;
   status: string | null;
   recommendation: number | null;
+  verdict: string;
   maintained: string | null;
   license: string | null;
 };
@@ -94,6 +95,11 @@ export const LOOT_PROPS = {
   how: "How",
   status: "Status",
   recommendation: "Recommendation",
+  // The one column here the loot-radar routine does not write: the triage pass
+  // writes it alongside Status, as `<bucket> — <reason>` (adopt / trial / skip /
+  // already-have). Status collapses adopt and already-have into `adopted`, so
+  // this is the only record of which one a row actually was.
+  verdict: "Verdict",
   maintained: "Maintained",
   license: "License",
 } as const;
@@ -302,6 +308,7 @@ export function fetchLoot(uuid: string): Promise<Result<LootRow>> {
         how: text(p, P.how),
         status: sel(p, P.status),
         recommendation: num(p, P.recommendation),
+        verdict: text(p, P.verdict),
         maintained: sel(p, P.maintained),
         license: sel(p, P.license),
       };

@@ -1,7 +1,7 @@
 import { notFound } from "next/navigation";
 import Link from "next/link";
 import { fetchLoot } from "@/lib/data";
-import { LOOT_TARGETS, type LootTarget } from "@/lib/config";
+import { LOOT_TARGETS, parseVerdict, type LootTarget } from "@/lib/config";
 import {
   Badge,
   DataError,
@@ -10,6 +10,7 @@ import {
   STATUS_SPINE,
   formatWeek,
   MAINTAINED_BADGE,
+  VERDICT_BADGE,
   licenseTone,
 } from "@/components/ui";
 import LootRating from "@/components/LootRating";
@@ -56,6 +57,7 @@ export default async function Page({
     .sort((a, b) => (b.week ?? "").localeCompare(a.week ?? ""));
 
   const status = current.status ?? "new";
+  const verdict = parseVerdict(current.verdict);
 
   return (
     <div className="mx-auto flex max-w-2xl flex-col gap-8">
@@ -84,6 +86,9 @@ export default async function Page({
           <Badge tone={STATUS_TONE[status] ?? "muted"}>
             {STATUS_LABEL[status] ?? status}
           </Badge>
+          {verdict.bucket && VERDICT_BADGE[verdict.bucket] && (
+            <Badge>{VERDICT_BADGE[verdict.bucket]}</Badge>
+          )}
           {current.maintained && MAINTAINED_BADGE[current.maintained] && (
             <Badge>{MAINTAINED_BADGE[current.maintained]}</Badge>
           )}
@@ -105,6 +110,11 @@ export default async function Page({
         <h2 className="font-mono text-[11px] tracking-[0.14em] text-muted uppercase">
           我的評估
         </h2>
+        {verdict.reason && (
+          <p className="text-sm leading-relaxed whitespace-pre-line text-foreground">
+            {verdict.reason}
+          </p>
+        )}
         <LootRating value={current.recommendation} />
         <LootStatusControl
           pageId={current.id}
@@ -120,6 +130,7 @@ export default async function Page({
           </h2>
           {past.map((h) => {
             const hStatus = h.status ?? "new";
+            const hVerdict = parseVerdict(h.verdict);
             return (
               <article
                 key={h.id}
@@ -136,6 +147,12 @@ export default async function Page({
                     </span>
                   )}
                 </div>
+                {hVerdict.reason && (
+                  <p className="text-sm leading-relaxed whitespace-pre-line text-foreground">
+                    <span className="font-medium text-muted">判決 </span>
+                    {hVerdict.reason}
+                  </p>
+                )}
                 {h.why && (
                   <p className="text-sm leading-relaxed whitespace-pre-line text-foreground">
                     <span className="font-medium text-muted">為何 </span>
