@@ -43,3 +43,15 @@ export const DEFAULT_LOOT_TARGET: LootTarget = (
 // meaning "not yet triaged". Array order IS lane/button order on the board.
 export const LOOT_STATUSES = ["new", "deferred", "adopted", "skipped"] as const;
 export type LootStatus = (typeof LOOT_STATUSES)[number];
+
+// The triage pass writes Verdict as `<bucket> — <reason>`; split it so the bucket
+// can badge and the reason can read as prose. Free text a human also edits by
+// hand in Notion, so a value that doesn't match the contract renders whole as the
+// reason rather than vanishing.
+export function parseVerdict(verdict: string): {
+  bucket: string | null;
+  reason: string;
+} {
+  const m = /^(adopt|trial|skip|already-have)\s*—\s*([\s\S]*)$/.exec(verdict.trim());
+  return m ? { bucket: m[1], reason: m[2] } : { bucket: null, reason: verdict };
+}

@@ -205,6 +205,13 @@ export const RISK_BADGE: Record<string, string> = {
   high: "🛑 高風險",
 };
 
+// Verdict bucket → badge, same exception-only rule as MAINTAINED_BADGE above:
+// adopt / trial / skip each map 1:1 onto a Status the row already wears, so only
+// `already-have` earns a flag — it's the one verdict `adopted` cannot express.
+export const VERDICT_BADGE: Record<string, string> = {
+  "already-have": "🗃️ 早就有",
+};
+
 // License → badge colour, mirroring the Notion SELECT palette onto THIS app's
 // semantic tokens — so license green/red are the SAME green/red the ▲▼ delta uses,
 // keeping the app coherent instead of importing Notion's exact hues. Pattern-

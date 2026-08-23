@@ -3,7 +3,7 @@ import { useEffect, useMemo, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
 import type { LootRow } from "@/lib/data";
-import { LOOT_STATUSES, type LootTarget } from "@/lib/config";
+import { LOOT_STATUSES, parseVerdict, type LootTarget } from "@/lib/config";
 import {
   Badge,
   Chip,
@@ -13,6 +13,7 @@ import {
   STATUS_TONE,
   STATUS_SPINE,
   MAINTAINED_BADGE,
+  VERDICT_BADGE,
   licenseTone,
 } from "./ui";
 import LootStatusControl from "./LootStatusControl";
@@ -63,7 +64,8 @@ export default function LootBoard({
         (x) =>
           x.repo.toLowerCase().includes(q) ||
           x.intro.toLowerCase().includes(q) ||
-          x.asset.toLowerCase().includes(q),
+          x.asset.toLowerCase().includes(q) ||
+          x.verdict.toLowerCase().includes(q),
       );
     }
     if (type) r = r.filter((x) => x.type === type);
@@ -117,8 +119,8 @@ export default function LootBoard({
             type="search"
             value={query}
             onChange={(e) => setQuery(e.target.value)}
-            aria-label="搜尋 repo、介紹或資產"
-            placeholder="搜尋 repo / 介紹 / 資產…"
+            aria-label="搜尋 repo、介紹、資產或判決"
+            placeholder="搜尋 repo / 介紹 / 資產 / 判決…"
             className="w-full rounded-none border border-border bg-surface px-3 py-1.5 text-sm placeholder:text-muted focus:border-accent focus:ring-2 focus:ring-accent/30 focus:outline-none sm:w-64"
           />
           {types.length > 0 && (
@@ -183,77 +185,97 @@ export default function LootBoard({
                 <span className="font-mono text-xs text-muted">{items.length}</span>
               </summary>
               <ol className="mt-2 list-none divide-y divide-border border-b border-border">
-                {items.map((r) => (
-                  <li
-                    key={r.id}
-                    className={`relative border-l-[3px] ${STATUS_SPINE[key] ?? "border-l-border"}`}
-                  >
-                    <div className="flex flex-col gap-2 p-4">
-                      {/* The detail link covers the content box only; the controls
-                          below sit OUTSIDE this relative box so the absolute link
-                          can't swallow taps on the rating stars / status buttons.
-                          The repo link rides above it (z-10) so its tap still opens
-                          the repo directly — same two-anchor trick as TrendingList. */}
-                      <div className="relative flex flex-col gap-1.5">
-                        <Link
-                          href={`/loot/${target}/${r.id}`}
-                          aria-label={`${r.repo} 明細`}
-                          className="absolute inset-0"
-                        />
-                        <div className="flex items-start justify-between gap-2">
-                          <span className="flex min-w-0 items-center gap-2">
-                            {/* Square unread mark (zero-radius doctrine — an ink
-                                tick, not a round dot) on pending rows only. */}
-                            {key === "new" && (
-                              <span
-                                aria-hidden
-                                className="h-1.5 w-1.5 shrink-0 bg-accent"
-                              />
-                            )}
-                            <a
-                              href={r.link ?? "#"}
-                              target="_blank"
-                              rel="noopener noreferrer"
-                              className="relative z-10 truncate font-mono text-sm font-medium text-foreground hover:text-accent"
-                            >
-                              {r.repo}
-                            </a>
-                          </span>
-                          <span className="flex shrink-0 items-center gap-2">
-                            {r.type && <Badge>{r.type}</Badge>}
-                            {r.maintained && MAINTAINED_BADGE[r.maintained] && (
-                              <Badge>{MAINTAINED_BADGE[r.maintained]}</Badge>
-                            )}
-                            {r.license && (
-                              <Badge className={licenseTone(r.license)}>
-                                {r.license}
-                              </Badge>
-                            )}
-                            {r.week && (
-                              <span className="font-mono text-[11px] text-muted">
-                                {formatWeek(r.week)}
+                {items.map((r) => {
+                  const verdict = parseVerdict(r.verdict);
+                  return (
+                    <li
+                      key={r.id}
+                      className={`relative border-l-[3px] ${STATUS_SPINE[key] ?? "border-l-border"}`}
+                    >
+                      <div className="flex flex-col gap-2 p-4">
+                        {/* The detail link covers the content box only; the controls
+                            below sit OUTSIDE this relative box so the absolute link
+                            can't swallow taps on the rating stars / status buttons.
+                            The repo link rides above it (z-10) so its tap still opens
+                            the repo directly — same two-anchor trick as TrendingList. */}
+                        <div className="relative flex flex-col gap-1.5">
+                          <Link
+                            href={`/loot/${target}/${r.id}`}
+                            aria-label={`${r.repo} 明細`}
+                            className="absolute inset-0"
+                          />
+                          <div className="flex items-start justify-between gap-2">
+                            <span className="flex min-w-0 items-center gap-2">
+                              {/* Square unread mark (zero-radius doctrine — an ink
+                                  tick, not a round dot) on pending rows only. */}
+                              {key === "new" && (
+                                <span
+                                  aria-hidden
+                                  className="h-1.5 w-1.5 shrink-0 bg-accent"
+                                />
+                              )}
+                              <a
+                                href={r.link ?? "#"}
+                                target="_blank"
+                                rel="noopener noreferrer"
+                                className="relative z-10 truncate font-mono text-sm font-medium text-foreground hover:text-accent"
+                              >
+                                {r.repo}
+                              </a>
+                            </span>
+                            <span className="flex shrink-0 items-center gap-2">
+                              {r.type && <Badge>{r.type}</Badge>}
+                              {verdict.bucket &&
+                                VERDICT_BADGE[verdict.bucket] && (
+                                  <Badge>{VERDICT_BADGE[verdict.bucket]}</Badge>
+                                )}
+                              {r.maintained && MAINTAINED_BADGE[r.maintained] && (
+                                <Badge>{MAINTAINED_BADGE[r.maintained]}</Badge>
+                              )}
+                              {r.license && (
+                                <Badge className={licenseTone(r.license)}>
+                                  {r.license}
+                                </Badge>
+                              )}
+                              {r.week && (
+                                <span className="font-mono text-[11px] text-muted">
+                                  {formatWeek(r.week)}
+                                </span>
+                              )}
+                            </span>
+                          </div>
+                          {r.intro && (
+                            <p className="line-clamp-2 text-sm text-muted">{r.intro}</p>
+                          )}
+                          {r.why && (
+                            <p className="line-clamp-2 text-sm">{r.why}</p>
+                          )}
+                          {/* The ruling reads as an annotation ON the pitch above
+                              it, so it needs a rule to break off — in muted body
+                              type it was indistinguishable from `why`. Ink, not
+                              accent: a settled verdict is the opposite of the
+                              board's one call to action. */}
+                          {verdict.reason && (
+                            <p className="line-clamp-2 border-l-2 border-ink-2 pl-2 text-sm">
+                              <span className="mr-1.5 font-mono text-[11px] font-medium tracking-[0.08em] text-foreground uppercase">
+                                判決
                               </span>
-                            )}
-                          </span>
+                              {verdict.reason}
+                            </p>
+                          )}
                         </div>
-                        {r.intro && (
-                          <p className="line-clamp-2 text-sm text-muted">{r.intro}</p>
-                        )}
-                        {r.why && (
-                          <p className="line-clamp-2 text-sm">{r.why}</p>
-                        )}
+                        <div className="flex flex-col gap-3 border-t border-border pt-3">
+                          <LootRating value={r.recommendation} />
+                          <LootStatusControl
+                            pageId={r.id}
+                            status={r.status ?? "new"}
+                            target={target}
+                          />
+                        </div>
                       </div>
-                      <div className="flex flex-col gap-3 border-t border-border pt-3">
-                        <LootRating value={r.recommendation} />
-                        <LootStatusControl
-                          pageId={r.id}
-                          status={r.status ?? "new"}
-                          target={target}
-                        />
-                      </div>
-                    </div>
-                  </li>
-                ))}
+                    </li>
+                  );
+                })}
               </ol>
             </details>
           );

@@ -3,10 +3,11 @@
 雷達上每個 repo 顯示的訊號。這些值由 `ai-assistant` routines 在歸檔時計算、寫進
 Notion；本 app 是純讀者，只負責渲染。寫入端的規則住在 `ai-assistant` 的 skills
 （`github-trending`、`loot-radar`）；讀取與渲染端是 `lib/data.ts` + `components/ui.tsx`。
+唯一例外是 **Verdict** —— 那欄由 triage（`loot-radar-triage` skill）寫，不是 routine 寫。
 
 兩種顯示哲學：
 
-- **只標例外（flag-exceptions）**：Momentum、Maintained、Risk —— 健康／正常狀態
+- **只標例外（flag-exceptions）**：Momentum、Maintained、Risk、Verdict 徽章 —— 健康／正常狀態
   *不顯示*，只有真的有事才跳徽章，所以乾淨的 repo 維持乾淨，有徽章就代表有意義。
 - **全部顯示（always-show）**：License —— 每個 repo 都有授權、每個都不同、每個都重要，
   沒有「正常值」可藏；顏色本身就是訊號。
@@ -85,6 +86,30 @@ archived；`pushed_at` 超過 90 天 → stale；否則 active。徽章定義在
 
 ---
 
+## Verdict（Notion rich text，僅 loot）
+
+triage 過後留下的裁決，格式固定 `<bucket> — <理由>`，bucket 只有四個：
+`adopt` / `trial` / `skip` / `already-have`。`trial` 尾巴再掛 `; flip when <條件>`，
+講明什麼情況下才值得回頭裝。`parseVerdict`（`lib/config.ts`）把 bucket 跟理由拆開；
+不符格式的值（例如手打的）整串當理由渲染，不掉字。
+
+`Status` 只有四個狀態，把 `adopt` 跟 `already-have` 一起壓成 `adopted`。所以：
+
+| bucket | 對應 Status | 徽章 | 為何 |
+| --- | --- | --- | --- |
+| `adopt` | 已採用 | 不顯示 | 狀態徽章已經講完了 |
+| `trial` | 觀望 | 不顯示 | 同上；資訊在 `flip when` 那句 |
+| `skip` | 已略過 | 不顯示 | 同上 |
+| `already-have` | 已採用 | **🗃️ 早就有** | `Status` 表達不了的那個 —— 板子推的東西其實早就在用 |
+
+理由本身則是 always-show：board 卡片一行（clamp 兩行）、詳情頁擺在「我的評估」區塊
+最上面，跟評分與狀態同一段（都是使用者自己的判斷，不是 routine 生的推銷詞）。
+board 的搜尋框也吃這欄，所以 `already-have` 可以直接當關鍵字查。
+
+未 triage 的列這欄是空的，UI 就整段不渲染；`loot-radar` 不會回填它。
+
+---
+
 ## 資料從哪來
 
 | 訊號 | 寫入者（ai-assistant） | Notion 欄位 | 本 app 讀取於 |
@@ -93,8 +118,9 @@ archived；`pushed_at` 超過 90 天 → stale；否則 active。徽章定義在
 | Maintained | `github-trending` + `loot-radar` | `Maintained` | `fetchTrending` / `fetchLoot` |
 | Risk | `github-trending` | `Risk` | `fetchTrending` |
 | License | `github-trending` + `loot-radar` | `License` | `fetchTrending` / `fetchLoot` |
+| Verdict | `loot-radar-triage`（**不是 routine**） | `Verdict` | `fetchLoot` |
 
 Maintained / Risk / License 渲染於 trending 列表 + 詳情、loot board + 詳情（不含
 dashboard —— 它的 Front-Page 方言維持精簡，這三個訊號留在 Tape）。Momentum 例外：除了
 trending，也渲染於 dashboard 的 🚀 本週竄升 區。loot 的 `Maintained` / `License` 會空白，
-直到 `loot-radar` 跑一次回填。
+直到 `loot-radar` 跑一次回填。Verdict 只活在 loot（board + 詳情），dashboard 不聚合它。

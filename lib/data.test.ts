@@ -37,6 +37,7 @@ const loot = (repo: string, week: string | null): LootRow => ({
   how: "",
   status: null,
   recommendation: null,
+  verdict: "",
   maintained: null,
   license: null,
 });
