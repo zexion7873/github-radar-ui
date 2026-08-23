@@ -250,10 +250,15 @@ export default function LootBoard({
                           {r.why && (
                             <p className="line-clamp-2 text-sm">{r.why}</p>
                           )}
+                          {/* The ruling reads as an annotation ON the pitch above
+                              it, so it needs a rule to break off — in muted body
+                              type it was indistinguishable from `why`. Ink, not
+                              accent: a settled verdict is the opposite of the
+                              board's one call to action. */}
                           {verdict.reason && (
-                            <p className="line-clamp-2 text-sm">
-                              <span className="font-mono text-[11px] tracking-[0.08em] text-muted uppercase">
-                                判決{" "}
+                            <p className="line-clamp-2 border-l-2 border-ink-2 pl-2 text-sm">
+                              <span className="mr-1.5 font-mono text-[11px] font-medium tracking-[0.08em] text-foreground uppercase">
+                                判決
                               </span>
                               {verdict.reason}
                             </p>
