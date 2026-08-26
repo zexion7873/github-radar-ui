@@ -11,6 +11,7 @@ import {
   NotionError,
   type NotionPage,
 } from "./notion";
+import { canonicalBlogSource } from "./blog-source";
 
 export type TrendingRow = {
   id: string;
@@ -334,11 +335,12 @@ export function fetchBlog(uuid: string): Promise<Result<BlogRow>> {
     Object.values(P),
     (pg) => {
       const p = pg.properties;
+      const url = urlProp(p, P.url);
       return {
         id: pg.id,
         title: text(p, P.title),
-        url: urlProp(p, P.url),
-        source: text(p, P.source),
+        url,
+        source: canonicalBlogSource(url, text(p, P.source)),
         type: sel(p, P.type),
         author: text(p, P.author),
         published: dateStart(p, P.published),
