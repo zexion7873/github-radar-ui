@@ -31,14 +31,23 @@ const BATCH = 25;
 const inputClass =
   "w-full rounded-none border border-border bg-surface px-3 py-1.5 text-sm placeholder:text-muted focus:border-accent focus:ring-2 focus:ring-accent/30 focus:outline-none sm:w-64";
 
+// Chips beyond the top few hide behind a 更多 toggle — the full source list grew
+// into a four-row wall on desktop and an endless scroll strip on mobile.
+const TOP_SOURCES = 8;
+
 export default function BlogList({ rows }: { rows: BlogRow[] }) {
-  const sources = useMemo(
-    () =>
-      Array.from(new Set(rows.map((r) => r.source).filter((s): s is string => !!s))),
-    [rows],
-  );
+  // Most-published first, so the sources worth one tap are the ones shown.
+  const sources = useMemo(() => {
+    const counts = new Map<string, number>();
+    for (const r of rows)
+      if (r.source) counts.set(r.source, (counts.get(r.source) ?? 0) + 1);
+    return Array.from(counts.entries())
+      .sort((a, b) => b[1] - a[1])
+      .map(([s]) => s);
+  }, [rows]);
   const [query, setQuery] = useState("");
   const [source, setSource] = useState<string | null>(null);
+  const [allSources, setAllSources] = useState(false);
   // Reset the reveal on every filter change — carrying a grown limit into a new
   // result set would dump hundreds of cards back into the DOM on a stray keystroke.
   const [limit, setLimit] = useState(BATCH);
@@ -159,18 +168,52 @@ export default function BlogList({ rows }: { rows: BlogRow[] }) {
             className={inputClass}
           />
         </div>
-        {sources.length > 0 && (
-          <ChipScroller label="來源篩選">
-            <Chip on={source === null} onClick={() => pickSource(null)}>
-              全部
-            </Chip>
-            {sources.map((s) => (
-              <Chip key={s} on={source === s} onClick={() => pickSource(s)}>
-                {s}
-              </Chip>
-            ))}
-          </ChipScroller>
-        )}
+        {sources.length > 0 &&
+          (() => {
+            // The active source stays visible even from the hidden tail, so a
+            // picked filter can never disappear behind the toggle.
+            const top = sources.slice(0, TOP_SOURCES);
+            const visible = allSources
+              ? sources
+              : source && !top.includes(source)
+                ? [...top, source]
+                : top;
+            const chips = (
+              <>
+                <Chip on={source === null} onClick={() => pickSource(null)}>
+                  全部
+                </Chip>
+                {visible.map((s) => (
+                  <Chip key={s} on={source === s} onClick={() => pickSource(s)}>
+                    {s}
+                  </Chip>
+                ))}
+                {sources.length > TOP_SOURCES && (
+                  <Chip
+                    on={allSources}
+                    onClick={() => setAllSources((v) => !v)}
+                  >
+                    {allSources
+                      ? "收合"
+                      : `+${sources.length - visible.length} 更多`}
+                  </Chip>
+                )}
+              </>
+            );
+            // Collapsed: one scrollable line (ChipScroller). Expanded: wrap on
+            // every breakpoint — a single-line scroll would defeat the point.
+            return allSources ? (
+              <div
+                className="flex flex-wrap gap-2"
+                role="group"
+                aria-label="來源篩選"
+              >
+                {chips}
+              </div>
+            ) : (
+              <ChipScroller label="來源篩選">{chips}</ChipScroller>
+            );
+          })()}
         <p className="text-xs text-muted">
           顯示 {shown.length} / {rows.length}
         </p>
