@@ -72,7 +72,7 @@ function LootSummaryCard({
           )}
         </>
       ) : (
-        <p className="text-sm text-muted">🔒 登入查看明細</p>
+        <p className="text-sm text-muted">登入查看明細</p>
       )}
     </Link>
   );
@@ -109,7 +109,7 @@ export default function Dashboard({
   const topBlog = (blog ?? []).slice(0, 5);
 
   // 本週竄升 — repos genuinely heating up: momentum >= MOMENTUM_HOT, the SAME bar as
-  // the 🚀 badge, so "shown here" and "hot enough to flag" are one definition. Ranked
+  // the 竄升中 badge, so "shown here" and "hot enough to flag" are one definition. Ranked
   // by that relative spike, NOT by absolute stars/wk like the 熱門 list, so the front
   // page shows both lenses: big-and-steady vs small-and-surging. Top five.
   const surging = [...onChart]
@@ -118,6 +118,11 @@ export default function Dashboard({
     .slice(0, 5);
 
   const mixTotal = categoryMix.reduce((sum, m) => sum + m.count, 0);
+
+  // Newcomers this week (first week on chart) — stated on the 分類 kicker line,
+  // the page's single stats line. Same definition as the trending list's 新上榜
+  // badge: weeksOnChart <= 1 within the current chart.
+  const newThisWeek = onChart.filter((r) => (r.weeksOnChart ?? 1) <= 1).length;
 
   // An unmapped category falls back to bg-cat-other and would collide with a real
   // `other` segment. Mirror assertProps' "make silent drift loud" — but warn,
@@ -138,13 +143,14 @@ export default function Dashboard({
 
   return (
     <div className="flex flex-col gap-10">
-      {/* 本週分類 — the mix behind the stat cards above, as one stacked bar. The
-          ONE surface that spends category hues (CATEGORY_HUE); a 1px gap reveals
-          the border ink between segments, and a swatch legend names each. */}
+      {/* 本週分類 — the week's headline counts on the kicker line, the category mix
+          as one stacked bar beneath them. The ONE surface that spends category hues
+          (CATEGORY_HUE); a 1px gap reveals the border ink between segments, and a
+          swatch legend names each. */}
       {mixTotal > 0 && (
         <section>
           <div className="mb-2 font-mono text-[11px] tracking-[0.14em] text-muted uppercase">
-            本週分類 · {mixTotal} 在榜
+            本週在榜 {mixTotal} · 新上榜 {newThisWeek}
           </div>
           <div
             className="flex h-7 w-full gap-px overflow-hidden border border-border bg-border"
@@ -179,13 +185,13 @@ export default function Dashboard({
         </section>
       )}
 
-      {/* 🔥 熱門 repo — a newspaper section front: the masthead banner, then the
+      {/* 熱門 repo — a newspaper section front: the masthead banner, then the
           week's hottest repo as the hero #01 (display headline + full-ink 點評 deck +
           full chart), then #02… as briefs. One banner over the whole absolute-★
           leaderboard; the relative-momentum 本週竄升 list follows below. */}
       <section>
         <SectionHeader
-          title="🔥 熱門 repo"
+          title="熱門 repo"
           href="/trending"
           linkText="看全部 Trending"
         />
@@ -219,7 +225,7 @@ export default function Dashboard({
                   {lead.category}
                 </Badge>
               )}
-              {lead.weeksOnChart != null && <span>🏆 {lead.weeksOnChart} 週</span>}
+              {lead.weeksOnChart != null && <span>在榜 {lead.weeksOnChart} 週</span>}
               {lead.week && <span>{formatWeek(lead.week)}</span>}
             </div>
             {(lead.comment || lead.description) && (
@@ -284,13 +290,13 @@ export default function Dashboard({
         )}
       </section>
 
-      {/* 🚀 本週竄升 — the relative-momentum lens: who is accelerating fastest vs their
+      {/* 本週竄升 — the relative-momentum lens: who is accelerating fastest vs their
           own prior-week mean, distinct from the absolute-stars 熱門 list above, so the
           front page shows both lenses. Membership is momentum >= MOMENTUM_HOT (the same
-          bar as the 🚀 badge), so every ×N.N here is genuinely hot — always accent. */}
+          bar as the 竄升中 badge), so every ×N.N here is genuinely hot — always accent. */}
       <section>
         <SectionHeader
-          title="🚀 本週竄升"
+          title="本週竄升"
           href="/trending"
           linkText="看全部 Trending"
         />
@@ -372,7 +378,7 @@ export default function Dashboard({
 
       <section>
         <SectionHeader
-          title="📚 最新文章"
+          title="最新文章"
           href="/blog"
           linkText="看全部 Blog"
         />
@@ -419,7 +425,7 @@ export default function Dashboard({
 
       {/* Stop-press footer wire: the loot queue, set off by a heavy top rule. */}
       <section className="border-t-2 border-foreground pt-6">
-        <SectionHeader title="📦 待處理 Loot" />
+        <SectionHeader title="待處理 Loot" />
         {/* Explicit column counts, not flex-wrap or auto-fit: both size columns
             from the container, so with four targets they land on three-across
             and strand the last card (grown to a full row under flex-wrap, alone

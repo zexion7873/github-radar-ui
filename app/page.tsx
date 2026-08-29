@@ -8,13 +8,7 @@ import {
   momentumByRepo,
   type LootRow,
 } from "@/lib/data";
-import {
-  TABLES,
-  LOOT_TARGETS,
-  DEFAULT_LOOT_TARGET,
-  type LootTarget,
-} from "@/lib/config";
-import StatsBar from "@/components/StatsBar";
+import { TABLES, LOOT_TARGETS, type LootTarget } from "@/lib/config";
 import Dashboard from "@/components/Dashboard";
 import LastSynced from "@/components/LastSynced";
 import { DataError } from "@/components/ui";
@@ -23,17 +17,12 @@ import { isAuthed } from "@/lib/auth";
 
 export const dynamic = "force-dynamic";
 
-// Distinct repos still 'new'. The caller dedups per repo (latest week) first, so
-// a repo shortlisted across multiple weeks counts once — matching the loot board.
-const pendingCount = (rows: LootRow[] | null): number | null =>
-  rows ? rows.filter((r) => (r.status ?? "new") === "new").length : null;
-
 export default async function Page() {
   const authed = isAuthed((await cookies()).get("gh_radar")?.value);
   // Trending, blog, and every LOOT_TARGETS table in parallel; loot and blog
   // failures degrade to "—" / null in their cards rather than failing the page.
-  // Only a trending failure (the page's backbone — stat counts and the hot
-  // list) shows the error notice. The inner Promise.all still starts every loot
+  // Only a trending failure (the page's backbone — the hot lists and the
+  // category bar) shows the error notice. The inner Promise.all still starts every loot
   // fetch immediately, so nesting costs no round-trip.
   const targets = Object.keys(LOOT_TARGETS) as LootTarget[];
   const [trending, blog, lootResults] = await Promise.all([
@@ -54,28 +43,15 @@ export default async function Page() {
     }),
   ) as Record<LootTarget, LootRow[] | null>;
 
-  // One combined pending count for the stat bar — StatsBar shows totals, not
-  // per-target detail (the dashboard's 📦 待處理 Loot footer already covers
-  // that), so this tile's count doesn't grow a new column every time a target
-  // is added. A target whose fetch failed contributes nothing rather than
-  // sinking the whole tile to "—".
-  const lootPending = Object.values(loot)
-    .map(pendingCount)
-    .filter((n): n is number => n !== null);
-  const lootPendingTotal =
-    lootPending.length > 0 ? lootPending.reduce((a, b) => a + b, 0) : null;
-
   // repos = every repo ever archived (the dedup only grows); onChart = this
   // week's live chart. Every "本週" surface below MUST rank within onChart —
   // feeding it `repos` lets a repo that fell off weeks ago keep the headline.
   const repos = latestPerRepo(trending.rows);
   const { onChart } = currentChart(repos);
-  const newThisWeek = onChart.filter((r) => (r.weeksOnChart ?? 1) <= 1).length;
-  const onChartThisWeek = onChart.length;
 
   // This week's category mix, sorted heaviest-first — feeds the dashboard's
-  // 本週分類 distribution bar. Built from the on-chart set so it sums to
-  // onChartThisWeek; a null category buckets to "other" (the bar's neutral hue).
+  // 本週分類 distribution bar. Built from the on-chart set so it sums to the
+  // on-chart count; a null category buckets to "other" (the bar's neutral hue).
   const categoryMix = Object.entries(
     onChart.reduce<Record<string, number>>((acc, r) => {
       const c = r.category ?? "other";
@@ -87,7 +63,7 @@ export default async function Page() {
     .sort((a, b) => b.count - a.count);
 
   // Per-repo relative momentum, shared by the dashboard's 本週竄升 ranking — the
-  // same computation the /trending list uses for its 🚀 sort and badge.
+  // same computation the /trending list uses for its 竄升中 sort and badge.
   const series = weeklySeriesByRepo(trending.rows);
 
   // Freshest source date across every table — the dashboard's "is the pipeline
@@ -104,17 +80,6 @@ export default async function Page() {
   return (
     <div className="flex flex-col gap-6">
       {latestSync && <LastSynced iso={latestSync} />}
-      <StatsBar
-        stats={[
-          { label: "本週在榜", value: onChartThisWeek, href: "/trending" },
-          { label: "本週新上榜", value: newThisWeek, href: "/trending" },
-          {
-            label: "待處理 Loot",
-            value: lootPendingTotal,
-            href: `/loot/${DEFAULT_LOOT_TARGET}`,
-          },
-        ]}
-      />
       <Dashboard
         authed={authed}
         onChart={onChart}

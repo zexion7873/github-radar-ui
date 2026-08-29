@@ -86,10 +86,10 @@ export default async function Page({
           figure is stated once. */}
       {/* Accent top on every cell: this readout exists to feature these three
           figures, so each is "hot" metric content that earns the mark — the accent
-          still marks meaning (all three ARE the headline data here), unlike
-          StatsBar where one featured stat sits among context cells. Delta is a
-          ticker reading: green up, danger red down — never on the same surface as
-          the write-failure red, so the two never collide. */}
+          still marks meaning (all three ARE the headline data here), not a default
+          decoration for any numeric cell. Delta is a ticker reading: green up,
+          danger red down — never on the same surface as the write-failure red, so
+          the two never collide. */}
       <div className="grid grid-cols-3 border-b border-border">
         <div className="border-t-[3px] border-t-accent border-r border-border px-3 py-3">
           <div className="font-mono text-2xl tabular-nums text-foreground">

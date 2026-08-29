@@ -61,7 +61,7 @@ export default function TrendingList({
     return r;
   }, [rows, active, query, sort, momentum]);
 
-  // Latest week across all repos — drives the ✨ badge so it means the SAME
+  // Latest week across all repos — drives the 新上榜 badge so it means the SAME
   // thing as the dashboard's "本週新上榜" stat (newcomer in the most recent week),
   // not just "any repo with ≤1 week on chart" regardless of when.
   const latestWeek = useMemo(
@@ -89,7 +89,7 @@ export default function TrendingList({
           >
             <option value="recent">最新優先</option>
             <option value="stars">★/週 最高</option>
-            <option value="momentum">🚀 竄升中</option>
+            <option value="momentum">竄升中</option>
           </select>
         </div>
 
@@ -156,22 +156,22 @@ export default function TrendingList({
                     >
                       {r.repo}
                     </a>
-                    {/* Right rail of badges. 🚀 (relative-momentum spike) is
-                        orthogonal to ✨/🏆 and can stack with either. ✨ only for
-                        newcomers in the latest week; 🏆 for returnees; a newcomer
-                        whose latest week isn't the newest shows neither — rare after
-                        latestPerRepo, and intentional. NOTE: the ✨/🏆 rule is a
-                        UI-local re-derivation of the skill's flag (github-trending
-                        SKILL.md step 8 = "no prior archived row"); change them
-                        together. */}
+                    {/* Right rail of badges. 竄升中 (relative-momentum spike) is
+                        orthogonal to 新上榜/在榜週數 and can stack with either. 新上榜
+                        only for newcomers in the latest week; 在榜 N 週 for returnees;
+                        a newcomer whose latest week isn't the newest shows neither —
+                        rare after latestPerRepo, and intentional. NOTE: the
+                        新上榜/在榜週數 rule is a UI-local re-derivation of the skill's
+                        flag (github-trending SKILL.md step 8 = "no prior archived
+                        row"); change them together. */}
                     <div className="flex shrink-0 items-center gap-1.5">
                       {mo != null && mo >= MOMENTUM_HOT && (
-                        <Badge tone="accent">🚀 竄升中</Badge>
+                        <Badge tone="accent">竄升中</Badge>
                       )}
                       {r.week === latestWeek && (r.weeksOnChart ?? 1) <= 1 ? (
-                        <Badge tone={FRESH_TONE}>✨ 新上榜</Badge>
+                        <Badge tone={FRESH_TONE}>新上榜</Badge>
                       ) : r.weeksOnChart != null && r.weeksOnChart > 1 ? (
-                        <Badge tone="muted">🏆 {r.weeksOnChart} 週</Badge>
+                        <Badge tone="muted">在榜 {r.weeksOnChart} 週</Badge>
                       ) : null}
                     </div>
                   </div>
