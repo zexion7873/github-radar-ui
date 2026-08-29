@@ -10,7 +10,7 @@ export default async function LoginPage({
     <div className="flex min-h-[60vh] items-center justify-center">
       <form action={login} className="flex w-full max-w-xs flex-col gap-3">
         <p className="mb-2 font-mono text-[11px] tracking-[0.14em] text-muted uppercase">
-          🔒 Loot 需要密碼
+          Loot 需要密碼
         </p>
         <input type="hidden" name="from" value={from ?? "/"} />
         <input

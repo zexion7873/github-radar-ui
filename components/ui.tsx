@@ -163,7 +163,7 @@ export const CATEGORY_HUE: Record<string, string> = {
 };
 
 // A repo whose latest week runs >=50% above its own prior-week average is
-// "heating up" and earns the 🚀 accent. Tuned to flag a genuine spike, not noise.
+// "heating up" and earns the 竄升中 accent. Tuned to flag a genuine spike, not noise.
 // Lives here (not in server-only data.ts) so both the client TrendingList and the
 // server Dashboard can share the one threshold without a build-poison import.
 export const MOMENTUM_HOT = 1.5;
@@ -192,24 +192,24 @@ export const STATUS_SPINE: Record<string, string> = {
 // Health-signal badges from the ai-assistant enrichment. Only the EXCEPTION
 // states render — `active` / `none` are the healthy default and stay unbadged, so
 // a clean repo shows nothing and a flag actually means something. Severity rides
-// the emoji, not a new colour: the 3-tone palette is deliberate (see Tone above),
-// so these stay `muted` and never spend the scarce accent.
+// the label text, not a new colour: the 3-tone palette is deliberate (see Tone
+// above), so these stay `muted` and never spend the scarce accent.
 export const MAINTAINED_BADGE: Record<string, string> = {
-  stale: "💤 停更",
-  archived: "🗄️ 封存",
+  stale: "停更",
+  archived: "封存",
 };
 export const RISK_BADGE: Record<string, string> = {
   // `watch` (30–180d) is the norm for trending repos, not an exception — badging
   // it on every row reads as wallpaper, so only `high` (archived / <30d flash
   // risk) earns a flag.
-  high: "🛑 高風險",
+  high: "高風險",
 };
 
 // Verdict bucket → badge, same exception-only rule as MAINTAINED_BADGE above:
 // adopt / trial / skip each map 1:1 onto a Status the row already wears, so only
 // `already-have` earns a flag — it's the one verdict `adopted` cannot express.
 export const VERDICT_BADGE: Record<string, string> = {
-  "already-have": "🗃️ 早就有",
+  "already-have": "早就有",
 };
 
 // License → badge colour, mirroring the Notion SELECT palette onto THIS app's
@@ -226,7 +226,7 @@ export function licenseTone(license: string): string {
   return "border-border text-muted"; // unknown → neutral
 }
 
-// One fixed tone for every "fresh this week" ✨ badge (trending + blog): the
+// One fixed tone for every fresh-this-week badge (trending 新上榜 + blog 新): the
 // same accent as pending, so freshness reads as "hot" everywhere.
 export const FRESH_TONE: Tone = "accent";
 

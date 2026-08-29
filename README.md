@@ -8,7 +8,7 @@ triage state back to Notion in place:
 | Page | Source table | Shows |
 |---|---|---|
 | `/` | Trending + Loot + Blog | **Dashboard** — top-5 hot repos + latest blog posts (each with a blurb) + one summary card per loot ledger |
-| `/trending` | Trending Archive | Weekly trending AI repos, filterable by category, with 🆕 / 🔁 weeks-on-chart |
+| `/trending` | Trending Archive | Weekly trending AI repos, filterable by category, with 新上榜 / 在榜週數 badges |
 | `/blog` | Blog Archive | AI/agent blog posts grouped 官方 / 個人, each with a one-paragraph summary + 點評, newest first |
 | `/loot/claude` | Loot Ledger (Claude Code) | Loot grouped by status (new / adopted / skipped), with editable status and a read-only rating |
 | `/loot/copilot` | Loot Ledger (Copilot) | Same, for the Copilot target |

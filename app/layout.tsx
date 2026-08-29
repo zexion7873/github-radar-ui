@@ -82,7 +82,7 @@ export default async function RootLayout({
               <div className="flex flex-col">
                 <h1 className="font-serif text-2xl leading-none tracking-tight">
                   <Link href="/" className="transition-colors hover:text-accent">
-                    📡 GitHub <span className="text-accent">Radar</span>
+                    GitHub <span className="text-accent">Radar</span>
                   </Link>
                 </h1>
                 <p className="mt-1.5 font-mono text-[10px] tracking-[0.18em] text-muted uppercase">

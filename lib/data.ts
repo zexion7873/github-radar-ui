@@ -271,7 +271,7 @@ export function repoMomentum(points: WeekPoint[]): number | null {
 }
 
 // Per-repo momentum map, built from the same series the sparklines use so the
-// trending list's 🚀 sort and badge share one computation. Lives in this
+// trending list's 竄升中 sort and badge share one computation. Lives in this
 // server-only module; computed in the page and passed to the client list as a prop.
 export function momentumByRepo(
   series: Record<string, WeekPoint[]>,

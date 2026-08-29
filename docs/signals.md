@@ -14,7 +14,7 @@ Notion；本 app 是純讀者，只負責渲染。寫入端的規則住在 `ai-a
 
 ---
 
-## Momentum（`🚀 竄升中`）
+## Momentum（`竄升中`）
 
 相對星速的加速度。不是儲存的欄位，而是本 app 算出來的（`repoMomentum`，`lib/data.ts`），
 從每週的 `Stars/wk` 序列：
@@ -23,14 +23,14 @@ Notion；本 app 是純讀者，只負責渲染。寫入端的規則住在 `ai-a
 動能 = 最新一週的 stars/wk ÷ 前面所有週的平均
 ```
 
-驅動 trending 列表的 **🚀 竄升中** 排序，以及每列的徽章。
+驅動 trending 列表的 **竄升中** 排序，以及每列的徽章。
 
 | 值 | 意義 | 徽章 |
 | --- | --- | --- |
 | `null` | 資料不到兩週 —— 沒得比 | 排序沉底，無徽章 |
 | `< 1` | 降溫（比自己過去慢） | — |
 | `≈ 1` | 穩定 | — |
-| `≥ 1.5` | 比自己的基準加速 ≥ 50%（`MOMENTUM_HOT`） | **🚀 竄升中** |
+| `≥ 1.5` | 比自己的基準加速 ≥ 50%（`MOMENTUM_HOT`） | **竄升中** |
 
 是相對而非絕對：小 repo 暴衝會贏過大 repo 穩定（ROSS-Index 精神 —— 把新秀抬到
 老牌冠軍前面）。
@@ -46,8 +46,8 @@ archived；`pushed_at` 超過 90 天 → stale；否則 active。徽章定義在
 | 值 | 意義 | UI |
 | --- | --- | --- |
 | `active` | 90 天內有 push、未封存 | 不顯示（健康預設） |
-| `stale` | 超過 90 天沒 push | **💤 停更** |
-| `archived` | GitHub 上已封存（唯讀／死） | **🗄️ 封存** |
+| `stale` | 超過 90 天沒 push | **停更** |
+| `archived` | GitHub 上已封存（唯讀／死） | **封存** |
 
 ---
 
@@ -61,7 +61,7 @@ archived；`pushed_at` 超過 90 天 → stale；否則 active。徽章定義在
 | --- | --- | --- |
 | `none` | 沒事 | 不顯示 |
 | `watch` | 30–180 天 或 停更 | **刻意藏掉** —— `watch` 對 trending 是常態（repo 天生年輕），每列都標就是壁紙不是訊號 |
-| `high` | 已封存，或 < 30 天（快閃刪除風險） | **🛑 高風險** |
+| `high` | 已封存，或 < 30 天（快閃刪除風險） | **高風險** |
 
 ---
 
@@ -100,7 +100,7 @@ triage 過後留下的裁決，格式固定 `<bucket> — <理由>`，bucket 只
 | `adopt` | 已採用 | 不顯示 | 狀態徽章已經講完了 |
 | `trial` | 觀望 | 不顯示 | 同上；資訊在 `flip when` 那句 |
 | `skip` | 已略過 | 不顯示 | 同上 |
-| `already-have` | 已採用 | **🗃️ 早就有** | `Status` 表達不了的那個 —— 板子推的東西其實早就在用 |
+| `already-have` | 已採用 | **早就有** | `Status` 表達不了的那個 —— 板子推的東西其實早就在用 |
 
 理由本身則是 always-show：board 卡片一行（clamp 兩行）、詳情頁擺在「我的評估」區塊
 最上面，跟評分與狀態同一段（都是使用者自己的判斷，不是 routine 生的推銷詞）。
@@ -122,5 +122,5 @@ board 的搜尋框也吃這欄，所以 `already-have` 可以直接當關鍵字�
 
 Maintained / Risk / License 渲染於 trending 列表 + 詳情、loot board + 詳情（不含
 dashboard —— 它的 Front-Page 方言維持精簡，這三個訊號留在 Tape）。Momentum 例外：除了
-trending，也渲染於 dashboard 的 🚀 本週竄升 區。loot 的 `Maintained` / `License` 會空白，
+trending，也渲染於 dashboard 的 本週竄升 區。loot 的 `Maintained` / `License` 會空白，
 直到 `loot-radar` 跑一次回填。Verdict 只活在 loot（board + 詳情），dashboard 不聚合它。
