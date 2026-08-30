@@ -229,6 +229,10 @@ export default function BlogList({ rows }: { rows: BlogRow[] }) {
             {sections.map(({ label, items }) => (
               <section key={label}>
                 <h2 className="mb-1 flex items-baseline gap-2 border-b-2 border-foreground pb-1 font-serif text-2xl tracking-tight text-foreground">
+                  <span
+                    aria-hidden="true"
+                    className="inline-block h-2.5 w-2.5 self-center bg-accent"
+                  />
                   {label}
                   <span className="font-mono text-xs font-normal tracking-wide text-muted">
                     {items.length}

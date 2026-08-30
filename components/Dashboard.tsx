@@ -22,7 +22,11 @@ function SectionHeader({
 }) {
   return (
     <div className="mb-3 flex items-center justify-between">
-      <h2 className="font-serif text-xl tracking-tight text-foreground">
+      <h2 className="flex items-center gap-2.5 font-serif text-xl tracking-tight text-foreground">
+        {/* Accent tick in the emoji's old seat — structural accent (marks a
+            section front), same dingbat family as the legend swatches and the
+            loot unread square. Content itself stays ink. */}
+        <span aria-hidden="true" className="inline-block h-2.5 w-2.5 bg-accent" />
         {title}
       </h2>
       {href && (
