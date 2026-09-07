@@ -10,7 +10,7 @@ triage state back to Notion in place:
 | `/` | Trending + Loot + Blog | **Dashboard** — top-5 hot repos + latest blog posts (each with a blurb) + one summary card per loot ledger |
 | `/trending` | Trending Archive | Weekly trending AI repos, filterable by category, with 新上榜 / 在榜週數 badges |
 | `/blog` | Blog Archive | AI/agent blog posts grouped 官方 / 個人, each with a one-paragraph summary + 點評, newest first |
-| `/loot/claude` | Loot Ledger (Claude Code) | Loot grouped by status (new / adopted / skipped), with editable status and a read-only rating |
+| `/loot/claude` | Loot Ledger (Claude Code) | Loot grouped by status (new / deferred / adopted / skipped), with editable status and a read-only rating |
 | `/loot/copilot` | Loot Ledger (Copilot) | Same, for the Copilot target |
 | `/loot/opencode` | Loot Ledger (opencode) | Same, for the opencode target |
 | `/loot/codex` | Loot Ledger (Codex) | Same, for the Codex target |
@@ -56,11 +56,17 @@ never reaches the browser.
    > the loot board is unreachable. That is deliberate — an unset secret must not
    > mean "open". The public pages keep working; the gate only ever covered
    > `/loot/*` (see the matcher in [`proxy.ts`](proxy.ts)).
-4. **Run it.**
+4. **Run it.** Use the Node version in [`.nvmrc`](.nvmrc) — CI reads the same file.
    ```bash
    npm run dev
    ```
    Open <http://localhost:3000> and log in with `APP_PASSWORD`.
+
+Every push and PR is gated on three scripts:
+
+```bash
+npm run lint && npm run build && npm test
+```
 
 The data-source UUIDs (and the pinned `2025-09-03` Notion API version) live in
 [`lib/config.ts`](lib/config.ts).
