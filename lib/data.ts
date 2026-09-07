@@ -18,6 +18,7 @@ export type TrendingRow = {
   repo: string;
   week: string | null;
   starsPerWeek: number | null;
+  totalStars: number | null;
   language: string;
   category: string | null;
   link: string | null;
@@ -74,6 +75,7 @@ const TRENDING_PROPS = {
   repo: "Repo",
   week: "Week",
   starsPerWeek: "Stars/wk",
+  totalStars: "Total stars",
   language: "Language",
   category: "Category",
   link: "Link",
@@ -128,7 +130,7 @@ const REVALIDATE_SECONDS = 600;
 // schema property on every page (empty cells included), so a key absent from the
 // first row means the column was renamed/removed — without this the extractors
 // would just hand back "" / null and the UI would render plausible blank cards.
-function assertProps(page: NotionPage, expected: readonly string[]): void {
+export function assertProps(page: NotionPage, expected: readonly string[]): void {
   const missing = expected.filter((k) => !(k in page.properties));
   if (missing.length > 0) {
     throw new NotionError(
@@ -187,6 +189,7 @@ export function fetchTrending(uuid: string): Promise<Result<TrendingRow>> {
         repo: text(p, P.repo),
         week: dateStart(p, P.week),
         starsPerWeek: num(p, P.starsPerWeek),
+        totalStars: num(p, P.totalStars),
         language: text(p, P.language),
         category: sel(p, P.category),
         link: urlProp(p, P.link),
