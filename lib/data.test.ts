@@ -1,5 +1,6 @@
 import { describe, expect, it } from "vitest";
 import {
+  assertProps,
   currentChart,
   latestPerRepo,
   repoMomentum,
@@ -8,12 +9,14 @@ import {
   type TrendingRow,
   type WeekPoint,
 } from "./data";
+import { NotionError, type NotionPage } from "./notion";
 
 const trending = (repo: string, week: string | null): TrendingRow => ({
   id: `${repo}-${week}`,
   repo,
   week,
   starsPerWeek: null,
+  totalStars: null,
   language: "",
   category: null,
   link: null,
@@ -40,6 +43,35 @@ const loot = (repo: string, week: string | null): LootRow => ({
   verdict: "",
   maintained: null,
   license: null,
+});
+
+describe("assertProps", () => {
+  const page = (props: string[]): NotionPage => ({
+    id: "p1",
+    properties: Object.fromEntries(props.map((k) => [k, {}])),
+  });
+
+  it("passes on an empty cell — it checks presence, not population", () => {
+    expect(() =>
+      assertProps(page(["Repo", "Stars/wk", "Total stars"]), [
+        "Repo",
+        "Stars/wk",
+        "Total stars",
+      ]),
+    ).not.toThrow();
+  });
+
+  it("throws a NotionError naming the missing column", () => {
+    const call = () => assertProps(page(["Repo"]), ["Repo", "Total stars"]);
+    expect(call).toThrow(NotionError);
+    expect(call).toThrow(/missing expected property: Total stars/);
+  });
+
+  it("pluralizes when more than one column is missing", () => {
+    expect(() =>
+      assertProps(page(["Repo"]), ["Repo", "Total stars", "Risk"]),
+    ).toThrow(/missing expected properties: Total stars, Risk/);
+  });
 });
 
 describe("latestPerRepo", () => {

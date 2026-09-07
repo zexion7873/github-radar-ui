@@ -39,14 +39,17 @@ Notion；本 app 是純讀者，只負責渲染。寫入端的規則住在 `ai-a
 
 ## Maintained（Notion SELECT）
 
-「還活著嗎」。routine 從 `pushed_at` + `archived` 旗標推導。規則：`archived` →
-archived；`pushed_at` 超過 90 天 → stale；否則 active。徽章定義在
-`components/ui.tsx` 的 `MAINTAINED_BADGE`。
+「還活著嗎」。**兩個 routine 都寫這欄，但新鮮度的取樣點不同**：`github-trending` 取
+ecosyste.ms 的 `pushed_at`；`loot-radar` 取最新一筆**非 bot commit** 的日期（`pushed_at`
+會被沒帶 commit 的 push 和 metadata churn 灌水，而 loot 列引用的是某個具體資產的新鮮度；
+列上指名檔案／目錄時還會加 `&path=` 只算那條路徑）。之後的判定兩邊相同：`archived` →
+archived；那個日期超過 90 天 → stale；否則 active。本 app 不算任何日期，只把 Notion 的
+SELECT 值對到徽章文字（`components/ui.tsx` 的 `MAINTAINED_BADGE`）。
 
 | 值 | 意義 | UI |
 | --- | --- | --- |
-| `active` | 90 天內有 push、未封存 | 不顯示（健康預設） |
-| `stale` | 超過 90 天沒 push | **停更** |
+| `active` | 90 天內有新動作（trending 看 push、loot 看 commit）、未封存 | 不顯示（健康預設） |
+| `stale` | 超過 90 天沒新動作 | **停更** |
 | `archived` | GitHub 上已封存（唯讀／死） | **封存** |
 
 ---

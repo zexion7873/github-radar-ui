@@ -62,6 +62,9 @@ export default async function Page({
         </a>
         <div className="flex flex-wrap items-center gap-2 font-mono text-[11px] tracking-wide text-muted uppercase">
           {latest.language && <span>{latest.language}</span>}
+          {latest.totalStars != null && (
+            <span>★ 總計 {latest.totalStars.toLocaleString()}</span>
+          )}
           {latest.category && (
             <Badge tone={CATEGORY_TONE[latest.category] ?? "muted"}>
               {latest.category}

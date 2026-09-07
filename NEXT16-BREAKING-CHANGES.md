@@ -1,7 +1,7 @@
 # Next.js 16 — Breaking Changes & Migration Notes
 
 > Distilled from the offline docs shipped in `node_modules/next/dist/docs/`
-> (`02-guides/upgrading/version-16.md` + `codemods.md`) for **next@16.2.9 / react@19.2.4**.
+> (`02-guides/upgrading/version-16.md` + `codemods.md`) for **next@16.3.4 / react@19.2.4**.
 > This is why `AGENTS.md` says "this is NOT the Next.js you know" — verify against the
 > on-disk docs before writing App Router code.
 
