@@ -1,0 +1,13 @@
+version: 2
+updates:
+  - package-ecosystem: npm
+    directory: "/"
+    schedule:
+      interval: weekly
+    # next and eslint-config-next are pinned to one exact version; ungrouped PRs
+    # would land them out of step.
+    groups:
+      next:
+        patterns:
+          - next
+          - eslint-config-next
