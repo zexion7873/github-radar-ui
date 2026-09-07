@@ -62,7 +62,7 @@ export default async function RootLayout({
   );
   return (
     <html
-      lang="en"
+      lang="zh-TW"
       suppressHydrationWarning
       className={`${geistSans.variable} ${geistMono.variable} ${dmSerif.variable} ${sourceSerif.variable} h-full antialiased${theme === "dark" ? " dark" : ""}`}
     >
