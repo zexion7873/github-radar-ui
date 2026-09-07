@@ -4,10 +4,16 @@ updates:
     directory: "/"
     schedule:
       interval: weekly
-    # next and eslint-config-next are pinned to one exact version; ungrouped PRs
-    # would land them out of step.
+    # Exact-pinned packages that must move together. Ungrouped, Dependabot bumps
+    # one side alone and `npm ci` fails ERESOLVE against the peer it left behind.
     groups:
       next:
         patterns:
           - next
           - eslint-config-next
+      react:
+        patterns:
+          - react
+          - react-dom
+          - "@types/react"
+          - "@types/react-dom"
