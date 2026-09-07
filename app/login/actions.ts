@@ -12,8 +12,9 @@ import {
 // Best-effort brute-force throttle. The per-IP counter is module state, so on
 // serverless it's per-instance and leaky — a speed bump, not a guarantee; the
 // real defense is a high-entropy APP_PASSWORD. The fixed per-failure delay below
-// DOES apply on every request regardless of instance, so an online guess always
-// pays a fixed cost.
+// applies to every attempt that reaches the credential check regardless of
+// instance, so an online guess always pays a fixed cost; an already-throttled
+// request is rejected without it rather than holding compute it doesn't need.
 const WINDOW_MS = 10 * 60 * 1000;
 const MAX_ATTEMPTS = 10;
 const FAIL_DELAY_MS = 500;
@@ -51,6 +52,14 @@ export async function login(formData: FormData) {
   if (tooMany(ip)) {
     redirect(`/login?error=1&from=${encodeURIComponent(from)}`);
   }
+
+  // A missing env var and a wrong password deliberately produce the identical
+  // response — an unauthenticated client must not learn which. The operator does
+  // need to know, so the difference surfaces in the server log only.
+  if (!expected)
+    console.error("[login] APP_PASSWORD is not set — every login will fail");
+  if (!secret)
+    console.error("[login] AUTH_SECRET is not set — every login will fail");
 
   if (!expected || !secret || !safeEqual(password, expected)) {
     recordFailure(ip);
