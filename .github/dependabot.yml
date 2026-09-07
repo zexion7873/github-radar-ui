@@ -4,6 +4,12 @@ updates:
     directory: "/"
     schedule:
       interval: weekly
+    # @types/node majors track Node's Current line, but .nvmrc pins 22. Types ahead
+    # of the runtime declare APIs it does not have, so a wrong call type-checks and
+    # throws in production; types behind it fail loudly at build instead.
+    ignore:
+      - dependency-name: "@types/node"
+        update-types: ["version-update:semver-major"]
     # Exact-pinned packages that must move together. Ungrouped, Dependabot bumps
     # one side alone and `npm ci` fails ERESOLVE against the peer it left behind.
     groups:
