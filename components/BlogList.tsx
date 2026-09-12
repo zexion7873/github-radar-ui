@@ -51,6 +51,16 @@ export default function BlogList({ rows }: { rows: BlogRow[] }) {
   // Reset the reveal on every filter change — carrying a grown limit into a new
   // result set would dump hundreds of cards back into the DOM on a stray keystroke.
   const [limit, setLimit] = useState(BATCH);
+  // The reveal button must not grow `limit` into a section the reader folded
+  // away, so the fold lives in React state and not only on the <details> node.
+  const [folded, setFolded] = useState<ReadonlySet<string>>(new Set());
+  const toggle = (label: string, open: boolean) =>
+    setFolded((prev) => {
+      const next = new Set(prev);
+      if (open) next.delete(label);
+      else next.add(label);
+      return next;
+    });
   const search = (q: string) => {
     setQuery(q);
     setLimit(BATCH);
@@ -97,8 +107,10 @@ export default function BlogList({ rows }: { rows: BlogRow[] }) {
       items: shown.filter((r) => !KNOWN_TYPES.has(r.type ?? "")),
     },
   ].filter((s) => s.items.length > 0);
+  // A folded section's hidden rows are not "more to show" — counting them would
+  // leave the button offering rows that no amount of clicking can reveal.
   const remaining = sections.reduce(
-    (n, s) => n + Math.max(0, s.items.length - limit),
+    (n, s) => n + (folded.has(s.label) ? 0 : Math.max(0, s.items.length - limit)),
     0,
   );
 
@@ -227,23 +239,40 @@ export default function BlogList({ rows }: { rows: BlogRow[] }) {
         <>
           <div className="flex flex-col gap-10">
             {sections.map(({ label, items }) => (
-              <section key={label}>
-                <h2 className="mb-1 flex items-baseline gap-2 border-b-2 border-foreground pb-1 font-serif text-2xl tracking-tight text-foreground">
-                  <span
-                    aria-hidden="true"
-                    className="inline-block h-2.5 w-2.5 self-center bg-accent"
-                  />
-                  {label}
-                  <span className="font-mono text-xs font-normal tracking-wide text-muted">
-                    {items.length}
-                  </span>
-                </h2>
+              // Native <details> over a hand-rolled disclosure: it carries the
+              // expanded state and keyboard behaviour for free. Named group, since
+              // each card below already claims the unnamed one for its hover.
+              <details
+                key={label}
+                open={!folded.has(label)}
+                onToggle={(e) => toggle(label, e.currentTarget.open)}
+                className="group/section"
+              >
+                <summary className="cursor-pointer list-none [&::-webkit-details-marker]:hidden">
+                  <h2 className="mb-1 flex items-baseline gap-2 border-b-2 border-foreground pb-1 font-serif text-2xl tracking-tight text-foreground">
+                    <span
+                      aria-hidden="true"
+                      className="self-center font-mono text-xs text-muted transition-transform group-open/section:rotate-90"
+                    >
+                      &rsaquo;
+                    </span>
+                    <span
+                      aria-hidden="true"
+                      className="inline-block h-2.5 w-2.5 self-center bg-accent"
+                    />
+                    {label}
+                    <span className="font-mono text-xs font-normal tracking-wide text-muted">
+                      {items.length}
+                    </span>
+                  </h2>
+                </summary>
                 {/* Each section head keeps its FULL match count above, so a
-                    truncated section still announces how much sits behind it. */}
+                    truncated or folded section still announces how much sits
+                    behind it — the fold never silently swallows a search match. */}
                 <div className="divide-y divide-border">
                   {items.slice(0, limit).map(card)}
                 </div>
-              </section>
+              </details>
             ))}
           </div>
           {remaining > 0 && (
