@@ -3,6 +3,7 @@ import Link from "next/link";
 import { fetchBlog } from "@/lib/data";
 import { TABLES } from "@/lib/config";
 import { Badge, DataError, formatWeek } from "@/components/ui";
+import { splitSummary } from "@/lib/summary";
 
 export const dynamic = "force-dynamic";
 
@@ -64,9 +65,27 @@ export default async function Page({
       {post.summary && (
         <section className="flex flex-col gap-2">
           <h2 className="font-serif text-xl">摘要</h2>
-          <p className="font-serif-text text-[1.0625rem] leading-[1.8] whitespace-pre-line text-foreground">
-            {post.summary}
-          </p>
+          <div className="flex flex-col gap-8 font-serif-text text-[1.0625rem] leading-[1.8] text-foreground">
+            {splitSummary(post.summary).map((block, i) =>
+              block.label ? (
+                // Weight is the whole signal: `font-mono` and `uppercase` are both
+                // no-ops on 漢字 (Geist Mono loads the latin subset only, so
+                // --font-mono falls back to the same PingFang as the body face),
+                // and a head set smaller than its body reads as a caption. The
+                // negative margin eats half the flex gap below it, so the label
+                // binds down to the cluster it heads instead of floating between
+                // two. gap-8 ≈ the empty line box `whitespace-pre-line` painted
+                // here before, so summaries without labels keep their rhythm.
+                <h3 key={i} className="-mb-4 font-semibold">
+                  {block.text}
+                </h3>
+              ) : (
+                <p key={i} className="whitespace-pre-line">
+                  {block.text}
+                </p>
+              ),
+            )}
+          </div>
         </section>
       )}
       {post.comment && (
