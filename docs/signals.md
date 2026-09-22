@@ -56,15 +56,21 @@ SELECT 值對到徽章文字（`components/ui.tsx` 的 `MAINTAINED_BADGE`）。
 
 ## Risk（Notion SELECT —— 僅 trending）
 
-短命／刪除風險，看年齡。規則：`archived` 或 `created_at` < 30 天 → high；
-`created_at` 30–180 天 或 Maintained = stale → watch；否則 none。徽章定義在
-`components/ui.tsx` 的 `RISK_BADGE`。
+短命／刪除風險，看年齡。規則：`archived` 或 年齡 < 30 天 → high；
+年齡 30–180 天（含兩端）或 Maintained = stale → watch；否則 none。年齡 = 該列的 Week 日期
+減 `created_at` 的日期部分，日曆天。徽章定義在 `components/ui.tsx` 的 `RISK_BADGE`。
 
 | 值 | 意義 | UI |
 | --- | --- | --- |
 | `none` | 沒事 | 不顯示 |
 | `watch` | 30–180 天 或 停更 | **刻意藏掉** —— `watch` 對 trending 是常態（repo 天生年輕），每列都標就是壁紙不是訊號 |
 | `high` | 已封存，或 < 30 天（快閃刪除風險） | **高風險** |
+
+**`high` 從沒亮過。** 截至 2026-09-23，16 週 190 列裡 `high` 是 0 次（`none` 82、`watch` 108），
+且逐列重算全數吻合 —— 不是寫入端的 bug。`created_at` 含私有孵化期，上榜時最年輕的 repo 也已
+66 天；真正不滿 30 天的 repo，ecosyste.ms 多半還沒索引，過去是四個訊號一起空白而不是 `high`
+（寫入端自 2026-09-28 那週起改從 GitHub JSON 推導，之後才有機會亮）。所以「只標 `high`」目前等於
+什麼都不標；要量「快閃風險」得換寫入端的尺（例如首次上榜週），那是另一個 issue，不是 UI 的事。
 
 ---
 
@@ -113,6 +119,16 @@ board 的搜尋框也吃這欄，所以 `already-have` 可以直接當關鍵字�
 
 ---
 
+## Total stars（NUMBER —— 非訊號，僅 trending 詳情頁的 `★ 總計`）
+
+累計星數，只渲染在 trending 詳情頁，`null` 就整個 span 不畫。兩個斷點：2026-07-06 之前的列是
+`null`（欄位後加、無法回填）；**2026-09-28 那週起改寫 GitHub API 的即時值**，之前是 ecosyste.ms
+的快取（中位數落後 5 天、最長 41 天，爆紅週的值可以低於同週的 `Stars/wk`）。同時寫入端加了
+sanity gate：總數低於本週 `Stars/wk` 一律寫空白。所以跨過 2026-09-28 的 total 序列不可比；哪天要做
+絕對成長率，序列從 2026-09-28 起算、跳過 `null`，跟 `repoMomentum` 跳過 `null` 的 `Stars/wk` 一樣。
+
+---
+
 ## 資料從哪來
 
 | 訊號 | 寫入者（ai-assistant） | Notion 欄位 | 本 app 讀取於 |
@@ -120,6 +136,7 @@ board 的搜尋框也吃這欄，所以 `already-have` 可以直接當關鍵字�
 | Momentum | —（本地算出） | —（來自 `Stars/wk` 序列） | `repoMomentum`，`lib/data.ts` |
 | Maintained | `github-trending` + `loot-radar` | `Maintained` | `fetchTrending` / `fetchLoot` |
 | Risk | `github-trending` | `Risk` | `fetchTrending` |
+| Total stars | `github-trending` | `Total stars` | `fetchTrending`（僅詳情頁） |
 | License | `github-trending` + `loot-radar` | `License` | `fetchTrending` / `fetchLoot` |
 | Verdict | `loot-radar-triage`（**不是 routine**） | `Verdict` | `fetchLoot` |
 
