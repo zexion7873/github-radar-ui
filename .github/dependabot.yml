@@ -12,6 +12,8 @@ updates:
         update-types: ["version-update:semver-major"]
     # Exact-pinned packages that must move together. Ungrouped, Dependabot bumps
     # one side alone and `npm ci` fails ERESOLVE against the peer it left behind.
+    # A dependency joins the first group it matches, so these two stay above the
+    # catch-all.
     groups:
       next:
         patterns:
@@ -23,3 +25,12 @@ updates:
           - react-dom
           - "@types/react"
           - "@types/react-dom"
+      # Everything else at minor/patch rides one weekly PR. Majors fall through to
+      # individual PRs so each gets a human read, and security updates stay
+      # ungrouped (applies-to defaults to version-updates) so they stay visible.
+      minor-and-patch:
+        patterns:
+          - "*"
+        update-types:
+          - minor
+          - patch
