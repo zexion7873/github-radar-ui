@@ -3,7 +3,9 @@
 雷達上每個 repo 顯示的訊號。這些值由 `ai-assistant` routines 在歸檔時計算、寫進
 Notion；本 app 是純讀者，只負責渲染。寫入端的規則住在 `ai-assistant` 的 skills
 （`github-trending`、`loot-radar`）；讀取與渲染端是 `lib/data.ts` + `components/ui.tsx`。
-唯一例外是 **Verdict** —— 那欄由 triage（`loot-radar-triage` skill）寫，不是 routine 寫。
+例外有兩個，都來自 triage（`loot-radar-triage` skill），不是 routine：**Verdict** 那欄由它寫；
+它掃熱門榜時，還會替審過的 repo 在 loot 帳本新建整列（`Asset` 以 `heat:` 開頭，建立時就帶著
+裁決，`Status` 不會是 `new`），那些列的每一欄都出自 triage。
 
 兩種顯示哲學：
 
@@ -134,10 +136,10 @@ sanity gate：總數低於本週 `Stars/wk` 一律寫空白。所以跨過 2026-
 | 訊號 | 寫入者（ai-assistant） | Notion 欄位 | 本 app 讀取於 |
 | --- | --- | --- | --- |
 | Momentum | —（本地算出） | —（來自 `Stars/wk` 序列） | `repoMomentum`，`lib/data.ts` |
-| Maintained | `github-trending` + `loot-radar` | `Maintained` | `fetchTrending` / `fetchLoot` |
+| Maintained | `github-trending` + `loot-radar`（`heat:` 列：`loot-radar-triage`） | `Maintained` | `fetchTrending` / `fetchLoot` |
 | Risk | `github-trending` | `Risk` | `fetchTrending` |
 | Total stars | `github-trending` | `Total stars` | `fetchTrending`（僅詳情頁） |
-| License | `github-trending` + `loot-radar` | `License` | `fetchTrending` / `fetchLoot` |
+| License | `github-trending` + `loot-radar`（`heat:` 列：`loot-radar-triage`） | `License` | `fetchTrending` / `fetchLoot` |
 | Verdict | `loot-radar-triage`（**不是 routine**） | `Verdict` | `fetchLoot` |
 
 Maintained / Risk / License 渲染於 trending 列表 + 詳情、loot board + 詳情（不含
