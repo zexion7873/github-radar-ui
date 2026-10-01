@@ -6,9 +6,11 @@ This version has breaking changes — APIs, conventions, and file structure may 
 
 ## Working on this repo
 
-This UI is a **pure Notion reader** — it renders the archive tables the
+This UI talks to **Notion only** — it renders the archive tables the
 [`ai-assistant`](../ai-assistant) routines write; it never calls GitHub / ecosyste.ms
-itself. New per-repo fields are added write-time in those routines (a new Notion
+itself. Its one write is the loot `Status` select (a password-gated Server Action), which
+must `updateTag` that ledger's cache tag or the next read serves the old status for up
+to 600s. New per-repo fields are added write-time in those routines (a new Notion
 column), then read here. The signal set is documented in [`docs/signals.md`](docs/signals.md).
 
 Gotchas that will bite you:
