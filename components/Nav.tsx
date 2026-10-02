@@ -9,18 +9,20 @@ import { DEFAULT_LOOT_TARGET } from "@/lib/config";
 // target; switching between targets happens on the loot pages themselves via
 // a Chip row (app/loot/[target]/page.tsx) — the same pattern already used for
 // every other filter in this app.
-const links: { href: string; label: string; prefix?: string }[] = [
+const links: { href: string; label: string; prefix?: string; gated?: boolean }[] = [
   { href: "/", label: "Dashboard" },
   { href: "/trending", label: "Trending" },
   { href: "/blog", label: "Blog" },
-  { href: `/loot/${DEFAULT_LOOT_TARGET}`, label: "Loot", prefix: "/loot" },
+  { href: `/loot/${DEFAULT_LOOT_TARGET}`, label: "Loot", prefix: "/loot", gated: true },
 ];
 
-export default function Nav() {
+export default function Nav({ authed }: { authed: boolean }) {
   const pathname = usePathname();
+  // Logged out, proxy.ts bounces /loot/* to /login, so a gated tab would only be a login wall.
+  const visible = links.filter((l) => authed || !l.gated);
   return (
     <nav aria-label="主要導覽" className="-mx-1 flex gap-4 overflow-x-auto px-1">
-      {links.map((l) => {
+      {visible.map((l) => {
         // "Loot" matches any target's URL (/loot/copilot, a detail page, …),
         // not just the default one it links to — everything else keeps the
         // exact match it already had.

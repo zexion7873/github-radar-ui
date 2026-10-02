@@ -76,5 +76,7 @@ The data-source UUIDs (and the pinned `2025-09-03` Notion API version) live in
 Push to a Git remote, import the repo at <https://vercel.com/new>, set all three
 environment variables (`NOTION_TOKEN`, `APP_PASSWORD`, `AUTH_SECRET`), and deploy.
 The in-app password gate covers `/loot/*` only — the dashboard, `/trending`, and
-`/blog` are intentionally public (see `proxy.ts`). If you want to lock those down
-too, enable Vercel Deployment Protection.
+`/blog` are intentionally public (see `proxy.ts`). The dashboard still renders its
+待處理 Loot summary, and the nav its Loot tab, only for a signed-in session, so
+anonymous visitors never receive the loot counts. If you want to lock those pages down too, enable Vercel Deployment
+Protection.

@@ -44,11 +44,9 @@ function SectionHeader({
 function LootSummaryCard({
   target,
   rows,
-  authed,
 }: {
   target: LootTarget;
   rows: LootRow[] | null;
-  authed: boolean;
 }) {
   const pending = rows?.filter((r) => (r.status ?? "new") === "new") ?? [];
   return (
@@ -62,21 +60,13 @@ function LootSummaryCard({
           {rows == null ? "—" : `${pending.length} 待處理`}
         </Badge>
       </div>
-      {/* The pending count above is public; the repo names are gated — logged-out
-          visitors get a login prompt instead of the shortlist. */}
-      {authed ? (
-        <>
-          {pending.slice(0, 3).map((r) => (
-            <p key={r.id} className="truncate text-sm text-muted">
-              {r.repo}
-            </p>
-          ))}
-          {rows != null && pending.length === 0 && (
-            <p className="text-sm text-muted">沒有待處理</p>
-          )}
-        </>
-      ) : (
-        <p className="text-sm text-muted">登入查看明細</p>
+      {pending.slice(0, 3).map((r) => (
+        <p key={r.id} className="truncate text-sm text-muted">
+          {r.repo}
+        </p>
+      ))}
+      {rows != null && pending.length === 0 && (
+        <p className="text-sm text-muted">沒有待處理</p>
       )}
     </Link>
   );
@@ -427,26 +417,28 @@ export default function Dashboard({
         )}
       </section>
 
-      {/* Stop-press footer wire: the loot queue, set off by a heavy top rule. */}
-      <section className="border-t-2 border-foreground pt-6">
-        <SectionHeader title="待處理 Loot" />
-        {/* Explicit column counts, not flex-wrap or auto-fit: both size columns
-            from the container, so with four targets they land on three-across
-            and strand the last card (grown to a full row under flex-wrap, alone
-            in a short one under auto-fit). 1/2/4 divides four evenly at every
-            width. Revisit the counts when LOOT_TARGETS stops being a power of
-            two. */}
-        <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-4">
-          {(Object.keys(LOOT_TARGETS) as LootTarget[]).map((target) => (
-            <LootSummaryCard
-              key={target}
-              target={target}
-              rows={loot[target]}
-              authed={authed}
-            />
-          ))}
-        </div>
-      </section>
+      {/* Stop-press footer wire: the loot queue, set off by a heavy top rule.
+          Server-gated: CSS-hiding it would still ship the counts to anonymous visitors. */}
+      {authed && (
+        <section className="border-t-2 border-foreground pt-6">
+          <SectionHeader title="待處理 Loot" />
+          {/* Explicit column counts, not flex-wrap or auto-fit: both size columns
+              from the container, so with four targets they land on three-across
+              and strand the last card (grown to a full row under flex-wrap, alone
+              in a short one under auto-fit). 1/2/4 divides four evenly at every
+              width. Revisit the counts when LOOT_TARGETS stops being a power of
+              two. */}
+          <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-4">
+            {(Object.keys(LOOT_TARGETS) as LootTarget[]).map((target) => (
+              <LootSummaryCard
+                key={target}
+                target={target}
+                rows={loot[target]}
+              />
+            ))}
+          </div>
+        </section>
+      )}
     </div>
   );
 }

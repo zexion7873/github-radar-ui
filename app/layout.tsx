@@ -47,8 +47,8 @@ export default async function RootLayout({
   const cookieStore = await cookies();
   const theme = cookieStore.get("theme")?.value;
   // Loot is the only gated area now, so the chrome (title + nav) is always shown —
-  // public visitors need it to navigate. `authed` only toggles the top-right
-  // control: 登出 for a live session, 登入 link otherwise.
+  // public visitors need it to navigate. `authed` toggles the top-right control
+  // (登出 for a live session, 登入 link otherwise) and whether Nav shows the Loot tab.
   const authed = isAuthed(cookieStore.get("gh_radar")?.value);
   // Masthead dateline — today's edition date, in the radar's home timezone.
   // Distinct from LastSynced's "資料最新到" (the data-freshness date); a
@@ -110,7 +110,7 @@ export default async function RootLayout({
                 )}
               </div>
             </div>
-            <Nav />
+            <Nav authed={authed} />
           </StickyHeader>
           <main id="main">{children}</main>
         </div>
