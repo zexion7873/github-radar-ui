@@ -46,3 +46,8 @@ next-env.d.ts
 
 # agent run-continuation state (local)
 .omo/
+
+# Claude Code per-machine state
+.claude/settings.local.json
+.claude/worktrees/
+.claude/launch.json
