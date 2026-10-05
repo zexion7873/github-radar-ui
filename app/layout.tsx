@@ -32,8 +32,8 @@ const sourceSerif = Source_Serif_4({
 });
 
 export const metadata: Metadata = {
-  // Without it, Vercel resolves og:image against the SHORTEST production alias
-  // (ghradar.vercel.app), not the domain on the resume.
+  // Without it, Vercel resolves og:image against the SHORTEST production
+  // alias, not the domain on the resume.
   metadataBase: new URL("https://whyisthistrending.vercel.app"),
   title: "GitHub Radar",
   description:
