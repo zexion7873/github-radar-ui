@@ -32,8 +32,12 @@ const sourceSerif = Source_Serif_4({
 });
 
 export const metadata: Metadata = {
+  // Without it, Vercel resolves og:image against the SHORTEST production
+  // alias, not the domain on the resume.
+  metadataBase: new URL("https://whyisthistrending.vercel.app"),
   title: "GitHub Radar",
-  description: "Trending repos and loot from the GitHub routines",
+  description:
+    "Trending AI repos on GitHub, ranked by stars gained each week, each with a one-line summary and a sharp take.",
 };
 
 // Only needed for first visit (no cookie yet): apply the system preference
