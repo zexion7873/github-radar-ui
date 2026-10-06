@@ -4,7 +4,7 @@ updates:
     directory: "/"
     schedule:
       interval: weekly
-    # @types/node majors track Node's Current line, but .nvmrc pins 22. Types ahead
+    # @types/node majors track Node's Current line, but .nvmrc pins 24. Types ahead
     # of the runtime declare APIs it does not have, so a wrong call type-checks and
     # throws in production; types behind it fail loudly at build instead.
     ignore:
