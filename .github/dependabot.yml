@@ -34,3 +34,10 @@ updates:
         update-types:
           - minor
           - patch
+
+  # Without this entry Dependabot never reads .github/workflows, so action
+  # pins rot silently. Majors here get a human read like any npm major.
+  - package-ecosystem: github-actions
+    directory: "/"
+    schedule:
+      interval: weekly
