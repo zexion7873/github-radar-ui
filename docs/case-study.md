@@ -65,7 +65,8 @@ The Trending Archive has a second reader:
 that answers questions over it with citations. contract-guard covers it without
 reading its code: the eight columns it reads are a subset of the ones this site
 reads, so any finding on those columns names radar-rag as affected too. That
-matters because radar-rag fails silently where this site shows an error.
+matters because radar-rag degrades silently where this site shows an error: a
+missing column becomes an empty field, and a row left with no text is skipped.
 
 ---
 
