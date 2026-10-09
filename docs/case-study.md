@@ -1,6 +1,6 @@
 # Case study: the agent pipeline behind GitHub Radar
 
-This site is the visible end of a larger system. Behind it, eight scheduled
+This site is the visible end of a larger system. Behind it, seven scheduled
 Claude Code agents scout GitHub and the AI blogs, enrich what they find, write
 it to Notion, and post a digest to Slack. That code lives in a private
 repository (`ai-assistant`); this document describes how it is built, what went
@@ -8,12 +8,12 @@ wrong in production, and what each failure changed.
 
 **At a glance**
 
-- **8 scheduled agent runs**, daily and weekly, on Claude Code cloud routines.
+- **7 scheduled agent runs**, daily and weekly, on Claude Code cloud routines.
   Nothing runs on my laptop.
-- **7 skills**, about 1,800 lines of versioned `SKILL.md` instructions, 110
-  commits since 2026-06-15.
-- **8 Notion tables** as the shared archive. This site reads 6 of them, and an
-  agent that writes nothing checks those 6 every week.
+- **4 skills**, about 1,300 lines of versioned `SKILL.md` instructions, plus a
+  local triage skill that keeps a human in the loop.
+- **6 Notion tables** as the shared archive, all read by this site and checked
+  every week by an agent that writes nothing.
 - **One hard rule:** every agent's write surface is bounded and spelled out,
   because the cloud runtime approves connector writes without asking anyone.
 
@@ -24,7 +24,6 @@ wrong in production, and what each failure changed.
 ```mermaid
 flowchart LR
     subgraph Cloud["Claude Code cloud routines"]
-        Daily["Daily<br/>news · mail · memory"]
         Trending["Weekly<br/>github-trending"]
         Loot["Weekly ×4<br/>loot-radar"]
         Blog["Daily<br/>blog-radar"]
@@ -35,8 +34,6 @@ flowchart LR
     Site["This site<br/>Next.js on Vercel"]
     Triage["Local triage skill<br/>human in the loop"]
 
-    Daily --> Slack
-    Daily --> Notion
     Trending --> Slack
     Trending --> Notion
     Loot --> Slack
@@ -52,9 +49,6 @@ flowchart LR
 
 | Agent | Cadence | Reads | Writes |
 |---|---|---|---|
-| **check-news** | daily | news sources on the web | a Slack digest |
-| **check-mail** | daily | Gmail, with two read-only tools and nothing else | a Slack digest, with codes and card numbers masked |
-| **archive-memory** | daily, last in the same run | the two digests above | the day's archive page, and progress on topics I track |
 | **github-trending** | weekly | GitHub Trending, topic search, ecosyste.ms, the GitHub API | one row per repo: stars/week, live total, category, maintenance, license, a one-line take |
 | **loot-radar** ×4 | weekly | GitHub, plus a clone of the target tool's real config | a shortlist of config assets worth stealing into Claude Code, Copilot, opencode or Codex, each to its own table |
 | **blog-radar** | daily, silent when nothing is new | a watch list of AI-lab and practitioner blogs | one row per new post, with a full summary |
@@ -79,9 +73,9 @@ page view, while the agents already had the data in hand.
 
 **Bounded writes are the safety model.** A cloud routine approves connector
 writes without asking, and its sandbox does not stop them, so the skill file is
-the only safety net. Each one names its write surface exactly: check-mail may
-call two Gmail tools, both read-only; each archive agent may create or update
-rows in one table and never deletes. "Never deletes" is enforced by banning,
+the only safety net. Each one names its write surface exactly: an archive agent
+may create or update rows in its one table and never deletes, and
+contract-guard may not write at all. "Never deletes" is enforced by banning,
 by name, the calls that can delete by side effect (moving a page to the trash,
 replacing a page's content), because the connector has no tool literally named
 delete.
@@ -109,7 +103,7 @@ yet is parked with its install command.
 
 **The live prompts drifted away from the skills.** A routine has two
 instruction sources: the committed skill, and the trigger's prompt, which lives
-in the cloud and is invisible to git. On 2026-09-08 all five writing routines
+in the cloud and is invisible to git. On 2026-09-08 five of the writing routines
 turned out to restate a rule that the skills had since banned: finding an
 existing row by fuzzy search. A fuzzy miss reads as "no prior row", which means
 a duplicate row and a returning repo labelled new. Two prompts had also dropped
