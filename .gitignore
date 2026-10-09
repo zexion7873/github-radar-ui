@@ -51,3 +51,6 @@ next-env.d.ts
 .claude/settings.local.json
 .claude/worktrees/
 .claude/launch.json
+
+# opencode per-machine plugin config (opencode plugin … without -g writes here)
+.opencode/
