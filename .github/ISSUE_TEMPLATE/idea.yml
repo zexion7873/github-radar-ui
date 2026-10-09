@@ -1,0 +1,29 @@
+name: Idea
+description: Something the radar should show, or show differently
+labels: ["enhancement"]
+body:
+  - type: textarea
+    id: problem
+    attributes:
+      label: What is annoying you
+      description: The situation, not the solution. The moment the radar failed to tell you something you wanted to know.
+    validations:
+      required: true
+
+  - type: textarea
+    id: idea
+    attributes:
+      label: What you had in mind
+      description: Optional. A rough shape is fine, and so is "no idea, but this bothers me."
+
+  - type: dropdown
+    id: area
+    attributes:
+      label: Which part, if you know
+      options:
+        - Dashboard
+        - Trending
+        - Blog
+        - A per-repo signal or badge
+        - Layout, mobile or dark mode
+        - Not sure
