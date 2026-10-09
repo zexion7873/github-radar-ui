@@ -11,7 +11,7 @@ and a sharp take.**
 
 [![Live site](https://img.shields.io/badge/live-whyisthistrending.vercel.app-black?style=flat)](https://whyisthistrending.vercel.app)
 [![Next.js 16](https://img.shields.io/badge/Next.js-16-black?style=flat)](NEXT16-BREAKING-CHANGES.md)
-[![License: all rights reserved](https://img.shields.io/badge/license-all%20rights%20reserved-lightgrey?style=flat)](#%EF%B8%8F-license)
+[![License: MIT](https://img.shields.io/github/license/zexion7873/github-radar-ui?style=flat)](LICENSE)
 
 A read-mostly Next.js site over the Notion archive that a set of Claude Code
 routines writes every week. The site never calls GitHub itself.
@@ -152,8 +152,7 @@ have the rest.
 
 ## ⚖️ License
 
-All rights reserved. The source is public to read; no license is granted to
-copy, modify or redistribute it.
+[MIT](LICENSE).
 
 Unofficial personal project. Not affiliated with, endorsed by, or sponsored by
 GitHub, Notion, Vercel or Anthropic.
