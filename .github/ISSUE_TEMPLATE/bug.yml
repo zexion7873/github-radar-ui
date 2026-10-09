@@ -1,0 +1,70 @@
+name: Bug report
+description: A page shows something wrong, breaks, or looks broken
+labels: ["bug"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        One question decides where a report goes, and it is worth answering
+        before you write anything:
+
+        - **Is the data wrong, or how the site shows it?** The repo summaries,
+          takes, categories and signals are written upstream by separate
+          routines; this site only renders them. A wrong summary is still worth
+          reporting, but say so, because the fix lives elsewhere.
+
+  - type: input
+    id: url
+    attributes:
+      label: Page URL
+      description: The full address. The category filter, search box and sort order are not part of it, so name any you had set in the description below.
+      placeholder: "https://whyisthistrending.vercel.app/trending"
+    validations:
+      required: true
+
+  - type: dropdown
+    id: kind
+    attributes:
+      label: What kind of problem
+      options:
+        - The data itself is wrong (summary, take, stars, category)
+        - The site shows correct data wrongly (layout, sorting, filters, badges)
+        - The page errors or does not load
+        - Something else
+    validations:
+      required: true
+
+  - type: input
+    id: device
+    attributes:
+      label: Browser and device
+      description: Layout bugs are often phone-only or dark-mode-only, so say which.
+      placeholder: "Safari on iPhone, dark mode"
+    validations:
+      required: true
+
+  - type: textarea
+    id: what
+    attributes:
+      label: What you saw, and what you expected instead
+      description: A screenshot helps more than a description for anything visual.
+    validations:
+      required: true
+
+  - type: textarea
+    id: repro
+    attributes:
+      label: How to make it happen again
+      description: If you cannot reproduce it, say so. An intermittent report with real timestamps beats a confident guess.
+      placeholder: |
+        1. Open /trending on a phone
+        2. Pick a category and sort by stars
+        3. The badge row overflows the card
+
+  - type: checkboxes
+    id: checked
+    attributes:
+      label: Before submitting
+      options:
+        - label: I saw this happen myself on the live site or a local run.
+          required: true
