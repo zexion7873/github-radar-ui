@@ -63,6 +63,9 @@ flowchart LR
 - **Server-side only.** Every Notion call runs on the server with an internal
   integration token; the token never reaches the browser.
 
+The agents upstream, how their writes are bounded, and what broke in production
+are written up in [docs/case-study.md](docs/case-study.md).
+
 ---
 
 ## 🔐 Access
