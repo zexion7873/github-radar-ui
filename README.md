@@ -108,10 +108,9 @@ Loot tab, so anonymous visitors never receive loot data.
    ```bash
    node -e "console.log(require('crypto').randomBytes(32).toString('hex'))"
    ```
-   > [!IMPORTANT]
-   > **All three are required.** With `AUTH_SECRET` unset the gate fails *safe*:
-   > every `/loot/*` route redirects to `/login` and no login can succeed. An
-   > unset secret must never mean "open". The public pages keep working.
+   **All three are required.** With `AUTH_SECRET` unset the gate fails *safe*:
+   every `/loot/*` route redirects to `/login` and no login can succeed. An
+   unset secret must never mean "open". The public pages keep working.
 4. **Run it** on the Node version in [`.nvmrc`](.nvmrc), which CI reads too:
    ```bash
    npm run dev
