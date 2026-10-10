@@ -28,10 +28,19 @@ export const LOOT_TARGETS = {
 
 export type LootTarget = keyof typeof LOOT_TARGETS;
 
-// radar-rag's "Ask the radar" page — the site's one link out to it, and a plain
-// <a>, never a fetch: this UI stays a pure Notion reader. The URL is the
-// radar-rag service's; change it only together with that service's deploy.
-export const RADAR_RAG_URL = "https://radar-rag-50472171523.asia-east1.run.app/";
+// radar-rag answers questions over the archive. This site's SERVER never calls
+// it (it reads Notion only); the /ask page's browser code does, so both values
+// are public. The defaults are production; NEXT_PUBLIC_* overrides point local
+// dev at a local radar-rag with Cloudflare's always-pass test site key. The URL
+// is radar-rag's: change it only together with that service's deploy.
+export const RADAR_RAG_URL =
+  process.env.NEXT_PUBLIC_RADAR_RAG_URL ??
+  "https://radar-rag-50472171523.asia-east1.run.app";
+export const TURNSTILE_SITE_KEY =
+  process.env.NEXT_PUBLIC_TURNSTILE_SITE_KEY ?? "0x4AAAAAAFTDvuuo53zguas_";
+// radar-rag's CORS and the Turnstile widget allow only this host (plus
+// localhost for dev), so the /ask page stays inert on preview deployments.
+export const PRODUCTION_HOST = "whyisthistrending.vercel.app";
 
 // The single canonical "first" target — Nav's collapsed Loot tab and the
 // dashboard's combined pending-count stat both need one default landing spot.
