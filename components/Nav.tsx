@@ -15,14 +15,22 @@ const links: {
   prefix?: string;
   gated?: boolean;
   external?: string;
+  hint?: string;
 }[] = [
   { href: "/", label: "Dashboard" },
   { href: "/trending", label: "Trending" },
   { href: "/blog", label: "Blog" },
   { href: `/loot/${DEFAULT_LOOT_TARGET}`, label: "Loot", prefix: "/loot", gated: true },
   // External: another service, so a new tab and no active state. `external` is
-  // its accessible name, which says so (the ↗ alone reads as "arrow").
-  { href: RADAR_RAG_URL, label: "Ask ↗", external: "Ask the radar（在新分頁開啟 radar-rag）" },
+  // its accessible name, which says so (the ↗ alone reads as "arrow"). radar-rag
+  // scales to zero and its JVM serves the page too, so a cold visit shows a blank
+  // tab for ~10-15 s; `hint` warns before the click instead of after it.
+  {
+    href: RADAR_RAG_URL,
+    label: "Ask ↗",
+    external: "Ask the radar（在新分頁開啟 radar-rag，首次開啟約需 10–15 秒）",
+    hint: "首次開啟約需 10–15 秒",
+  },
 ];
 
 export default function Nav({ authed }: { authed: boolean }) {
@@ -51,6 +59,7 @@ export default function Nav({ authed }: { authed: boolean }) {
               target="_blank"
               rel="noopener noreferrer"
               aria-label={l.external}
+              title={l.hint}
               className={className}
             >
               {l.label}
