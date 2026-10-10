@@ -129,6 +129,16 @@ export function stripLeadingLabel(quote: string, label: string): string {
   return label && q.startsWith(label) ? q.slice(label.length).trimStart() : quote;
 }
 
+// radar-rag cites sentence by sentence, so one citation can carry several short
+// passages that need not be adjacent in the row. They render as one quote, joined
+// by an ellipsis so it never reads as a continuous excerpt.
+export function joinPassages(passages: string[], label: string): string {
+  return passages
+    .map((q) => stripLeadingLabel(q, label).trim())
+    .filter(Boolean)
+    .join(" … ");
+}
+
 // radar-rag's status codes, in the same words its own page used.
 export function askErrorMessage(status: number): string {
   switch (status) {
