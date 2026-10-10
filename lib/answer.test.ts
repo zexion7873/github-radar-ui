@@ -2,6 +2,7 @@ import { describe, expect, it } from "vitest";
 import {
   askErrorMessage,
   isAskResponse,
+  joinPassages,
   parseAnswer,
   parseInline,
   rowHref,
@@ -137,5 +138,21 @@ describe("stripLeadingLabel", () => {
 
   it("leaves a passage that does not open with the label untouched", () => {
     expect(stripLeadingLabel("Agent 記憶系統", "vectorize-io/hindsight")).toBe("Agent 記憶系統");
+  });
+});
+
+describe("joinPassages", () => {
+  it("joins sentence-level passages with an ellipsis", () => {
+    expect(joinPassages(["用 retain 讓 agent 學習。", "  本週漲幅第一。 "], "a/b")).toBe(
+      "用 retain 讓 agent 學習。 … 本週漲幅第一。",
+    );
+  });
+
+  it("strips the label from a passage and drops passages left empty", () => {
+    expect(joinPassages(["a/b", "a/b 記憶系統。", ""], "a/b")).toBe("記憶系統。");
+  });
+
+  it("is empty when nothing remains", () => {
+    expect(joinPassages([], "a/b")).toBe("");
   });
 });

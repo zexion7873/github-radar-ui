@@ -13,7 +13,7 @@ import {
   parseAnswer,
   rowHref,
   rowLabel,
-  stripLeadingLabel,
+  joinPassages,
   uncitedSources,
 } from "@/lib/answer";
 import { Notice, formatWeek } from "@/components/ui";
@@ -250,6 +250,48 @@ function InlineText({ parts }: { parts: Inline[] }) {
   );
 }
 
+// Section heads follow the site's dialect: an accent tick for a section front, and
+// for a fold the BlogList group head (rotating ›, tick, label, mono count).
+function Tick() {
+  return (
+    <span aria-hidden="true" className="inline-block h-2.5 w-2.5 shrink-0 self-center bg-accent" />
+  );
+}
+
+function FoldHead({
+  group,
+  label,
+  count,
+  size,
+}: {
+  group: "cited" | "others";
+  label: string;
+  count: number;
+  size: "xl" | "lg";
+}) {
+  return (
+    <summary className="cursor-pointer list-none [&::-webkit-details-marker]:hidden">
+      <h2
+        className={`flex items-baseline gap-2 font-serif tracking-tight text-foreground transition-colors hover:text-accent ${
+          size === "xl" ? "text-xl" : "text-lg"
+        }`}
+      >
+        <span
+          aria-hidden="true"
+          className={`self-center font-mono text-xs text-muted transition-transform ${
+            group === "cited" ? "group-open/cited:rotate-90" : "group-open/others:rotate-90"
+          }`}
+        >
+          &rsaquo;
+        </span>
+        <Tick />
+        {label}
+        <span className="font-mono text-xs font-normal tracking-wide text-muted">{count}</span>
+      </h2>
+    </summary>
+  );
+}
+
 function Answer({
   data,
   headingRef,
@@ -258,28 +300,36 @@ function Answer({
   headingRef: React.RefObject<HTMLHeadingElement | null>;
 }) {
   const others = uncitedSources(data);
+  const blocks = parseAnswer(data.answer);
   return (
     <section className="flex flex-col gap-8 border-t-2 border-foreground pt-6">
-      <div className="flex flex-col gap-3">
-        <h2 ref={headingRef} tabIndex={-1} className="font-serif text-xl focus:outline-none">
+      <div className="flex flex-col gap-4">
+        <h2
+          ref={headingRef}
+          tabIndex={-1}
+          className="flex items-center gap-2.5 font-serif text-xl tracking-tight focus:outline-none"
+        >
+          <Tick />
           回答 · Answer
         </h2>
-        <div className="flex flex-col gap-3 font-serif-text text-[1.0625rem] leading-[1.8] text-foreground">
-          {parseAnswer(data.answer).map((b, i) =>
+        <div className="flex flex-col gap-4 font-serif-text text-[1.0625rem] leading-[1.8] text-foreground">
+          {blocks.map((b, i) =>
             b.kind === "ul" ? (
-              <ul key={i} className="flex list-disc flex-col gap-1 pl-5">
+              <ul key={i} className="flex list-disc flex-col gap-2 pl-5 marker:text-muted">
                 {b.items.map((item, j) => (
-                  <li key={j}>
+                  <li key={j} className="pl-1">
                     <InlineText parts={item} />
                   </li>
                 ))}
               </ul>
             ) : b.kind === "h3" ? (
-              <h3 key={i} className="font-semibold">
+              // Weight, not mono or uppercase, carries the level: both are no-ops on 漢字.
+              <h3 key={i} className="mt-2 border-l-2 border-accent pl-3 font-semibold leading-snug">
                 <InlineText parts={b.inline} />
               </h3>
             ) : (
-              <p key={i}>
+              // The opening paragraph reads as the deck: one step up, like a lede.
+              <p key={i} className={i === 0 ? "text-lg leading-[1.7]" : undefined}>
                 <InlineText parts={b.inline} />
               </p>
             ),
@@ -287,21 +337,27 @@ function Answer({
         </div>
       </div>
 
+      {/* The answer already restates what it cites, so the citations start folded:
+          the evidence is one click away instead of reading as the answer twice. */}
       {data.citations.length > 0 && (
-        <div className="flex flex-col gap-3">
-          <h2 className="font-serif text-xl">引用 · Cited</h2>
-          <Rows rows={data.citations} numbered withQuotes />
-        </div>
+        <details className="group/cited">
+          <FoldHead group="cited" label="引用 · Cited" count={data.citations.length} size="xl" />
+          <div className="mt-3">
+            <Rows rows={data.citations} variant="cited" />
+          </div>
+        </details>
       )}
 
       {others.length > 0 && (
-        <details className="group/sources">
-          <summary className="cursor-pointer list-none font-mono text-[11px] tracking-wide text-muted uppercase transition-colors hover:text-foreground [&::-webkit-details-marker]:hidden">
-            <span className="inline-block transition-transform group-open/sources:rotate-90">›</span>{" "}
-            其他檢索到、但沒有引用的資料 · Also retrieved（{others.length}）
-          </summary>
+        <details className="group/others">
+          <FoldHead
+            group="others"
+            label="其他檢索到、但沒有引用的資料 · Also retrieved"
+            count={others.length}
+            size="lg"
+          />
           <div className="mt-3">
-            <Rows rows={others} numbered={false} withQuotes={false} />
+            <Rows rows={others} variant="compact" />
           </div>
         </details>
       )}
@@ -313,33 +369,29 @@ function Answer({
   );
 }
 
-function Rows({
-  rows,
-  numbered,
-  withQuotes,
-}: {
-  rows: AskRow[];
-  numbered: boolean;
-  withQuotes: boolean;
-}) {
+// "cited" is the evidence: numbered, full-size titles, passages. "compact" is the
+// rows retrieved but unused: a lighter, tighter list one step below it.
+function Rows({ rows, variant }: { rows: AskRow[]; variant: "cited" | "compact" }) {
+  const cited = variant === "cited";
+  const title = cited
+    ? "font-serif text-lg break-all text-foreground transition-colors hover:text-accent"
+    : "font-serif text-base break-all text-muted transition-colors hover:text-foreground";
   return (
-    <ol className="flex flex-col divide-y divide-border">
+    <ol className={cited ? "flex flex-col divide-y divide-border" : "flex flex-col gap-1.5"}>
       {rows.map((row, i) => {
         const target = rowHref(row);
         const name = rowLabel(row);
+        const passage = cited ? joinPassages(row.citedText ?? [], name) : "";
         return (
-          <li key={`${row.id}-${i}`} className="flex flex-col gap-2 py-3">
+          <li key={`${row.id}-${i}`} className={cited ? "flex flex-col gap-2 py-3" : "flex flex-col"}>
             <div className="flex flex-wrap items-baseline gap-x-2 gap-y-1">
-              {numbered && (
+              {cited && (
                 <span className="font-mono text-[11px] tracking-[0.18em] text-muted tabular-nums">
                   {String(i + 1).padStart(2, "0")}
                 </span>
               )}
               {target?.internal ? (
-                <Link
-                  href={target.href}
-                  className="font-serif text-lg break-all text-foreground transition-colors hover:text-accent"
-                >
+                <Link href={target.href} className={title}>
                   {name}
                 </Link>
               ) : target ? (
@@ -347,12 +399,12 @@ function Rows({
                   href={target.href}
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="font-serif text-lg break-all text-foreground transition-colors hover:text-accent"
+                  className={title}
                 >
                   {name} ↗
                 </a>
               ) : (
-                <span className="font-serif text-lg break-all">{name}</span>
+                <span className={title}>{name}</span>
               )}
               <span className="font-mono text-[11px] tracking-wide text-muted uppercase">
                 {row.source === "blog" ? "blog" : "trending"}
@@ -372,15 +424,11 @@ function Rows({
                 )}
               </span>
             </div>
-            {withQuotes &&
-              (row.citedText ?? []).map((quote, j) => (
-                <blockquote
-                  key={j}
-                  className="border-l-2 border-accent pl-3 font-serif-text text-sm leading-relaxed text-muted"
-                >
-                  {stripLeadingLabel(quote, name)}
-                </blockquote>
-              ))}
+            {passage && (
+              <blockquote className="border-l-2 border-accent pl-3 font-serif-text text-sm leading-relaxed text-muted">
+                {passage}
+              </blockquote>
+            )}
           </li>
         );
       })}
