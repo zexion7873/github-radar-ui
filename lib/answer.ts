@@ -80,7 +80,9 @@ export function parseAnswer(text: string): Block[] {
     }
     list = null;
     if (!line) continue;
-    const heading = line.match(/^#{1,6}\s+(.*)$/);
+    // The model writes subheads either as markdown headings or as a line that is
+    // nothing but one bold run (optionally ending in a colon); both are subheads.
+    const heading = line.match(/^#{1,6}\s+(.*)$/) ?? line.match(/^\*\*([^*]+)\*\*\s*[:：]?$/);
     blocks.push({
       kind: heading ? "h3" : "p",
       inline: parseInline(heading ? heading[1] : line),
@@ -137,6 +139,18 @@ export function joinPassages(passages: string[], label: string): string {
     .map((q) => stripLeadingLabel(q, label).trim())
     .filter(Boolean)
     .join(" … ");
+}
+
+// Bold names in the answer that match a cited or retrieved row's label link to
+// that row, keyed case-insensitively. A name the model rephrased stays plain bold.
+export function nameLinks(data: AskResponse): Map<string, { href: string; internal: boolean }> {
+  const links = new Map<string, { href: string; internal: boolean }>();
+  for (const row of [...data.citations, ...data.sources]) {
+    const target = rowHref(row);
+    const key = rowLabel(row).trim().toLowerCase();
+    if (target && key && !links.has(key)) links.set(key, target);
+  }
+  return links;
 }
 
 // radar-rag's status codes, in the same words its own page used.

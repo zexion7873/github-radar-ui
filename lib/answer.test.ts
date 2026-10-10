@@ -3,6 +3,7 @@ import {
   askErrorMessage,
   isAskResponse,
   joinPassages,
+  nameLinks,
   parseAnswer,
   parseInline,
   rowHref,
@@ -42,6 +43,25 @@ describe("parseAnswer", () => {
         items: [[{ kind: "text", text: "one" }], [{ kind: "text", text: "two" }]],
       },
       { kind: "p", inline: [{ kind: "text", text: "結論" }] },
+    ]);
+  });
+
+  it("treats a line that is only one bold run as a subhead, colon or not", () => {
+    expect(parseAnswer("**實際可用的工具**\n**怎麼選：**")).toEqual([
+      { kind: "h3", inline: [{ kind: "text", text: "實際可用的工具" }] },
+      { kind: "h3", inline: [{ kind: "text", text: "怎麼選：" }] },
+    ]);
+  });
+
+  it("keeps a bold lead-in followed by prose as a paragraph", () => {
+    expect(parseAnswer("**選擇建議**：看 benchmark 就選 hindsight。")).toEqual([
+      {
+        kind: "p",
+        inline: [
+          { kind: "strong", text: "選擇建議" },
+          { kind: "text", text: "：看 benchmark 就選 hindsight。" },
+        ],
+      },
     ]);
   });
 
@@ -154,5 +174,30 @@ describe("joinPassages", () => {
 
   it("is empty when nothing remains", () => {
     expect(joinPassages([], "a/b")).toBe("");
+  });
+});
+
+describe("nameLinks", () => {
+  const id = "3bf2e058-e02d-81c5-8cae-ff1a172107c2";
+
+  it("maps a row's label, lowercased, to its link", () => {
+    const links = nameLinks({
+      answer: "a",
+      citations: [{ id, source: "trending", repo: "vectorize-io/Hindsight" }],
+      sources: [{ id: "x1", source: "blog", title: "How to Give Your Agent Memory", url: "https://b.example/p" }],
+      usage: { model: "m", inputTokens: 1, outputTokens: 1 },
+    });
+    expect(links.get("vectorize-io/hindsight")).toEqual({ href: `/trending/${id}`, internal: true });
+    expect(links.get("how to give your agent memory")).toEqual({ href: "https://b.example/p", internal: false });
+  });
+
+  it("skips a row with nothing to link to", () => {
+    const links = nameLinks({
+      answer: "a",
+      citations: [{ id: "x1", source: "blog", title: "No link" }],
+      sources: [],
+      usage: { model: "m", inputTokens: 1, outputTokens: 1 },
+    });
+    expect(links.size).toBe(0);
   });
 });

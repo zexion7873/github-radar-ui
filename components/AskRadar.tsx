@@ -14,6 +14,7 @@ import {
   rowHref,
   rowLabel,
   joinPassages,
+  nameLinks,
   uncitedSources,
 } from "@/lib/answer";
 import { Notice, formatWeek } from "@/components/ui";
@@ -236,18 +237,36 @@ export default function AskRadar() {
   );
 }
 
-function InlineText({ parts }: { parts: Inline[] }) {
-  return parts.map((p, i) =>
-    p.kind === "strong" ? (
-      <strong key={i}>{p.text}</strong>
-    ) : p.kind === "code" ? (
-      <code key={i} className="font-mono text-[0.9em]">
-        {p.text}
-      </code>
+type Links = Map<string, { href: string; internal: boolean }>;
+
+const nameLinkClass =
+  "underline decoration-border decoration-1 underline-offset-4 transition-colors hover:text-accent hover:decoration-accent";
+
+// Bold runs are the names the answer is about, so they stay full ink against the
+// ink-2 prose; one that matches a cited or retrieved row also links to it.
+function InlineText({ parts, links }: { parts: Inline[]; links: Links }) {
+  return parts.map((p, i) => {
+    if (p.kind === "code") {
+      return (
+        <code key={i} className="font-mono text-[0.9em]">
+          {p.text}
+        </code>
+      );
+    }
+    if (p.kind === "text") return p.text;
+    const name = <strong className="font-semibold text-foreground">{p.text}</strong>;
+    const target = links.get(p.text.trim().toLowerCase());
+    if (!target) return <span key={i}>{name}</span>;
+    return target.internal ? (
+      <Link key={i} href={target.href} className={nameLinkClass}>
+        {name}
+      </Link>
     ) : (
-      p.text
-    ),
-  );
+      <a key={i} href={target.href} target="_blank" rel="noopener noreferrer" className={nameLinkClass}>
+        {name}
+      </a>
+    );
+  });
 }
 
 // Section heads follow the site's dialect: an accent tick for a section front, and
@@ -301,6 +320,7 @@ function Answer({
 }) {
   const others = uncitedSources(data);
   const blocks = parseAnswer(data.answer);
+  const links = nameLinks(data);
   return (
     <section className="flex flex-col gap-8 border-t-2 border-foreground pt-6">
       <div className="flex flex-col gap-4">
@@ -312,25 +332,25 @@ function Answer({
           <Tick />
           回答 · Answer
         </h2>
-        <div className="flex flex-col gap-4 font-serif-text text-[1.0625rem] leading-[1.8] text-foreground">
+        <div className="flex flex-col gap-4 font-serif-text text-[1.0625rem] leading-[1.8] text-ink-2">
           {blocks.map((b, i) =>
             b.kind === "ul" ? (
               <ul key={i} className="flex list-disc flex-col gap-2 pl-5 marker:text-muted">
                 {b.items.map((item, j) => (
                   <li key={j} className="pl-1">
-                    <InlineText parts={item} />
+                    <InlineText parts={item} links={links} />
                   </li>
                 ))}
               </ul>
             ) : b.kind === "h3" ? (
               // Weight, not mono or uppercase, carries the level: both are no-ops on 漢字.
-              <h3 key={i} className="mt-2 border-l-2 border-accent pl-3 font-semibold leading-snug">
-                <InlineText parts={b.inline} />
+              <h3 key={i} className="mt-2 border-l-2 border-accent pl-3 font-semibold leading-snug text-foreground">
+                <InlineText parts={b.inline} links={links} />
               </h3>
             ) : (
               // The opening paragraph reads as the deck: one step up, like a lede.
-              <p key={i} className={i === 0 ? "text-lg leading-[1.7]" : undefined}>
-                <InlineText parts={b.inline} />
+              <p key={i} className={i === 0 ? "text-lg leading-[1.7] text-foreground" : undefined}>
+                <InlineText parts={b.inline} links={links} />
               </p>
             ),
           )}
