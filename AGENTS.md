@@ -23,5 +23,10 @@ Gotchas that will bite you:
 - **`lib/data.ts` is `server-only`.** Never import its values into a `"use client"`
   component (build poison) — compute server-side and pass as a prop, the way `series` /
   `momentum` reach `TrendingList`.
+- **Changing `/trending/[id]` or `/blog/[id]`?** radar-rag's Ask page links every cited
+  source to them by Notion page id (the dashed UUID in `row.id`), so both must stay public,
+  and `/trending/[id]` must keep resolving ANY week's row id to the repo's full history.
+  Renaming, re-keying or gating either route breaks those links. Coordinate with radar-rag
+  before deploying; its AGENTS.md records the same contract.
 - Next 16 specifics (incl. `middleware.ts` → `proxy.ts`) are distilled in
   [`NEXT16-BREAKING-CHANGES.md`](NEXT16-BREAKING-CHANGES.md).
