@@ -6,6 +6,8 @@ import {
   parseInline,
   rowHref,
   rowLabel,
+  stripLeadingLabel,
+  uncitedSources,
 } from "./answer";
 
 describe("parseInline", () => {
@@ -110,5 +112,30 @@ describe("isAskResponse", () => {
     expect(isAskResponse({ ...ok, answer: undefined })).toBe(false);
     expect(isAskResponse({ ...ok, sources: [{ source: "blog" }] })).toBe(false);
     expect(isAskResponse(null)).toBe(false);
+  });
+});
+
+describe("uncitedSources", () => {
+  it("keeps only the retrieved rows the answer did not cite", () => {
+    const row = (id: string) => ({ id, source: "trending" });
+    const data = {
+      answer: "a",
+      citations: [row("a"), row("b")],
+      sources: [row("b"), row("c"), row("a"), row("d")],
+      usage: { model: "m", inputTokens: 1, outputTokens: 1 },
+    };
+    expect(uncitedSources(data).map((r) => r.id)).toEqual(["c", "d"]);
+  });
+});
+
+describe("stripLeadingLabel", () => {
+  it("drops the repo name a passage opens with", () => {
+    expect(
+      stripLeadingLabel("vectorize-io/hindsight Agent 記憶系統", "vectorize-io/hindsight"),
+    ).toBe("Agent 記憶系統");
+  });
+
+  it("leaves a passage that does not open with the label untouched", () => {
+    expect(stripLeadingLabel("Agent 記憶系統", "vectorize-io/hindsight")).toBe("Agent 記憶系統");
   });
 });

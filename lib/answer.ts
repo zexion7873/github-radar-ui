@@ -115,6 +115,20 @@ export function rowLabel(row: AskRow): string {
   return row.repo || row.title || row.url || row.id;
 }
 
+// radar-rag repeats every citation in `sources`; the fold lists only the rows the
+// answer did not cite, so nothing shows twice.
+export function uncitedSources(data: AskResponse): AskRow[] {
+  const cited = new Set(data.citations.map((r) => r.id));
+  return data.sources.filter((r) => !cited.has(r.id));
+}
+
+// A cited passage often opens with the row's own name, which the title above it
+// already shows.
+export function stripLeadingLabel(quote: string, label: string): string {
+  const q = quote.trimStart();
+  return label && q.startsWith(label) ? q.slice(label.length).trimStart() : quote;
+}
+
 // radar-rag's status codes, in the same words its own page used.
 export function askErrorMessage(status: number): string {
   switch (status) {
