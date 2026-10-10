@@ -27,6 +27,7 @@ routines writes every week. The site never calls GitHub itself.
 | `/` | Trending + Blog + Loot | **Dashboard**: the top five hot repos, the latest blog posts, and, for the signed-in owner only, one summary card per loot ledger |
 | `/trending`, `/trending/[id]` | Trending Archive | Weekly trending AI repos, filterable by category, with 新上榜 / 在榜週數 badges; one page per repo |
 | `/blog`, `/blog/[id]` | Blog Archive | AI and agent blog posts grouped 官方 / 個人, each with a summary and a 點評, newest first |
+| `/ask` | none (radar-rag) | **Ask the radar**: questions in Chinese or English, answered from the Trending and Blog archives with citations that link to the detail pages here |
 | `/loot/[target]`, `/loot/[target]/[id]` | Loot Ledger (`claude` / `copilot` / `opencode` / `codex`) | **Owner only.** Config assets worth stealing into each coding agent's setup, grouped by status, with an editable status |
 
 The site is in Traditional Chinese. Every per-repo signal it shows, and the rule
@@ -42,12 +43,15 @@ flowchart LR
     Notion[("Notion<br/>archive tables")]
     Server["Next.js server<br/>reads cached 600 s"]
     Pages["Public pages<br/>/ · /trending · /blog"]
+    Ask["/ask<br/>(browser)"]
+    Rag["radar-rag<br/>POST /ask"]
     Gate{"/loot/*<br/>password gate"}
     Owner["Owner"]
 
     Routines -->|"write rows"| Notion
     Notion -->|"data_sources query"| Server
     Server --> Pages
+    Ask -->|"question + Turnstile token"| Rag
     Server --> Gate
     Gate --> Owner
     Owner -->|"set loot Status"| Server
@@ -68,8 +72,8 @@ are written up in [docs/case-study.md](docs/case-study.md).
 
 The same Trending Archive and Blog Archive also feed [radar-rag](https://github.com/zexion7873/radar-rag),
 a Java / Spring AI service that answers questions over them, in Chinese or English, with
-citations back to the rows it used. Its public page, [Ask the radar](https://radar-rag-50472171523.asia-east1.run.app/), is the
-site's "Ask ↗" tab; the site only links to it and never calls its API.
+citations back to the rows it used. The site's `/ask` page is its front end. The page's
+browser code calls radar-rag directly, while the site's server still reads only Notion.
 
 ---
 

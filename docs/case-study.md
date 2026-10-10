@@ -62,7 +62,7 @@ copies.
 
 The Trending Archive and the Blog Archive have a second reader:
 [radar-rag](https://github.com/zexion7873/radar-rag), a Java / Spring AI service
-that answers questions over them with citations ([Ask the radar](https://radar-rag-50472171523.asia-east1.run.app/)).
+that answers questions over them with citations, asked from this site's `/ask` page.
 contract-guard covers it without reading its code: every column it reads in either
 table is one this site also reads, so any finding on those columns names radar-rag
 as affected too. That matters because radar-rag degrades silently where this site
