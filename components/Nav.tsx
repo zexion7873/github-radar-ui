@@ -1,7 +1,7 @@
 "use client";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { DEFAULT_LOOT_TARGET } from "@/lib/config";
+import { DEFAULT_LOOT_TARGET, RADAR_RAG_URL } from "@/lib/config";
 
 // A per-target tab repeated "LOOT ·" once per LOOT_TARGETS entry — fine at
 // two targets, clumsy and unbounded at three-plus (and mobile just clips it
@@ -9,11 +9,20 @@ import { DEFAULT_LOOT_TARGET } from "@/lib/config";
 // target; switching between targets happens on the loot pages themselves via
 // a Chip row (app/loot/[target]/page.tsx) — the same pattern already used for
 // every other filter in this app.
-const links: { href: string; label: string; prefix?: string; gated?: boolean }[] = [
+const links: {
+  href: string;
+  label: string;
+  prefix?: string;
+  gated?: boolean;
+  external?: string;
+}[] = [
   { href: "/", label: "Dashboard" },
   { href: "/trending", label: "Trending" },
   { href: "/blog", label: "Blog" },
   { href: `/loot/${DEFAULT_LOOT_TARGET}`, label: "Loot", prefix: "/loot", gated: true },
+  // External: another service, so a new tab and no active state. `external` is
+  // its accessible name, which says so (the ↗ alone reads as "arrow").
+  { href: RADAR_RAG_URL, label: "Ask ↗", external: "Ask the radar（在新分頁開啟 radar-rag）" },
 ];
 
 export default function Nav({ authed }: { authed: boolean }) {
@@ -29,16 +38,31 @@ export default function Nav({ authed }: { authed: boolean }) {
         const active = l.prefix
           ? pathname.startsWith(l.prefix)
           : pathname === l.href;
+        const className = `-mb-px whitespace-nowrap border-b-2 px-1 pb-1.5 font-mono text-[11px] tracking-[0.14em] uppercase transition-colors ${
+          active
+            ? "border-accent text-foreground"
+            : "border-transparent text-muted hover:text-foreground"
+        }`;
+        if (l.external) {
+          return (
+            <a
+              key={l.href}
+              href={l.href}
+              target="_blank"
+              rel="noopener noreferrer"
+              aria-label={l.external}
+              className={className}
+            >
+              {l.label}
+            </a>
+          );
+        }
         return (
           <Link
             key={l.href}
             href={l.href}
             aria-current={active ? "page" : undefined}
-            className={`-mb-px whitespace-nowrap border-b-2 px-1 pb-1.5 font-mono text-[11px] tracking-[0.14em] uppercase transition-colors ${
-              active
-                ? "border-accent text-foreground"
-                : "border-transparent text-muted hover:text-foreground"
-            }`}
+            className={className}
           >
             {l.label}
           </Link>

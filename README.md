@@ -66,9 +66,10 @@ flowchart LR
 The agents upstream, how their writes are bounded, and what broke in production
 are written up in [docs/case-study.md](docs/case-study.md).
 
-The same Trending Archive also feeds [radar-rag](https://github.com/zexion7873/radar-rag),
-a Java / Spring AI service that answers questions over it, in Chinese or English, with
-citations back to the rows it used.
+The same Trending Archive and Blog Archive also feed [radar-rag](https://github.com/zexion7873/radar-rag),
+a Java / Spring AI service that answers questions over them, in Chinese or English, with
+citations back to the rows it used. Its public page, [Ask the radar](https://radar-rag-50472171523.asia-east1.run.app/), is the
+site's "Ask ↗" tab; the site only links to it and never calls its API.
 
 ---
 

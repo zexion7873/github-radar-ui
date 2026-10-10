@@ -28,6 +28,11 @@ export const LOOT_TARGETS = {
 
 export type LootTarget = keyof typeof LOOT_TARGETS;
 
+// radar-rag's "Ask the radar" page — the site's one link out to it, and a plain
+// <a>, never a fetch: this UI stays a pure Notion reader. The URL is the
+// radar-rag service's; change it only together with that service's deploy.
+export const RADAR_RAG_URL = "https://radar-rag-50472171523.asia-east1.run.app/";
+
 // The single canonical "first" target — Nav's collapsed Loot tab and the
 // dashboard's combined pending-count stat both need one default landing spot.
 // Insertion order of LOOT_TARGETS decides it, so a newly added target only
