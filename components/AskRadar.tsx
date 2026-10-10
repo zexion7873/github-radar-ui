@@ -13,6 +13,8 @@ import {
   parseAnswer,
   rowHref,
   rowLabel,
+  stripLeadingLabel,
+  uncitedSources,
 } from "@/lib/answer";
 import { Notice, formatWeek } from "@/components/ui";
 
@@ -68,6 +70,8 @@ export default function AskRadar() {
   const [result, setResult] = useState<AskResponse | null>(null);
   const widgetEl = useRef<HTMLDivElement>(null);
   const widgetId = useRef<string | null>(null);
+  const answerHeading = useRef<HTMLHeadingElement>(null);
+  const form = useRef<HTMLFormElement>(null);
 
   // Wake radar-rag while the visitor types. An opaque no-cors GET needs no CORS
   // rule, and radar-rag leaves /config out of its rate limit.
@@ -100,6 +104,14 @@ export default function AskRadar() {
     },
     [],
   );
+
+  // A fresh answer lands below the form: bring it into view and move focus to its
+  // heading, so keyboard and screen-reader users start reading there.
+  useEffect(() => {
+    if (!result) return;
+    answerHeading.current?.focus({ preventScroll: true });
+    answerHeading.current?.scrollIntoView({ behavior: "smooth", block: "start" });
+  }, [result]);
 
   const ask = async (e: SubmitEvent<HTMLFormElement>) => {
     e.preventDefault();
@@ -167,7 +179,7 @@ export default function AskRadar() {
         />
       )}
 
-      <form onSubmit={ask} className="flex flex-col gap-3">
+      <form ref={form} onSubmit={ask} className="flex flex-col gap-3">
         <label htmlFor="q" className="font-mono text-[11px] tracking-wide text-muted uppercase">
           你的問題 · Your question
         </label>
@@ -175,6 +187,13 @@ export default function AskRadar() {
           id="q"
           value={q}
           onChange={(e) => setQ(e.target.value)}
+          onKeyDown={(e) => {
+            if (e.key === "Enter" && (e.metaKey || e.ctrlKey)) {
+              e.preventDefault();
+              form.current?.requestSubmit();
+            }
+          }}
+          aria-describedby="q-hint"
           rows={3}
           maxLength={500}
           required
@@ -194,20 +213,25 @@ export default function AskRadar() {
           ))}
         </div>
         <div ref={widgetEl} className="min-h-[65px]" />
-        <button
-          type="submit"
-          disabled={!token || !q.trim() || pending}
-          className="self-start rounded-none border border-foreground bg-foreground px-4 py-1.5 font-mono text-[11px] tracking-[0.14em] text-background uppercase transition-colors hover:border-accent hover:bg-accent disabled:cursor-not-allowed disabled:border-border disabled:bg-transparent disabled:text-muted"
-        >
-          {pending ? "思考中 · Thinking" : "提問 · Ask"}
-        </button>
+        <div className="mt-1 flex flex-wrap items-center gap-x-3 gap-y-2">
+          <button
+            type="submit"
+            disabled={!token || !q.trim() || pending}
+            className="rounded-none border border-foreground bg-foreground px-4 py-1.5 font-mono text-[11px] tracking-[0.14em] text-background uppercase transition-colors hover:border-accent hover:bg-accent disabled:cursor-not-allowed disabled:border-border disabled:bg-transparent disabled:text-muted"
+          >
+            {pending ? "思考中 · Thinking" : "提問 · Ask"}
+          </button>
+          <span id="q-hint" className="font-mono text-[11px] tracking-wide text-muted">
+            {pending ? "" : !token ? "正在做機器人驗證… · Verifying you're human…" : "⌘ / Ctrl + Enter"}
+          </span>
+        </div>
       </form>
 
       <p role="status" aria-live="polite" className="text-sm text-muted empty:hidden">
         {status}
       </p>
 
-      {result && <Answer data={result} />}
+      {result && <Answer data={result} headingRef={answerHeading} />}
     </div>
   );
 }
@@ -226,11 +250,20 @@ function InlineText({ parts }: { parts: Inline[] }) {
   );
 }
 
-function Answer({ data }: { data: AskResponse }) {
+function Answer({
+  data,
+  headingRef,
+}: {
+  data: AskResponse;
+  headingRef: React.RefObject<HTMLHeadingElement | null>;
+}) {
+  const others = uncitedSources(data);
   return (
-    <section className="flex flex-col gap-8">
+    <section className="flex flex-col gap-8 border-t-2 border-foreground pt-6">
       <div className="flex flex-col gap-3">
-        <h2 className="font-serif text-xl">回答 · Answer</h2>
+        <h2 ref={headingRef} tabIndex={-1} className="font-serif text-xl focus:outline-none">
+          回答 · Answer
+        </h2>
         <div className="flex flex-col gap-3 font-serif-text text-[1.0625rem] leading-[1.8] text-foreground">
           {parseAnswer(data.answer).map((b, i) =>
             b.kind === "ul" ? (
@@ -257,18 +290,18 @@ function Answer({ data }: { data: AskResponse }) {
       {data.citations.length > 0 && (
         <div className="flex flex-col gap-3">
           <h2 className="font-serif text-xl">引用 · Cited</h2>
-          <Rows rows={data.citations} withQuotes />
+          <Rows rows={data.citations} numbered withQuotes />
         </div>
       )}
 
-      {data.sources.length > 0 && (
+      {others.length > 0 && (
         <details className="group/sources">
           <summary className="cursor-pointer list-none font-mono text-[11px] tracking-wide text-muted uppercase transition-colors hover:text-foreground [&::-webkit-details-marker]:hidden">
             <span className="inline-block transition-transform group-open/sources:rotate-90">›</span>{" "}
-            檢索到的全部資料列 · All retrieved rows（{data.sources.length}）
+            其他檢索到、但沒有引用的資料 · Also retrieved（{others.length}）
           </summary>
           <div className="mt-3">
-            <Rows rows={data.sources} withQuotes={false} />
+            <Rows rows={others} numbered={false} withQuotes={false} />
           </div>
         </details>
       )}
@@ -280,7 +313,15 @@ function Answer({ data }: { data: AskResponse }) {
   );
 }
 
-function Rows({ rows, withQuotes }: { rows: AskRow[]; withQuotes: boolean }) {
+function Rows({
+  rows,
+  numbered,
+  withQuotes,
+}: {
+  rows: AskRow[];
+  numbered: boolean;
+  withQuotes: boolean;
+}) {
   return (
     <ol className="flex flex-col divide-y divide-border">
       {rows.map((row, i) => {
@@ -289,6 +330,11 @@ function Rows({ rows, withQuotes }: { rows: AskRow[]; withQuotes: boolean }) {
         return (
           <li key={`${row.id}-${i}`} className="flex flex-col gap-2 py-3">
             <div className="flex flex-wrap items-baseline gap-x-2 gap-y-1">
+              {numbered && (
+                <span className="font-mono text-[11px] tracking-[0.18em] text-muted tabular-nums">
+                  {String(i + 1).padStart(2, "0")}
+                </span>
+              )}
               {target?.internal ? (
                 <Link
                   href={target.href}
@@ -332,7 +378,7 @@ function Rows({ rows, withQuotes }: { rows: AskRow[]; withQuotes: boolean }) {
                   key={j}
                   className="border-l-2 border-accent pl-3 font-serif-text text-sm leading-relaxed text-muted"
                 >
-                  {quote}
+                  {stripLeadingLabel(quote, name)}
                 </blockquote>
               ))}
           </li>
