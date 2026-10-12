@@ -1,10 +1,12 @@
 import { describe, expect, it } from "vitest";
 import {
+  askExamples,
   assertProps,
   currentChart,
   latestPerRepo,
   repoMomentum,
   weeklySeriesByRepo,
+  type BlogRow,
   type LootRow,
   type TrendingRow,
   type WeekPoint,
@@ -185,5 +187,59 @@ describe("repoMomentum", () => {
     expect(
       repoMomentum([pt("2026-06-01", 0), pt("2026-06-08", 50)]),
     ).toBeNull();
+  });
+});
+
+describe("askExamples", () => {
+  const t = (
+    repo: string,
+    week: string,
+    starsPerWeek: number,
+    category: string | null,
+  ): TrendingRow => ({ ...trending(repo, week), starsPerWeek, category });
+  const post = (title: string, archived: string | null): BlogRow => ({
+    id: title,
+    title,
+    url: null,
+    source: "",
+    type: null,
+    author: "",
+    published: null,
+    archived,
+    brief: "",
+    summary: "",
+    comment: "",
+  });
+  const now = new Date("2026-10-12T05:00:00Z");
+
+  it("draws from the previous chart week and a post archived 8+ days ago", () => {
+    const rows = [
+      t("new/hot", "2026-10-12", 9000, "agents"),
+      t("a/one", "2026-10-05", 300, "tooling"),
+      t("b/two", "2026-10-05", 800, "agents"),
+      t("c/three", "2026-10-05", 100, "tooling"),
+      t("d/four", "2026-10-05", 50, "other"),
+      t("old/x", "2026-09-28", 5000, "models"),
+    ];
+    const blog = [
+      post("Fresh post", "2026-10-10"),
+      post("Edge post", "2026-10-05"),
+      post("Synced post", "2026-10-04"),
+    ];
+    expect(askExamples(rows, blog, now)).toEqual([
+      "「b/two」是做什麼的？為什麼會紅？",
+      "最近 tooling 類有哪些值得看的 repo？",
+      "「Synced post」這篇在講什麼？",
+    ]);
+  });
+
+  it("still names a repo when the week has no stars/wk", () => {
+    const rows = [t("new/hot", "2026-10-12", 9, null), { ...trending("a/one", "2026-10-05") }];
+    expect(askExamples(rows, [], now)).toEqual(["「a/one」是做什麼的？為什麼會紅？"]);
+  });
+
+  it("returns nothing it cannot prove is indexed", () => {
+    const rows = [t("only/week", "2026-10-12", 9000, "agents")];
+    expect(askExamples(rows, [post("Fresh post", "2026-10-10"), post("No date", null)], now)).toEqual([]);
   });
 });
