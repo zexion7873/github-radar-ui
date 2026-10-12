@@ -6,9 +6,12 @@ import {
   nameLinks,
   parseAnswer,
   parseInline,
+  previewAnswer,
+  readAskStream,
   rowHref,
   rowLabel,
   stripLeadingLabel,
+  takeSseEvents,
   uncitedSources,
 } from "./answer";
 
@@ -182,10 +185,8 @@ describe("nameLinks", () => {
 
   it("maps a row's label, lowercased, to its link", () => {
     const links = nameLinks({
-      answer: "a",
       citations: [{ id, source: "trending", repo: "vectorize-io/Hindsight" }],
       sources: [{ id: "x1", source: "blog", title: "How to Give Your Agent Memory", url: "https://b.example/p" }],
-      usage: { model: "m", inputTokens: 1, outputTokens: 1 },
     });
     expect(links.get("vectorize-io/hindsight")).toEqual({ href: `/trending/${id}`, internal: true });
     expect(links.get("how to give your agent memory")).toEqual({ href: "https://b.example/p", internal: false });
@@ -193,11 +194,126 @@ describe("nameLinks", () => {
 
   it("skips a row with nothing to link to", () => {
     const links = nameLinks({
-      answer: "a",
       citations: [{ id: "x1", source: "blog", title: "No link" }],
       sources: [],
-      usage: { model: "m", inputTokens: 1, outputTokens: 1 },
     });
     expect(links.size).toBe(0);
+  });
+});
+
+describe("previewAnswer", () => {
+  it("holds back a bold run until its closing marker arrives", () => {
+    expect(previewAnswer("用 **mem")).toEqual([{ kind: "p", inline: [{ kind: "text", text: "用" }] }]);
+  });
+
+  it("holds back an open code span and a lone trailing asterisk", () => {
+    expect(previewAnswer("跑 `npx")).toEqual([{ kind: "p", inline: [{ kind: "text", text: "跑" }] }]);
+    expect(previewAnswer("看 *")).toEqual([{ kind: "p", inline: [{ kind: "text", text: "看" }] }]);
+  });
+
+  it("keeps an unfinished lone bold line a paragraph, not a subhead", () => {
+    expect(previewAnswer("開頭\n**Hindsight**")).toEqual([
+      { kind: "p", inline: [{ kind: "text", text: "開頭" }] },
+      { kind: "p", inline: [{ kind: "strong", text: "Hindsight" }] },
+    ]);
+  });
+
+  it("makes it a subhead once its newline arrives", () => {
+    expect(previewAnswer("開頭\n**Hindsight**\n")).toEqual([
+      { kind: "p", inline: [{ kind: "text", text: "開頭" }] },
+      { kind: "h3", inline: [{ kind: "text", text: "Hindsight" }] },
+    ]);
+  });
+
+  it("hides a bare bullet marker and joins a growing bullet to its list", () => {
+    expect(previewAnswer("- one\n- ")).toEqual([
+      { kind: "ul", items: [[{ kind: "text", text: "one" }]] },
+    ]);
+    expect(previewAnswer("- one\n- tw")).toEqual([
+      { kind: "ul", items: [[{ kind: "text", text: "one" }], [{ kind: "text", text: "tw" }]] },
+    ]);
+  });
+});
+
+describe("takeSseEvents", () => {
+  it("splits complete frames and returns the unfinished one as rest", () => {
+    expect(takeSseEvents('event:delta\ndata:{"text":"a"}\n\nevent:del')).toEqual({
+      events: [{ event: "delta", data: '{"text":"a"}' }],
+      rest: "event:del",
+    });
+  });
+
+  it("accepts CRLF, a space after the colon, comments and multi-line data", () => {
+    expect(takeSseEvents(": ping\r\n\r\nevent: done\r\ndata: x\r\ndata: y\r\n\r\n")).toEqual({
+      events: [{ event: "done", data: "x\ny" }],
+      rest: "",
+    });
+  });
+});
+
+describe("readAskStream", () => {
+  const id = "3bf2e058-e02d-81c5-8cae-ff1a172107c2";
+  const row = { id, source: "trending", repo: "vectorize-io/hindsight" };
+  const usage = { model: "m", inputTokens: 1, outputTokens: 2 };
+
+  // Splits the encoded stream into fixed-size byte chunks, so frames and
+  // multi-byte characters break mid-way the way a network delivers them.
+  function streamOf(text: string, size: number) {
+    const bytes = new TextEncoder().encode(text);
+    return new ReadableStream<Uint8Array<ArrayBuffer>>({
+      start(c) {
+        for (let i = 0; i < bytes.length; i += size) c.enqueue(bytes.slice(i, i + size));
+        c.close();
+      },
+    });
+  }
+
+  function collect() {
+    const seen = { sources: [] as unknown[], deltas: [] as string[] };
+    return {
+      seen,
+      on: { sources: (r: unknown) => seen.sources.push(r), delta: (t: string) => seen.deltas.push(t) },
+    };
+  }
+
+  it("assembles sources and done into an AskResponse across byte-split chunks", async () => {
+    const wire =
+      `event:sources\ndata:${JSON.stringify([row])}\n\n` +
+      `event:delta\ndata:{"text":"記憶"}\n\n` +
+      `event:delta\ndata:{"text":"工具"}\n\n` +
+      `event:done\ndata:${JSON.stringify({ answer: "記憶工具", citations: [row], usage })}\n\n`;
+    const { seen, on } = collect();
+    const out = await readAskStream(streamOf(wire, 7), on);
+    expect(seen.deltas).toEqual(["記憶", "工具"]);
+    expect(seen.sources).toEqual([[row]]);
+    expect(out).toEqual({
+      ok: true,
+      data: { answer: "記憶工具", citations: [row], sources: [row], usage },
+    });
+  });
+
+  it("returns the status of an error event after deltas already streamed", async () => {
+    const wire =
+      `event:sources\ndata:[]\n\n` +
+      `event:delta\ndata:{"text":"partial"}\n\n` +
+      `event:error\ndata:{"status":502,"message":"declined"}\n\n`;
+    const { seen, on } = collect();
+    expect(await readAskStream(streamOf(wire, 5), on)).toEqual({ ok: false, status: 502 });
+    expect(seen.deltas).toEqual(["partial"]);
+  });
+
+  it("fails a stream that ends without done", async () => {
+    const wire = `event:sources\ndata:[]\n\nevent:delta\ndata:{"text":"cut"}\n\n`;
+    expect(await readAskStream(streamOf(wire, 64), collect().on)).toEqual({ ok: false, status: null });
+  });
+
+  it("fails a done that arrives without sources", async () => {
+    const wire = `event:done\ndata:${JSON.stringify({ answer: "a", citations: [], usage })}\n\n`;
+    expect(await readAskStream(streamOf(wire, 64), collect().on)).toEqual({ ok: false, status: null });
+  });
+
+  it("fails a malformed delta instead of rendering it", async () => {
+    const wire = `event:sources\ndata:[]\n\nevent:delta\ndata:not json\n\n`;
+    expect(await readAskStream(streamOf(wire, 64), collect().on)).toEqual({ ok: false, status: null });
   });
 });

@@ -20,10 +20,8 @@ export type AskResponse = {
 
 // The response crosses a service boundary, so its shape is checked before render:
 // a radar-rag change that breaks it shows an error instead of a blank page.
-export function isAskResponse(v: unknown): v is AskResponse {
-  if (typeof v !== "object" || v === null) return false;
-  const r = v as Record<string, unknown>;
-  const rows = (x: unknown) =>
+function isRows(x: unknown): x is AskRow[] {
+  return (
     Array.isArray(x) &&
     x.every(
       (row) =>
@@ -31,12 +29,18 @@ export function isAskResponse(v: unknown): v is AskResponse {
         row !== null &&
         typeof (row as AskRow).id === "string" &&
         typeof (row as AskRow).source === "string",
-    );
+    )
+  );
+}
+
+export function isAskResponse(v: unknown): v is AskResponse {
+  if (typeof v !== "object" || v === null) return false;
+  const r = v as Record<string, unknown>;
   const u = r.usage as Record<string, unknown> | null | undefined;
   return (
     typeof r.answer === "string" &&
-    rows(r.citations) &&
-    rows(r.sources) &&
+    isRows(r.citations) &&
+    isRows(r.sources) &&
     typeof u === "object" &&
     u !== null &&
     typeof u.model === "string"
@@ -91,6 +95,105 @@ export function parseAnswer(text: string): Block[] {
   return blocks;
 }
 
+// Holds back a marker whose closing half has not streamed in yet, so the reader
+// never sees a stray ** or ` that turns into formatting a moment later.
+function holdOpenMarkers(line: string): string {
+  if ((line.split("**").length - 1) % 2) line = line.slice(0, line.lastIndexOf("**"));
+  if ((line.split("`").length - 1) % 2) line = line.slice(0, line.lastIndexOf("`"));
+  return line.replace(/(?<!\*)\*$/, "");
+}
+
+// While an answer streams, the line still being written must not change shape
+// under the reader: a bare bullet marker waits for its text, and a lone bold run
+// stays a paragraph until its newline proves it is a subhead, not a lead-in.
+export function previewAnswer(text: string): Block[] {
+  const cut = text.lastIndexOf("\n") + 1;
+  let tail = holdOpenMarkers(text.slice(cut)).trim();
+  if (/^(?:[-*]|\d+\.?|#{1,6})$/.test(tail)) tail = "";
+  const blocks = parseAnswer(text.slice(0, cut) + tail);
+  const last = blocks.at(-1);
+  if (tail && last?.kind === "h3" && !tail.startsWith("#")) {
+    blocks[blocks.length - 1] = { kind: "p", inline: parseInline(tail) };
+  }
+  return blocks;
+}
+
+export type SseEvent = { event: string; data: string };
+
+// Splits the complete server-sent-event frames off the front of buf; the
+// unfinished frame comes back as rest, to be prefixed to the next chunk.
+export function takeSseEvents(buf: string): { events: SseEvent[]; rest: string } {
+  const frames = buf.replace(/\r\n/g, "\n").split("\n\n");
+  const rest = frames.pop() ?? "";
+  const events: SseEvent[] = [];
+  for (const frame of frames) {
+    let event = "message";
+    const data: string[] = [];
+    for (const line of frame.split("\n")) {
+      if (line.startsWith(":")) continue;
+      const i = line.indexOf(":");
+      const field = i === -1 ? line : line.slice(0, i);
+      const value = i === -1 ? "" : line.slice(i + 1).replace(/^ /, "");
+      if (field === "event") event = value;
+      else if (field === "data") data.push(value);
+    }
+    if (data.length) events.push({ event, data: data.join("\n") });
+  }
+  return { events, rest };
+}
+
+export type StreamResult =
+  | { ok: true; data: AskResponse }
+  | { ok: false; status: number | null };
+
+function parseJson(s: string): unknown {
+  try {
+    return JSON.parse(s);
+  } catch {
+    return null;
+  }
+}
+
+function field(v: unknown, key: string): unknown {
+  return typeof v === "object" && v !== null ? (v as Record<string, unknown>)[key] : undefined;
+}
+
+// Reads radar-rag's /ask event stream. `done` is the only success: an `error`
+// event returns its status, and a malformed event or a stream that ends without
+// `done` returns status null. Either way the caller retracts what it rendered.
+export async function readAskStream(
+  body: ReadableStream<BufferSource>,
+  on: { sources: (rows: AskRow[]) => void; delta: (text: string) => void },
+): Promise<StreamResult> {
+  const reader = body.pipeThrough(new TextDecoderStream()).getReader();
+  let sources: AskRow[] | undefined;
+  let buf = "";
+  for (;;) {
+    const { value, done } = await reader.read();
+    if (done) return { ok: false, status: null };
+    const { events, rest } = takeSseEvents(buf + value);
+    buf = rest;
+    for (const e of events) {
+      const data = parseJson(e.data);
+      if (e.event === "sources") {
+        if (!isRows(data)) return { ok: false, status: null };
+        sources = data;
+        on.sources(data);
+      } else if (e.event === "delta") {
+        const text = field(data, "text");
+        if (typeof text !== "string") return { ok: false, status: null };
+        on.delta(text);
+      } else if (e.event === "done") {
+        const full = { ...(data as object), sources };
+        return isAskResponse(full) ? { ok: true, data: full } : { ok: false, status: null };
+      } else if (e.event === "error") {
+        const status = field(data, "status");
+        return { ok: false, status: typeof status === "number" ? status : 502 };
+      }
+    }
+  }
+}
+
 const PAGE_ID =
   /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/;
 
@@ -143,7 +246,9 @@ export function joinPassages(passages: string[], label: string): string {
 
 // Bold names in the answer that match a cited or retrieved row's label link to
 // that row, keyed case-insensitively. A name the model rephrased stays plain bold.
-export function nameLinks(data: AskResponse): Map<string, { href: string; internal: boolean }> {
+export function nameLinks(
+  data: Pick<AskResponse, "citations" | "sources">,
+): Map<string, { href: string; internal: boolean }> {
   const links = new Map<string, { href: string; internal: boolean }>();
   for (const row of [...data.citations, ...data.sources]) {
     const target = rowHref(row);
