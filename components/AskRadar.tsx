@@ -6,11 +6,14 @@ import { PRODUCTION_HOST, RADAR_RAG_URL, TURNSTILE_SITE_KEY } from "@/lib/config
 import {
   type AskResponse,
   type AskRow,
+  type Block,
   type Inline,
   askErrorMessage,
   isAskResponse,
   isHttp,
   parseAnswer,
+  previewAnswer,
+  readAskStream,
   rowHref,
   rowLabel,
   joinPassages,
@@ -63,6 +66,9 @@ export default function AskRadar({ examples }: { examples: string[] }) {
   const [pending, setPending] = useState(false);
   const [status, setStatus] = useState("");
   const [result, setResult] = useState<AskResponse | null>(null);
+  // The answer while it streams; replaced by `result` on done, dropped on any failure.
+  const [draft, setDraft] = useState<{ text: string; sources: AskRow[] } | null>(null);
+  const inflight = useRef<AbortController | null>(null);
   const widgetEl = useRef<HTMLDivElement>(null);
   const widgetId = useRef<string | null>(null);
   const answerHeading = useRef<HTMLHeadingElement>(null);
@@ -96,17 +102,20 @@ export default function AskRadar({ examples }: { examples: string[] }) {
     () => () => {
       if (widgetId.current) window.turnstile?.remove(widgetId.current);
       widgetId.current = null;
+      // Leaving the page mid-answer closes the stream, which stops radar-rag's model call.
+      inflight.current?.abort();
     },
     [],
   );
 
   // A fresh answer lands below the form: bring it into view and move focus to its
-  // heading, so keyboard and screen-reader users start reading there.
+  // heading once, when its first words arrive, not again on every delta or on done.
+  const shown = Boolean(draft?.text) || result !== null;
   useEffect(() => {
-    if (!result) return;
+    if (!shown) return;
     answerHeading.current?.focus({ preventScroll: true });
     answerHeading.current?.scrollIntoView({ behavior: "smooth", block: "start" });
-  }, [result]);
+  }, [shown]);
 
   const ask = async (e: SubmitEvent<HTMLFormElement>) => {
     e.preventDefault();
@@ -116,18 +125,48 @@ export default function AskRadar({ examples }: { examples: string[] }) {
     setToken(null);
     setPending(true);
     setResult(null);
+    setDraft(null);
     setStatus(
       "思考中。第一次提問要先喚醒服務，約 10 到 15 秒，回答再 5 到 10 秒…… · Thinking. A first question wakes the service (10-15 s), then the model answers (5-10 s)…",
     );
+    const controller = new AbortController();
+    inflight.current = controller;
     try {
       const res = await fetch(`${RADAR_RAG_URL}/ask`, {
         method: "POST",
-        headers: { "Content-Type": "application/json", "X-Turnstile-Token": used },
+        // JSON listed second keeps a JSON body on the errors raised before the
+        // stream starts (400/403/429); an event-stream-only Accept empties them.
+        headers: {
+          "Content-Type": "application/json",
+          Accept: "text/event-stream, application/json",
+          "X-Turnstile-Token": used,
+        },
         body: JSON.stringify({ q: question }),
-        signal: AbortSignal.timeout(ASK_TIMEOUT_MS),
+        signal: AbortSignal.any([AbortSignal.timeout(ASK_TIMEOUT_MS), controller.signal]),
       });
       if (!res.ok) {
         setStatus(askErrorMessage(res.status));
+        return;
+      }
+      if (res.body && res.headers.get("Content-Type")?.startsWith("text/event-stream")) {
+        const out = await readAskStream(res.body, {
+          sources: (rows) => {
+            setDraft({ text: "", sources: rows });
+            setStatus("找到資料了，正在寫回答…… · Found sources; writing the answer…");
+          },
+          delta: (text) => setDraft((d) => d && { ...d, text: d.text + text }),
+        });
+        setDraft(null);
+        if (out.ok) {
+          setResult(out.data);
+          setStatus("");
+        } else {
+          setStatus(
+            out.status === null
+              ? "回答中途斷了，請再試一次。 · The answer was cut off; try again."
+              : askErrorMessage(out.status),
+          );
+        }
         return;
       }
       const data: unknown = await res.json();
@@ -138,6 +177,7 @@ export default function AskRadar({ examples }: { examples: string[] }) {
       setResult(data);
       setStatus("");
     } catch (err) {
+      setDraft(null);
       setStatus(
         err instanceof DOMException && err.name === "TimeoutError"
           ? "等太久了，服務可能還在啟動，請再試一次。 · Timed out; the service may still be starting. Try again."
@@ -145,6 +185,7 @@ export default function AskRadar({ examples }: { examples: string[] }) {
       );
     } finally {
       setPending(false);
+      if (inflight.current === controller) inflight.current = null;
       // Each token verifies once, so the next question needs a fresh one.
       if (widgetId.current) window.turnstile?.reset(widgetId.current);
     }
@@ -226,7 +267,24 @@ export default function AskRadar({ examples }: { examples: string[] }) {
         {status}
       </p>
 
-      {result && <Answer data={result} headingRef={answerHeading} />}
+      {result ? (
+        <Answer
+          blocks={parseAnswer(result.answer)}
+          links={nameLinks(result)}
+          headingRef={answerHeading}
+        >
+          <Evidence data={result} />
+        </Answer>
+      ) : (
+        draft?.text && (
+          <Answer
+            blocks={previewAnswer(draft.text)}
+            links={nameLinks({ citations: [], sources: draft.sources })}
+            headingRef={answerHeading}
+            streaming
+          />
+        )
+      )}
     </div>
   );
 }
@@ -306,17 +364,20 @@ function FoldHead({
 }
 
 function Answer({
-  data,
+  blocks,
+  links,
   headingRef,
+  streaming = false,
+  children,
 }: {
-  data: AskResponse;
+  blocks: Block[];
+  links: Links;
   headingRef: React.RefObject<HTMLHeadingElement | null>;
+  streaming?: boolean;
+  children?: React.ReactNode;
 }) {
-  const others = uncitedSources(data);
-  const blocks = parseAnswer(data.answer);
-  const links = nameLinks(data);
   return (
-    <section className="flex flex-col gap-8 border-t-2 border-foreground pt-6">
+    <section aria-busy={streaming} className="flex flex-col gap-8 border-t-2 border-foreground pt-6">
       <div className="flex flex-col gap-4">
         <h2
           ref={headingRef}
@@ -350,7 +411,17 @@ function Answer({
           )}
         </div>
       </div>
+      {children}
+    </section>
+  );
+}
 
+// What the answer stands on, shown once it is done: citations and usage only
+// exist on the final event.
+function Evidence({ data }: { data: AskResponse }) {
+  const others = uncitedSources(data);
+  return (
+    <>
       {/* The answer already restates what it cites, so the citations start folded:
           the evidence is one click away instead of reading as the answer twice. */}
       {data.citations.length > 0 && (
@@ -379,7 +450,7 @@ function Answer({
       <p className="font-mono text-[11px] tracking-wide text-muted">
         {data.usage.model} · {data.usage.inputTokens} in / {data.usage.outputTokens} out tokens
       </p>
-    </section>
+    </>
   );
 }
 
