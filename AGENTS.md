@@ -35,5 +35,11 @@ Gotchas that will bite you:
   and `/trending/[id]` must keep resolving ANY week's row id to the repo's full history.
   Renaming, re-keying or gating either route breaks those links. Coordinate with radar-rag
   before deploying; its AGENTS.md records the same contract.
+- **CI skips docs-only PRs.** A PR that changes only `.md` files or `docs/` skips
+  `build-test` through a job-level `if` (a skipped job reports success). `build-test`
+  is a required check in the `main` ruleset, so never move this to a workflow-level
+  `paths`/`paths-ignore` filter: the check would never report and the PR would wait
+  forever. If the app ever imports or renders a `.md` file, take it out of the skip
+  pattern.
 - Next 16 specifics (incl. `middleware.ts` → `proxy.ts`) are distilled in
   [`NEXT16-BREAKING-CHANGES.md`](NEXT16-BREAKING-CHANGES.md).

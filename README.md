@@ -154,7 +154,8 @@ on Vercel Deployment Protection.
 npm run lint && npm run build && npm test
 ```
 
-CI runs exactly these three on every push and pull request, and needs no
+CI runs exactly these three on every push and pull request (a pull request
+that touches only `.md` files or `docs/` skips them), and needs no
 environment variables: every route renders on demand, so the build never reads
 Notion. [CONTRIBUTING.md](CONTRIBUTING.md) has the traps worth knowing first;
 [AGENTS.md](AGENTS.md) and [NEXT16-BREAKING-CHANGES.md](NEXT16-BREAKING-CHANGES.md)
