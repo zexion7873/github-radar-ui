@@ -1,5 +1,13 @@
 "use client";
-import { type SubmitEvent, useCallback, useEffect, useRef, useState, useSyncExternalStore } from "react";
+import {
+  type SubmitEvent,
+  useCallback,
+  useEffect,
+  useLayoutEffect,
+  useRef,
+  useState,
+  useSyncExternalStore,
+} from "react";
 import Link from "next/link";
 import Script from "next/script";
 import { PRODUCTION_HOST, RADAR_RAG_URL, TURNSTILE_SITE_KEY } from "@/lib/config";
@@ -72,6 +80,9 @@ export default function AskRadar({ examples }: { examples: string[] }) {
   const widgetEl = useRef<HTMLDivElement>(null);
   const widgetId = useRef<string | null>(null);
   const answerHeading = useRef<HTMLHeadingElement>(null);
+  const answerBody = useRef<HTMLDivElement>(null);
+  const pinned = useRef(true);
+  const [following, setFollowing] = useState(true);
   const form = useRef<HTMLFormElement>(null);
 
   // Wake radar-rag while the visitor types. An opaque no-cors GET needs no CORS
@@ -117,6 +128,30 @@ export default function AskRadar({ examples }: { examples: string[] }) {
     answerHeading.current?.scrollIntoView({ behavior: "smooth", block: "start" });
   }, [shown]);
 
+  // Follow the streaming answer only while its last line is on screen: position, not
+  // input events, so the page's own downward scroll never reads as the reader leaving.
+  useEffect(() => {
+    const onScroll = () => {
+      const end = answerBody.current;
+      pinned.current = !end || end.getBoundingClientRect().bottom <= window.innerHeight + 48;
+      setFollowing(pinned.current);
+    };
+    window.addEventListener("scroll", onScroll, { passive: true });
+    return () => window.removeEventListener("scroll", onScroll);
+  }, []);
+
+  const followEnd = useCallback(() => {
+    const end = answerBody.current;
+    if (!end) return;
+    const overflow = end.getBoundingClientRect().bottom - window.innerHeight;
+    // Instant, before paint: a smooth scroll per delta would chase its own tail.
+    if (overflow > 0) window.scrollBy({ top: overflow + 24, behavior: "instant" });
+  }, []);
+
+  useLayoutEffect(() => {
+    if (draft?.text && pinned.current) followEnd();
+  }, [draft?.text, followEnd]);
+
   const ask = async (e: SubmitEvent<HTMLFormElement>) => {
     e.preventDefault();
     const question = q.trim();
@@ -126,6 +161,8 @@ export default function AskRadar({ examples }: { examples: string[] }) {
     setPending(true);
     setResult(null);
     setDraft(null);
+    pinned.current = true;
+    setFollowing(true);
     setStatus(
       "思考中。第一次提問要先喚醒服務，約 10 到 15 秒，回答再 5 到 10 秒…… · Thinking. A first question wakes the service (10-15 s), then the model answers (5-10 s)…",
     );
@@ -272,6 +309,7 @@ export default function AskRadar({ examples }: { examples: string[] }) {
           blocks={parseAnswer(result.answer)}
           links={nameLinks(result)}
           headingRef={answerHeading}
+          bodyRef={answerBody}
         >
           <Evidence data={result} />
         </Answer>
@@ -281,9 +319,24 @@ export default function AskRadar({ examples }: { examples: string[] }) {
             blocks={previewAnswer(draft.text)}
             links={nameLinks({ citations: [], sources: draft.sources })}
             headingRef={answerHeading}
+            bodyRef={answerBody}
             streaming
           />
         )
+      )}
+
+      {draft?.text && !following && (
+        <button
+          type="button"
+          onClick={() => {
+            pinned.current = true;
+            setFollowing(true);
+            followEnd();
+          }}
+          className="fixed bottom-4 left-1/2 z-10 -translate-x-1/2 rounded-none border border-foreground bg-background px-3 py-1.5 font-mono text-[11px] tracking-[0.14em] text-foreground uppercase shadow-sm transition-colors hover:border-accent hover:text-accent focus-visible:ring-2 focus-visible:ring-accent/30 focus-visible:outline-none"
+        >
+          ↓ 還在寫 · Writing
+        </button>
       )}
     </div>
   );
@@ -367,12 +420,14 @@ function Answer({
   blocks,
   links,
   headingRef,
+  bodyRef,
   streaming = false,
   children,
 }: {
   blocks: Block[];
   links: Links;
   headingRef: React.RefObject<HTMLHeadingElement | null>;
+  bodyRef: React.RefObject<HTMLDivElement | null>;
   streaming?: boolean;
   children?: React.ReactNode;
 }) {
@@ -387,7 +442,7 @@ function Answer({
           <Tick />
           回答 · Answer
         </h2>
-        <div className="flex flex-col gap-4 font-serif-text text-[1.0625rem] leading-[1.8] text-ink-2">
+        <div ref={bodyRef} className="flex flex-col gap-4 font-serif-text text-[1.0625rem] leading-[1.8] text-ink-2">
           {blocks.map((b, i) =>
             b.kind === "ul" ? (
               <ul key={i} className="flex list-disc flex-col gap-2 pl-5 marker:text-muted">
