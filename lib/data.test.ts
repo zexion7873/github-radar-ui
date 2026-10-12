@@ -228,7 +228,7 @@ describe("askExamples", () => {
     ];
     expect(askExamples(rows, blog, now)).toEqual([
       "「b/two」是做什麼的？為什麼會紅？",
-      "最近 tooling 類有哪些值得看的 repo？",
+      "「a/one」適合拿來做什麼？",
       "「Synced post」這篇在講什麼？",
     ]);
   });

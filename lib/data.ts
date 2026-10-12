@@ -372,20 +372,13 @@ export function askExamples(
   const weeks = [...new Set(trending.map((r) => r.week).filter((w) => w != null))]
     .sort()
     .reverse();
-  const synced = trending.filter((r) => r.week === weeks[1]);
-  const top = synced.reduce<TrendingRow | null>(
-    (best, r) => (!best || (r.starsPerWeek ?? 0) > (best.starsPerWeek ?? 0) ? r : best),
-    null,
-  );
+  // A repo's name is what radar-rag's retrieval matches; its Category is metadata
+  // the search and the model never see, so "最近 X 類…" questions answer badly.
+  const [top, second] = trending
+    .filter((r) => r.week === weeks[1])
+    .sort((a, b) => (b.starsPerWeek ?? 0) - (a.starsPerWeek ?? 0));
   if (top) out.push(`「${top.repo}」是做什麼的？為什麼會紅？`);
-  const counts = new Map<string, number>();
-  for (const r of synced) {
-    if (r.category && r.category !== "other") {
-      counts.set(r.category, (counts.get(r.category) ?? 0) + 1);
-    }
-  }
-  const category = [...counts].sort((a, b) => b[1] - a[1])[0]?.[0];
-  if (category) out.push(`最近 ${category} 類有哪些值得看的 repo？`);
+  if (second) out.push(`「${second.repo}」適合拿來做什麼？`);
   const cutoff = new Date(now.getTime() - 8 * 86_400_000).toISOString().slice(0, 10);
   const post = blog.find((b) => b.title && b.archived && b.archived <= cutoff);
   if (post) out.push(`「${post.title}」這篇在講什麼？`);
