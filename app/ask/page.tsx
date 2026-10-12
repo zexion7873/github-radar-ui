@@ -1,12 +1,36 @@
 import type { Metadata } from "next";
 import AskRadar from "@/components/AskRadar";
+import { askExamples, fetchBlog, fetchTrending } from "@/lib/data";
+import { TABLES } from "@/lib/config";
 
 export const metadata: Metadata = {
   description:
     "Ask the GitHub Radar archive a question, in Chinese or English, and get an answer cited to the trending repos and blog posts it used.",
 };
 
-export default function Page() {
+export const dynamic = "force-dynamic";
+
+// Tops up askExamples() when Notion is down or the archive is too young; /ask
+// must keep working without Notion, since only radar-rag answers the question.
+const FALLBACK_EXAMPLES = [
+  "有哪些工具能讓 agent 記住跨對話的事情？",
+  "最近有哪些談 prompt injection 的文章？",
+  "Which trending repos help coding agents use skills?",
+];
+
+export default async function Page() {
+  const [trending, blog] = await Promise.all([
+    fetchTrending(TABLES.trending),
+    fetchBlog(TABLES.blog),
+  ]);
+  const examples = askExamples(
+    trending.ok ? trending.rows : [],
+    blog.ok ? blog.rows : [],
+    new Date(),
+  );
+  for (const ex of FALLBACK_EXAMPLES) {
+    if (examples.length < 3) examples.push(ex);
+  }
   return (
     <div className="mx-auto flex max-w-2xl flex-col gap-8">
       <header className="flex flex-col gap-3">
@@ -20,7 +44,7 @@ export default function Page() {
         </p>
       </header>
 
-      <AskRadar />
+      <AskRadar examples={examples} />
 
       <footer className="border-t border-border pt-4 text-sm text-muted">
         <p>

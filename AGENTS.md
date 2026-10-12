@@ -12,7 +12,9 @@ itself. The one exception runs in the browser: `/ask`'s client code calls radar-
 public `POST /ask` directly. It holds no secret (the Turnstile site key is public), no
 other page depends on it, and a radar-rag outage only breaks `/ask`. Its request and
 response shape, plus the 403 / 429 / 502 / 503 codes, are a cross-repo contract that
-radar-rag's AGENTS.md also records. Its one write is the loot `Status` select (a password-gated Server Action), which
+radar-rag's AGENTS.md also records. `/ask`'s example questions are built server-side
+from Notion rows at least one radar-rag sync old (`askExamples`), so they assume
+radar-rag re-indexes at least weekly. Its one write is the loot `Status` select (a password-gated Server Action), which
 must `updateTag` that ledger's cache tag or the next read serves the old status for up
 to 600s. New per-repo fields are added write-time in those routines (a new Notion
 column), then read here. The signal set is documented in [`docs/signals.md`](docs/signals.md).

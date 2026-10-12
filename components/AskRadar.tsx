@@ -39,12 +39,6 @@ declare global {
   }
 }
 
-const EXAMPLES = [
-  "有哪些工具能讓 agent 記住跨對話的事情？",
-  "最近有哪些談 prompt injection 的文章？",
-  "Which trending repos help coding agents use skills?",
-];
-
 // radar-rag scales to zero: a cold ask waits ~10-15 s for the service, then
 // 5-10 s for the model. The timeout sits well past both.
 const ASK_TIMEOUT_MS = 45_000;
@@ -62,7 +56,7 @@ function useAskAvailable(): boolean | null {
   return host === PRODUCTION_HOST || host === "localhost" || host === "127.0.0.1";
 }
 
-export default function AskRadar() {
+export default function AskRadar({ examples }: { examples: string[] }) {
   const available = useAskAvailable();
   const [q, setQ] = useState("");
   const [token, setToken] = useState<string | null>(null);
@@ -198,11 +192,11 @@ export default function AskRadar() {
           rows={3}
           maxLength={500}
           required
-          placeholder="例如：有哪些工具能讓 agent 記住跨對話的事情？"
+          placeholder={`例如：${examples[0]}`}
           className="w-full rounded-none border border-border bg-surface px-3 py-2 font-serif-text text-base leading-relaxed placeholder:text-muted focus:border-accent focus:ring-2 focus:ring-accent/30 focus:outline-none"
         />
         <div className="flex flex-wrap gap-2" aria-label="範例問題 · Examples">
-          {EXAMPLES.map((ex) => (
+          {examples.map((ex) => (
             <button
               key={ex}
               type="button"

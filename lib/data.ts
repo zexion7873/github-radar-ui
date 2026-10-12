@@ -356,3 +356,38 @@ export function fetchBlog(uuid: string): Promise<Result<BlogRow>> {
     "notion:blog",
   );
 }
+
+// radar-rag re-indexes the archive on a weekly cron, so the newest trending week
+// and the last few days of blog posts may not be searchable yet: an example built
+// from them would answer "no sources". Draw them only from rows at least one sync
+// old — the previous chart week, and posts archived 8+ days ago (a post archived
+// late on day D is first synced up to 7 days after D+1). Relies on radar-rag
+// syncing at least weekly, not on its schedule. Up to 3; the caller tops up.
+export function askExamples(
+  trending: TrendingRow[],
+  blog: BlogRow[],
+  now: Date,
+): string[] {
+  const out: string[] = [];
+  const weeks = [...new Set(trending.map((r) => r.week).filter((w) => w != null))]
+    .sort()
+    .reverse();
+  const synced = trending.filter((r) => r.week === weeks[1]);
+  const top = synced.reduce<TrendingRow | null>(
+    (best, r) => (!best || (r.starsPerWeek ?? 0) > (best.starsPerWeek ?? 0) ? r : best),
+    null,
+  );
+  if (top) out.push(`「${top.repo}」是做什麼的？為什麼會紅？`);
+  const counts = new Map<string, number>();
+  for (const r of synced) {
+    if (r.category && r.category !== "other") {
+      counts.set(r.category, (counts.get(r.category) ?? 0) + 1);
+    }
+  }
+  const category = [...counts].sort((a, b) => b[1] - a[1])[0]?.[0];
+  if (category) out.push(`最近 ${category} 類有哪些值得看的 repo？`);
+  const cutoff = new Date(now.getTime() - 8 * 86_400_000).toISOString().slice(0, 10);
+  const post = blog.find((b) => b.title && b.archived && b.archived <= cutoff);
+  if (post) out.push(`「${post.title}」這篇在講什麼？`);
+  return out;
+}
