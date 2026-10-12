@@ -23,8 +23,11 @@ describe("canonicalBlogSource", () => {
     ).toBe("Sebastian Raschka");
   });
 
-  it("folds both Anthropic surfaces into one source", () => {
+  it("folds every Anthropic surface into one source", () => {
     expect(canonicalBlogSource("https://claude.com/blog/x", "Claude")).toBe(
+      "Anthropic",
+    );
+    expect(canonicalBlogSource("https://claude.dev/blog/x", "claude.dev Blog")).toBe(
       "Anthropic",
     );
     expect(
