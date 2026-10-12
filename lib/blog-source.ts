@@ -9,6 +9,7 @@
 const SOURCE_BY_DOMAIN: readonly [string, string][] = [
   ["anthropic.com", "Anthropic"],
   ["claude.com", "Anthropic"],
+  ["claude.dev", "Anthropic"],
   ["openai.com", "OpenAI"],
   ["deepmind.google", "Google DeepMind"],
   ["research.google", "Google Research"],
