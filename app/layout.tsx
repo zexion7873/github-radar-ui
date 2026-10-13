@@ -14,17 +14,12 @@ import { SpeedInsights } from "@vercel/speed-insights/next";
 
 const geistSans = Geist({ variable: "--font-geist-sans", subsets: ["latin"] });
 const geistMono = Geist_Mono({ variable: "--font-geist-mono", subsets: ["latin"] });
-// DM Serif Display is non-variable — only ships weight 400 — so the weight is
-// required. It's the editorial voice: masthead, section heads, and big numerals.
+// Non-variable (weight 400 only), so the weight is required.
 const dmSerif = DM_Serif_Display({
   variable: "--font-dm-serif",
   subsets: ["latin"],
   weight: "400",
 });
-// Source Serif 4 is a variable text serif with a sober, near-sloped-roman italic
-// (legible, not calligraphic) — the editorial reading face. DM Serif Display stays
-// display-only (masthead, section heads, numerals, drop-cap); pull-quotes and the
-// AI 點評 voice render in its italic.
 const sourceSerif = Source_Serif_4({
   variable: "--font-source-serif",
   subsets: ["latin"],
@@ -40,9 +35,7 @@ export const metadata: Metadata = {
     "Trending AI repos on GitHub, ranked by stars gained each week, each with a one-line summary and a sharp take.",
 };
 
-// Only needed for first visit (no cookie yet): apply the system preference
-// before paint. Once the user has a theme cookie, the server renders the class
-// directly on <html> below, so it survives soft navigations (e.g. logout).
+// First visit only: once a theme cookie exists, the server renders the class itself.
 const themeScript = `(function(){try{if(/(?:^|; )theme=/.test(document.cookie))return;if(matchMedia('(prefers-color-scheme:dark)').matches)document.documentElement.classList.add('dark')}catch(e){}})()`;
 
 export default async function RootLayout({
@@ -50,15 +43,10 @@ export default async function RootLayout({
 }: Readonly<{ children: React.ReactNode }>) {
   const cookieStore = await cookies();
   const theme = cookieStore.get("theme")?.value;
-  // Loot is the only gated area now, so the chrome (title + nav) is always shown —
-  // public visitors need it to navigate. `authed` toggles the top-right control
-  // (登出 for a live session, 登入 link otherwise) and whether Nav shows the Loot tab.
+  // Toggles 登出 / 登入 and the Loot tab; the rest of the chrome shows either way.
   const authed = isAuthed(cookieStore.get("gh_radar")?.value);
-  // Masthead dateline — today's edition date, in the radar's home timezone.
-  // Distinct from LastSynced's "資料最新到" (the data-freshness date); a
-  // broadsheet's masthead carries the print date. NOT toISOString(): that's UTC,
-  // which prints yesterday's date on the masthead until 08:00 in Taipei. en-CA
-  // formats as YYYY-MM-DD, the shape formatWeek expects.
+  // Not toISOString(): UTC prints yesterday's date until 08:00 in Taipei. en-CA
+  // gives the YYYY-MM-DD that formatWeek expects.
   const today = formatWeek(
     new Intl.DateTimeFormat("en-CA", { timeZone: "Asia/Taipei" }).format(
       new Date(),

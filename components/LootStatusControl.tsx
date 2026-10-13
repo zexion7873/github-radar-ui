@@ -7,9 +7,7 @@ import { STATUS_LABEL } from "./ui";
 
 const STATUSES = LOOT_STATUSES;
 
-// The active status is a neutral pressed-ink fill, not a status colour: the loot
-// board's left spine already carries the status hue (accent = 待處理, pos = 已採用),
-// so colouring the button too would double-spend the scarce accent on every row.
+// Neutral, not a status colour: the board's spine already carries the status hue.
 const ACTIVE_CLASS = "bg-foreground/10 text-foreground";
 
 export default function LootStatusControl({
@@ -25,9 +23,7 @@ export default function LootStatusControl({
   // the server re-renders and the card moves to its new Status group with the real value.
   const [optimistic, setOptimistic] = useOptimistic(status);
   const [pending, startTransition] = useTransition();
-  // The status the user picked that failed to save. On failure we keep showing
-  // THIS value (not a silent snap-back to the stale server value) plus a red ring
-  // and a real retry, so the user can tell the write didn't land.
+  // A failed pick stays shown with a retry, so a lost write never snaps back silently.
   const [failed, setFailed] = useState<string | null>(null);
 
   const active = failed ?? optimistic;
@@ -51,10 +47,8 @@ export default function LootStatusControl({
           <button
             key={s}
             type="button"
-            // Not `disabled`: a disabled button is blurred and dropped from tab
-            // order, so the keyboard user who just picked a status would lose focus
-            // mid-interaction. Stay focusable; mark state with aria-pressed and
-            // no-op the click when it's already active or a write is in flight.
+            // Not `disabled`, which drops focus mid-interaction: aria-pressed and a
+            // no-op click instead.
             aria-pressed={s === active}
             aria-disabled={pending || s === active}
             onClick={() => {

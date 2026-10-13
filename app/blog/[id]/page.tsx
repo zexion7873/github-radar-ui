@@ -19,11 +19,8 @@ export default async function Page({
   const post = result.rows.find((r) => r.id === id);
   if (!post) notFound();
 
-  // Drop cap whenever the brief opens with a letter — Latin or CJK both flatter a
-  // large first character. The case it can't survive is leading punctuation: a
-  // full-width quote (「) makes ::first-letter swallow the quote + next glyph into
-  // one mushy blob, so those are gated out (\p{L} matches letters incl. 漢字 but
-  // excludes punctuation / quotes / digits).
+  // Letters only: a leading 「 makes ::first-letter swallow the quote and the
+  // next glyph into one blob.
   const briefDropCap = !!post.brief && /^\s*\p{L}/u.test(post.brief);
 
   return (
@@ -68,14 +65,8 @@ export default async function Page({
           <div className="flex flex-col gap-8 font-serif-text text-[1.0625rem] leading-[1.8] text-foreground">
             {splitSummary(post.summary).map((block, i) =>
               block.label ? (
-                // Weight is the whole signal: `font-mono` and `uppercase` are both
-                // no-ops on 漢字 (Geist Mono loads the latin subset only, so
-                // --font-mono falls back to the same PingFang as the body face),
-                // and a head set smaller than its body reads as a caption. The
-                // negative margin eats half the flex gap below it, so the label
-                // binds down to the cluster it heads instead of floating between
-                // two. gap-8 ≈ the empty line box `whitespace-pre-line` painted
-                // here before, so summaries without labels keep their rhythm.
+                // Weight carries the level: mono and uppercase are no-ops on 漢字. The
+                // negative margin binds the label to the cluster below it.
                 <h3 key={i} className="-mb-4 font-semibold">
                   {block.text}
                 </h3>

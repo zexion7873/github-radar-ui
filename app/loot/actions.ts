@@ -19,12 +19,8 @@ async function assertAuthed() {
   }
 }
 
-// Constrain writes to a row of the target the caller named. Both arguments arrive
-// from the client, so without this an authed user could PATCH any Notion page the
-// integration token can reach. Reading only the named ledger (rather than scanning
-// them all for one id) keeps the check at one cached read no matter how many
-// targets LOOT_TARGETS grows to. hasOwn, not `in`: `in` would accept "constructor".
-// Returns the resolved uuid so the caller busts exactly the tag it just dirtied.
+// Both arguments come from the client: without this, an authed user could PATCH
+// any page the token reaches. hasOwn, not `in`, which accepts "constructor".
 async function assertLootPage(target: string, pageId: string): Promise<string> {
   if (!Object.hasOwn(LOOT_TARGETS, target)) {
     throw new Error("unknown loot target");

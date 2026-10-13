@@ -33,9 +33,7 @@ export default async function Page({
     .filter((r) => r.repo === target.repo)
     .sort((a, b) => (a.week ?? "").localeCompare(b.week ?? ""));
   const latest = history[history.length - 1];
-  // `prev` is the previous ARCHIVED week, which is not necessarily the calendar
-  // week before — a repo that fell off the chart and returned has a gap here.
-  // The readout label below says 前次, not 上週, for exactly that reason.
+  // The previous ARCHIVED week, not the calendar week before: hence 前次, not 上週.
   const prev = history.length > 1 ? history[history.length - 2] : null;
   const delta =
     latest.starsPerWeek != null && prev?.starsPerWeek != null
@@ -83,16 +81,7 @@ export default async function Page({
         </div>
       </header>
 
-      {/* Terminal-style readout — the Tape dialect's signature on the detail page:
-          the key figures as big mono tabular numerals, the trajectory the hero
-          chart below. The ★/週 and 上榜週數 move here from the header meta so each
-          figure is stated once. */}
-      {/* Accent top on every cell: this readout exists to feature these three
-          figures, so each is "hot" metric content that earns the mark — the accent
-          still marks meaning (all three ARE the headline data here), not a default
-          decoration for any numeric cell. Delta is a ticker reading: green up,
-          danger red down — never on the same surface as the write-failure red, so
-          the two never collide. */}
+      {/* The delta's red is safe here: no write-failure red shares this page. */}
       <div className="grid grid-cols-3 border-b border-border">
         <div className="border-t-[3px] border-t-accent border-r border-border px-3 py-3">
           <div className="font-mono text-2xl tabular-nums text-foreground">

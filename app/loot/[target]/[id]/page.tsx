@@ -18,13 +18,9 @@ import LootStatusControl from "@/components/LootStatusControl";
 
 export const dynamic = "force-dynamic";
 
-// A labelled full-text block. The card clamps these to 3 lines; here they read in
-// full, preserving the source line breaks (whitespace-pre-line).
+// Full text, which the board card clamps to 3 lines.
 function Prose({ title, children }: { title: string; children: string }) {
   return (
-    // Dossier field: a mono label rule over the body, so the detail reads as the
-    // record behind a worklist item. Loot benches the serifs (its dialect voice),
-    // so every heading here is mono, not the editorial serif the other pages use.
     <section className="flex flex-col gap-2 border-t border-border pt-4">
       <h2 className="font-mono text-[11px] tracking-[0.14em] text-muted uppercase">
         {title}
@@ -47,9 +43,8 @@ export default async function Page({
   const result = await fetchLoot(uuid);
   if (!result.ok) return <DataError error={result.error} />;
 
-  // id is one weekly row's page id. Find it, then gather every week this repo was
-  // shortlisted (newest first) for the 歷次點評 section. Claude's table never
-  // repeats a repo, so `past` is usually empty and that section is skipped.
+  // Claude's table never repeats a repo, so `past` is usually empty and 歷次點評
+  // is skipped.
   const current = result.rows.find((r) => r.id === id);
   if (!current) notFound();
   const past = result.rows
@@ -68,8 +63,6 @@ export default async function Page({
         ← {label}
       </Link>
 
-      {/* Worklist dialect echo: the board's status spine carries onto the detail
-          header, and the repo wears the same mono voice as the board rows. */}
       <header
         className={`flex flex-col gap-2 border-l-[3px] pl-4 ${STATUS_SPINE[status] ?? "border-l-border"}`}
       >

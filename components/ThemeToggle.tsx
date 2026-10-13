@@ -2,11 +2,8 @@
 
 import { useSyncExternalStore } from "react";
 
-// The `.dark` class on <html> is the source of truth (set pre-paint by the inline
-// script, then by toggle()). Read it with useSyncExternalStore so `aria-pressed`
-// mirrors the real theme for AT without a setState-in-effect: getServerSnapshot
-// keeps SSR/hydration at false, and the MutationObserver re-reads it on every
-// class change (so toggling updates aria-pressed with no extra state).
+// The `.dark` class on <html> is the source of truth; useSyncExternalStore keeps
+// aria-pressed on it without a setState-in-effect.
 function subscribe(onChange: () => void) {
   const observer = new MutationObserver(onChange);
   observer.observe(document.documentElement, {
@@ -35,8 +32,7 @@ export default function ThemeToggle() {
       aria-label="切換深色模式"
       className="shrink-0 rounded-none p-1.5 text-muted transition-colors hover:text-foreground"
     >
-      {/* Stroked line icons in currentColor — the site's ink-only iconography, no
-          emoji. "Switch-to" convention: moon offers dark mode, sun offers light. */}
+      {/* Switch-to icons: the moon offers dark mode, the sun light. */}
       <svg
         aria-hidden="true"
         viewBox="0 0 24 24"

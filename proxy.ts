@@ -2,9 +2,6 @@ import { NextResponse } from "next/server";
 import type { NextRequest } from "next/server";
 import { isAuthed } from "@/lib/auth";
 
-// Single-password gate: the session cookie holds an expiring HMAC token minted
-// at login (see lib/auth.ts), verified constant-time in isAuthed (which also
-// fails SAFE when AUTH_SECRET is unset).
 export function proxy(request: NextRequest) {
   if (isAuthed(request.cookies.get("gh_radar")?.value)) return NextResponse.next();
 
@@ -14,9 +11,7 @@ export function proxy(request: NextRequest) {
 }
 
 export const config = {
-  // Gate ONLY the loot routes — the rest of the radar (dashboard, trending, blog)
-  // is public. `/loot/:path*` covers /loot/claude, /loot/copilot, and their detail
-  // pages. Server Actions POST to their own route, so the write-back actions ALSO
-  // verify the session — see app/loot/actions.ts.
+  // Only /loot is gated. Server Actions POST to their own route, so
+  // app/loot/actions.ts must check the session too.
   matcher: ["/loot/:path*"],
 };

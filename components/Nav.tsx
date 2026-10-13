@@ -3,12 +3,7 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { DEFAULT_LOOT_TARGET } from "@/lib/config";
 
-// A per-target tab repeated "LOOT ·" once per LOOT_TARGETS entry — fine at
-// two targets, clumsy and unbounded at three-plus (and mobile just clips it
-// off overflow-x-auto). "Loot" is now a single tab that lands on the default
-// target; switching between targets happens on the loot pages themselves via
-// a Chip row (app/loot/[target]/page.tsx) — the same pattern already used for
-// every other filter in this app.
+// One Loot tab for every target; the loot pages switch targets with a chip row.
 const links: { href: string; label: string; prefix?: string; gated?: boolean }[] = [
   { href: "/", label: "Dashboard" },
   { href: "/trending", label: "Trending" },
@@ -24,9 +19,7 @@ export default function Nav({ authed }: { authed: boolean }) {
   return (
     <nav aria-label="主要導覽" className="-mx-1 flex gap-4 overflow-x-auto px-1">
       {visible.map((l) => {
-        // "Loot" matches any target's URL (/loot/copilot, a detail page, …),
-        // not just the default one it links to — everything else keeps the
-        // exact match it already had.
+        // Loot matches any target's URL, not just the default it links to.
         const active = l.prefix
           ? pathname.startsWith(l.prefix)
           : pathname === l.href;

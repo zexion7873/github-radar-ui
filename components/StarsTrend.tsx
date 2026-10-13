@@ -1,10 +1,6 @@
 import { formatWeek } from "./ui";
 
-// Weekly stars/wk trajectory as a CSS bar chart. No chart dependency — the stack
-// is intentionally just next/react, and a handful of flex divs renders this fine.
-// Server-rendered and static; the `title` on each bar gives the per-week value on
-// hover and the container carries a text alternative for AT. Editorial: ink
-// rectangles, the peak week in accent, a single baseline rule, zero radius.
+// Flex divs, no chart dependency: the stack is deliberately next/react only.
 export default function StarsTrend({
   points,
   compact = false,
@@ -16,9 +12,7 @@ export default function StarsTrend({
   const first = points[0]?.week ?? null;
   const last = points[points.length - 1]?.week ?? null;
 
-  // Inline sparkline for the trending list: a tiny bar strip, peak in accent, no
-  // axis labels or baseline — just enough to read the shape of the trajectory at
-  // a glance beside each row. The full chart (below) carries the detail page.
+  // The trending list's inline sparkline: shape only, no axis.
   if (compact) {
     return (
       <div

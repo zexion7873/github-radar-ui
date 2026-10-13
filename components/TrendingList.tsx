@@ -61,9 +61,7 @@ export default function TrendingList({
     return r;
   }, [rows, active, query, sort, momentum]);
 
-  // Latest week across all repos — drives the 新上榜 badge so it means the SAME
-  // thing as the dashboard's "本週新上榜" stat (newcomer in the most recent week),
-  // not just "any repo with ≤1 week on chart" regardless of when.
+  // Across all repos, so 新上榜 means the same as the dashboard's 本週新上榜.
   const latestWeek = useMemo(
     () => rows.reduce((m, r) => (r.week && r.week > m ? r.week : m), ""),
     [rows],
@@ -110,17 +108,11 @@ export default function TrendingList({
         </p>
       </div>
 
-      {/* Ranked ledger — the rank gutter turns the flat grid into a leaderboard.
-          Single column (not a card grid) so the gutter's border-r reads as one
-          continuous rule down the page, the way a league table does. Rank is the
-          row's position in `shown`, so flipping the sort live-renumbers; it means
-          "place in the current view", not an absolute score. */}
+      {/* Rank is the row's place in the current view, so a sort flip renumbers it. */}
       {shown.length > 0 && (
         <ol className="list-none divide-y divide-border border-y border-border">
           {shown.map((r, i) => {
-            // Week-over-week change in ★/wk, from this repo's full series. Up wears
-            // the positive green, down/flat the muted ink — never --danger, which
-            // is reserved for a write failure. Null when there's no prior week.
+            // Down stays muted, never --danger, which only a write failure wears.
             const pts = series[r.repo] ?? [];
             const last = pts[pts.length - 1]?.stars;
             const prev = pts[pts.length - 2]?.stars;
@@ -139,9 +131,6 @@ export default function TrendingList({
                   aria-label={`${r.repo} 詳情與趨勢`}
                   className="absolute inset-0"
                 />
-                {/* Rank gutter: the page's signature element. Mono tabular figures so
-                    the column stays vertically aligned; darkens to ink on row hover,
-                    on-doctrine (depth from ink, not a shadow lift). */}
                 <div className="flex justify-center border-r border-border pt-4 font-mono text-sm tabular-nums text-muted transition-colors group-hover:border-ink-2 group-hover:text-foreground">
                   <span className="text-muted/50">#</span>
                   {String(i + 1).padStart(2, "0")}
@@ -156,14 +145,8 @@ export default function TrendingList({
                     >
                       {r.repo}
                     </a>
-                    {/* Right rail of badges. 竄升中 (relative-momentum spike) is
-                        orthogonal to 新上榜/在榜週數 and can stack with either. 新上榜
-                        only for newcomers in the latest week; 在榜 N 週 for returnees;
-                        a newcomer whose latest week isn't the newest shows neither —
-                        rare after latestPerRepo, and intentional. NOTE: the
-                        新上榜/在榜週數 rule is a UI-local re-derivation of the skill's
-                        flag (github-trending SKILL.md step 8 = "no prior archived
-                        row"); change them together. */}
+                    {/* 新上榜 / 在榜 N 週 re-derive github-trending SKILL.md step 8's
+                        "no prior archived row" flag; change them together. */}
                     <div className="flex shrink-0 items-center gap-1.5">
                       {mo != null && mo >= MOMENTUM_HOT && (
                         <Badge tone="accent">竄升中</Badge>
@@ -219,8 +202,6 @@ export default function TrendingList({
                     <p className="mt-auto text-xs text-muted">{formatWeek(r.week)}</p>
                   )}
                 </div>
-                {/* Sparkline rail (sm+): the trajectory at a glance beside the row.
-                    Hidden on mobile, where the rank + figures already carry it. */}
                 <div className="hidden items-start py-4 pr-4 sm:flex">
                   {pts.length > 1 && <StarsTrend points={pts} compact />}
                 </div>

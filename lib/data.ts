@@ -65,12 +65,8 @@ export type Result<T> = { ok: true; rows: T[] } | { ok: false; error: string };
 
 type Sort = { property: string; direction: "ascending" | "descending" };
 
-// Notion DISPLAY names, declared once per table so the sort, the read, and the
-// schema assertion all reference the SAME string. A column rename then fails loudly
-// either way instead of silently blanking a cell — but via two paths: a sort-key
-// rename trips a hard Notion 400 at query time (before assertProps runs), while a
-// non-sort-key rename trips assertProps' clearer "renamed or removed" message. Both
-// surface through load()'s catch.
+// Notion display names, shared by the sort, the read and assertProps, so a
+// renamed column fails loudly instead of rendering blank cells.
 const TRENDING_PROPS = {
   repo: "Repo",
   week: "Week",
@@ -98,10 +94,8 @@ export const LOOT_PROPS = {
   how: "How",
   status: "Status",
   recommendation: "Recommendation",
-  // The one column here the loot-radar routine does not write: the triage pass
-  // writes it alongside Status, as `<bucket> — <reason>` (adopt / trial / skip /
-  // already-have). Status collapses adopt and already-have into `adopted`, so
-  // this is the only record of which one a row actually was.
+  // Written by the triage pass, not the routine. The only record of adopt vs
+  // already-have: Status collapses both into `adopted`.
   verdict: "Verdict",
   maintained: "Maintained",
   license: "License",
@@ -120,16 +114,11 @@ const BLOG_PROPS = {
   comment: "Comment",
 } as const;
 
-// The routines write these tables weekly/daily, so caching reads for a few
-// minutes costs nothing in freshness and turns every navigation from a
-// 0.3-0.9s Notion round-trip into an instant cache hit. Only successful reads
-// are cached — a thrown Notion error propagates out and is never stored.
+// A fresh Notion write stays invisible for this long; a thrown read is never cached.
 const REVALIDATE_SECONDS = 600;
 
-// Turn a silent schema drift into a loud, actionable error. Notion returns every
-// schema property on every page (empty cells included), so a key absent from the
-// first row means the column was renamed/removed — without this the extractors
-// would just hand back "" / null and the UI would render plausible blank cards.
+// Notion returns every property on every page, so a key missing from row 1 is a
+// renamed column; without this check the UI renders plausible blank cards.
 export function assertProps(page: NotionPage, expected: readonly string[]): void {
   const missing = expected.filter((k) => !(k in page.properties));
   if (missing.length > 0) {
@@ -168,11 +157,8 @@ async function load<T>(
   }
 }
 
-// Returns the RAW weekly archive — one row per repo per week, NOT deduped — so
-// the detail page ([id]) can draw each repo's full per-week history. Callers that
-// want distinct repos (Dashboard, trending list) call latestPerRepo() themselves.
-// Do NOT move dedup in here: it would collapse every repo to its latest week and
-// silently blank the detail chart, with nothing pointing back to this change.
+// The raw archive, one row per repo per week. Deduping here would blank every
+// detail page's history chart; callers run latestPerRepo() themselves.
 export function fetchTrending(uuid: string): Promise<Result<TrendingRow>> {
   const P = TRENDING_PROPS;
   return load(
@@ -205,11 +191,8 @@ export function fetchTrending(uuid: string): Promise<Result<TrendingRow>> {
   );
 }
 
-// Weekly archives (trending AND loot) are one row per repo per week. Collapse
-// to each repo's most recent week so callers see distinct repos, not weekly
-// snapshots. Generic over the row shape — the trending list/dashboard and the
-// loot board share the identical keep-latest-week rule; the detail pages
-// re-read the full archive for their history sections (每週趨勢 / 歷次點評).
+// Keeps each repo's newest week. A count over a weekly archive (trending or
+// loot) that skips this counts a repo once per week.
 export function latestPerRepo<T extends { repo: string; week: string | null }>(
   rows: T[],
 ): T[] {
@@ -221,12 +204,8 @@ export function latestPerRepo<T extends { repo: string; week: string | null }>(
   return [...byRepo.values()];
 }
 
-// This week's live chart: the (already deduped) repos whose latest week IS the
-// newest week anywhere in the data. Distinct from the full dedup result, which
-// keeps every repo ever archived — a repo that fell off the chart weeks ago
-// still has a row there, and ranking THAT set by stars/wk lets a stale one-week
-// wonder headline a "本週" section forever. If every week is null, latestWeek is
-// "" and the chart is empty (nothing can honestly be called "this week").
+// Repos whose latest week is the newest week in the data. Ranking every deduped
+// repo instead lets one that fell off the chart headline 本週 forever.
 export function currentChart(repos: TrendingRow[]): {
   latestWeek: string;
   onChart: TrendingRow[];
@@ -240,11 +219,8 @@ export function currentChart(repos: TrendingRow[]): {
 
 export type WeekPoint = { week: string | null; stars: number | null };
 
-// Each repo's full weekly stars/wk history, ascending by week — the series behind
-// the trending list's inline sparkline and ▲▼ delta. Built from the RAW archive
-// (every weekly row), NOT latestPerRepo, which keeps only one week per repo. A
-// plain object (not a Map) so it serialises across the server→client boundary;
-// keyed by repo so the already-deduped list rows look up their own history by name.
+// Built from the raw archive, not latestPerRepo (one week per repo). A plain
+// object, not a Map, because it crosses the server→client boundary.
 export function weeklySeriesByRepo(
   rows: TrendingRow[],
 ): Record<string, WeekPoint[]> {
@@ -258,12 +234,8 @@ export function weeklySeriesByRepo(
   return byRepo;
 }
 
-// Relative momentum: the latest week's stars/wk against the mean of its prior
-// weeks. >1 = accelerating past its own baseline, <1 = cooling. RELATIVE (not the
-// absolute week-over-week ▲ delta the list already shows) so a small repo spiking
-// outranks a big steady one — the ROSS-Index spirit of surfacing newcomers over
-// established champions. Null when the latest week has no stars, when no prior
-// week has any, or when the baseline is zero.
+// Latest stars/wk over the mean of the prior weeks that have one; docs/signals.md
+// defines the 竄升中 thresholds against this ratio.
 export function repoMomentum(points: WeekPoint[]): number | null {
   const latest = points.at(-1)?.stars;
   if (latest == null) return null;
@@ -276,9 +248,7 @@ export function repoMomentum(points: WeekPoint[]): number | null {
   return base > 0 ? latest / base : null;
 }
 
-// Per-repo momentum map, built from the same series the sparklines use so the
-// trending list's 竄升中 sort and badge share one computation. Lives in this
-// server-only module; computed in the page and passed to the client list as a prop.
+// One computation for both the 竄升中 sort and the badge, so they cannot disagree.
 export function momentumByRepo(
   series: Record<string, WeekPoint[]>,
 ): Record<string, number | null> {
@@ -287,10 +257,8 @@ export function momentumByRepo(
   return m;
 }
 
-// One cache tag per ledger, not one for all of them. A status write busts the tag
-// of the table it wrote to; a shared tag made every flip expire every target's
-// read, so the next write's allow-list check re-fetched all of them from Notion —
-// a cost that grew with each target added.
+// Per ledger, not shared: a shared tag makes each Status write expire every
+// target's read.
 export function lootCacheTag(uuid: string): string {
   return `notion:loot:${uuid}`;
 }
@@ -324,16 +292,13 @@ export function fetchLoot(uuid: string): Promise<Result<LootRow>> {
   );
 }
 
-// Blog Archive is one row per post (no per-repo dedup needed). assertProps catches
-// a renamed key on the first read, so the property names below are now enforced
-// rather than trusted on faith.
+// One row per post, so no latestPerRepo().
 export function fetchBlog(uuid: string): Promise<Result<BlogRow>> {
   const P = BLOG_PROPS;
   return load(
     uuid,
-    // Published is the primary order; the blog routine archives best-effort and
-    // Notion sinks empty-date rows to the bottom of a date sort, so fall back to
-    // Archived (always set on write) — a post with no Published can't bury itself.
+    // Published can be empty, and Notion sinks empty dates to the bottom; Archived
+    // is always set, so it keeps an undated post from burying itself.
     [
       { property: P.published, direction: "descending" },
       { property: P.archived, direction: "descending" },
@@ -360,12 +325,8 @@ export function fetchBlog(uuid: string): Promise<Result<BlogRow>> {
   );
 }
 
-// radar-rag re-indexes the archive on a weekly cron, so the newest trending week
-// and the last few days of blog posts may not be searchable yet: an example built
-// from them would answer "no sources". Draw them only from rows at least one sync
-// old — the previous chart week, and posts archived 8+ days ago (a post archived
-// late on day D is first synced up to 7 days after D+1). Relies on radar-rag
-// syncing at least weekly, not on its schedule. Up to 3; the caller tops up.
+// Only rows at least one radar-rag sync old (the previous chart week, posts
+// archived 8+ days ago): newer ones may not be indexed and answer "no sources".
 export function askExamples(
   trending: TrendingRow[],
   blog: BlogRow[],

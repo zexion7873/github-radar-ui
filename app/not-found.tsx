@@ -1,10 +1,8 @@
 import Link from "next/link";
 import { Notice } from "@/components/ui";
 
-// Catches both the notFound() calls in the dynamic detail pages and any unmatched
-// URL. Only the unmatched URL gets a real 404 status — a stale detail id resolves
-// after app/loading.tsx has already flushed a 200 (Next 16 loading.js "Status
-// Codes"); the noindex meta Next emits is what keeps that out of search results.
+// A stale detail id still answers 200 (loading.tsx already flushed it); Next's
+// noindex meta keeps it out of search results.
 export default function NotFound() {
   return (
     <div className="mx-auto flex max-w-2xl flex-col gap-8">

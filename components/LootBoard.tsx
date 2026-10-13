@@ -29,11 +29,8 @@ export default function LootBoard({
   target: LootTarget;
 }) {
   const router = useRouter();
-  // Loot is editable from any device/tab; last-write-wins on Notion means a
-  // backgrounded tab can hold stale optimistic state. Refresh on return to
-  // reconcile with the server (the order-freeze below survives — no remount).
-  // Throttled to once a minute: reconciliation is worth one refresh, but every
-  // tab flick refetching a Notion-backed RSC tree under a 600s cache is not.
+  // A backgrounded tab holds stale optimistic state (Notion is last-write-wins), so
+  // refresh on return, at most once a minute.
   const lastRefresh = useRef(0);
   useEffect(() => {
     function onVisible() {
@@ -85,11 +82,8 @@ export default function LootBoard({
     ...[...groups.keys()].filter((k) => !STATUS_ORDER.includes(k)),
   ];
 
-  // Freeze each card's position from the first render's recommendation order, so
-  // rating a card — which revalidates and would otherwise re-sort the group —
-  // doesn't make it jump and cost the user their place mid-triage. The lazy
-  // useState initialiser snapshots once on mount; cards added later append, and a
-  // full reload re-snapshots against the latest ratings.
+  // Frozen at first render: a rating revalidates and would re-sort the card out
+  // from under the user mid-triage.
   const [order] = useState(() => {
     const ranked = [...rows].sort(
       (a, b) => (b.recommendation ?? -1) - (a.recommendation ?? -1),
@@ -100,9 +94,7 @@ export default function LootBoard({
   const noResults = filtered.length === 0;
   const hasFilter = !!query || !!type || !!status;
 
-  // Throughput at a glance: how much of the queue is still pending and what share
-  // of the whole target has been adopted. Derived from the full `rows`, so the
-  // numbers don't swing with the active filter.
+  // From the full `rows`, so the numbers don't swing with the filter.
   const pending = rows.filter((r) => (r.status ?? "new") === "new").length;
   const adoptRate =
     rows.length > 0
@@ -168,8 +160,7 @@ export default function LootBoard({
               (a, b) =>
                 (order.get(a.id) ?? Infinity) - (order.get(b.id) ?? Infinity),
             );
-          // 待處理 lane opens by default — it's the work; deferred/adopted/skipped
-          // collapse to keep the queue, not the archive/watchlist, in front of you.
+          // Only 待處理 opens by default: it is the work.
           return (
             <details key={key} open={key === "new"} className="group/lane">
               <summary className="flex cursor-pointer list-none items-center gap-2 border-b-2 border-foreground pb-1.5 [&::-webkit-details-marker]:hidden">
@@ -193,11 +184,8 @@ export default function LootBoard({
                       className={`relative border-l-[3px] ${STATUS_SPINE[key] ?? "border-l-border"}`}
                     >
                       <div className="flex flex-col gap-2 p-4">
-                        {/* The detail link covers the content box only; the controls
-                            below sit OUTSIDE this relative box so the absolute link
-                            can't swallow taps on the rating stars / status buttons.
-                            The repo link rides above it (z-10) so its tap still opens
-                            the repo directly — same two-anchor trick as TrendingList. */}
+                        {/* The controls sit outside this box, or the detail link swallows
+                            their taps; the repo link rides above it (z-10). */}
                         <div className="relative flex flex-col gap-1.5">
                           <Link
                             href={`/loot/${target}/${r.id}`}
@@ -206,8 +194,6 @@ export default function LootBoard({
                           />
                           <div className="flex items-start justify-between gap-2">
                             <span className="flex min-w-0 items-center gap-2">
-                              {/* Square unread mark (zero-radius doctrine — an ink
-                                  tick, not a round dot) on pending rows only. */}
                               {key === "new" && (
                                 <span
                                   aria-hidden
@@ -250,11 +236,7 @@ export default function LootBoard({
                           {r.why && (
                             <p className="line-clamp-2 text-sm">{r.why}</p>
                           )}
-                          {/* The ruling reads as an annotation ON the pitch above
-                              it, so it needs a rule to break off — in muted body
-                              type it was indistinguishable from `why`. Ink, not
-                              accent: a settled verdict is the opposite of the
-                              board's one call to action. */}
+                          {/* Ink, not accent: a settled verdict is not a call to action. */}
                           {verdict.reason && (
                             <p className="line-clamp-2 border-l-2 border-ink-2 pl-2 text-sm">
                               <span className="mr-1.5 font-mono text-[11px] font-medium tracking-[0.08em] text-foreground uppercase">

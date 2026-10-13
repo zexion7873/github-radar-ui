@@ -1,16 +1,10 @@
 import { type ReactNode } from "react";
 import Link from "next/link";
 
-// Shared card surface so every card (trending / loot / stats) gets the same
-// border and hover treatment — change the look once, it propagates. Editorial:
-// zero radius, hairline border, no shadow; depth comes from the border darkening
-// to ink on hover, not from a lift.
 export const cardClass = "rounded-none border border-border bg-surface";
 export const cardInteractive = `${cardClass} transition-colors duration-[var(--dur-ink)] ease-[var(--ease-ink)] hover:border-ink-2`;
 
-// Three semantic outline tones — the editorial palette trades the old five-colour
-// pill rainbow for one accent (terracotta) meaning "hot / needs attention", a
-// muted green for "adopted / positive", and neutral for everything else.
+// accent = hot / needs attention, pos = adopted / positive, muted = everything else.
 type Tone = "muted" | "accent" | "pos";
 
 const TONE: Record<Tone, string> = {
@@ -39,10 +33,7 @@ export function Badge({
   );
 }
 
-// Filter pill → editorial square chip. Active = solid ink block; inactive = a
-// hairline outline that darkens to ink on hover. Shared by the in-page filter
-// button (Chip) and the cross-page nav variant (ChipLink, e.g. the loot target
-// switcher) so both stay pixel-identical.
+// Shared by Chip and ChipLink so the two stay pixel-identical.
 function chipClass(on: boolean): string {
   return `shrink-0 rounded-none border px-3 py-1 font-mono text-[11px] tracking-[0.08em] uppercase transition-colors focus-visible:ring-2 focus-visible:ring-accent/30 focus-visible:outline-none active:scale-95 ${
     on
@@ -74,9 +65,7 @@ export function Chip({
   );
 }
 
-// Same look as Chip, but a real navigation (Link) instead of in-page state —
-// for switching between pages that happen to be mutually exclusive, like the
-// loot target board. `aria-current` marks the active one, matching Nav.
+// Chip's look for real navigation; `aria-current` marks the active one, as in Nav.
 export function ChipLink({
   href,
   on,
@@ -97,11 +86,8 @@ export function ChipLink({
   );
 }
 
-// A row of filter chips that scrolls horizontally on mobile (chips overflow into
-// one swipeable line instead of wrapping into many tall rows that eat the
-// viewport under the sticky header), reverting to wrap on sm+. The right-edge
-// gradient hints there's more to scroll — mobile only, since the desktop wrap
-// already shows every chip.
+// One swipeable line on mobile, so wrapped chips don't eat the viewport under the
+// sticky header; wraps on sm+.
 export function ChipScroller({
   children,
   label,
@@ -126,9 +112,7 @@ export function ChipScroller({
   );
 }
 
-// Loot status enum → display label. The raw enum (new/deferred/adopted/skipped)
-// stays the stored/state value; translate only at render so the Chinese UI never
-// shows the schema. Shared by LootBoard (chips + group header) and LootStatusControl.
+// The stored enum stays the state value; translate only at render.
 export const STATUS_LABEL: Record<string, string> = {
   new: "待處理",
   deferred: "觀望",
@@ -136,9 +120,7 @@ export const STATUS_LABEL: Record<string, string> = {
   skipped: "已略過",
 };
 
-// Categories no longer each own a hue — the editorial direction keeps them all
-// neutral so the single accent stays meaningful (hot / fresh / pending) instead
-// of competing with a category rainbow.
+// All neutral, so the single accent keeps meaning hot / fresh / pending.
 export const CATEGORY_TONE: Record<string, Tone> = {
   agents: "muted",
   models: "muted",
@@ -148,11 +130,8 @@ export const CATEGORY_TONE: Record<string, Tone> = {
   other: "muted",
 };
 
-// The deliberate exception to the flat-category rule above: the dashboard's
-// 本週分類 distribution bar is the ONE surface where categories carry a hue, so
-// the stacked segments read apart at a glance. Maps each Notion Category SELECT
-// value to its --cat-* token (globals.css); an unmapped value falls back to the
-// neutral `other` ink. Used ONLY by the bar — badges everywhere else stay muted.
+// Only the dashboard's 本週分類 bar may use these; badges stay muted. An unmapped
+// Category falls back to `other`.
 export const CATEGORY_HUE: Record<string, string> = {
   agents: "bg-cat-agents",
   models: "bg-cat-models",
@@ -162,15 +141,10 @@ export const CATEGORY_HUE: Record<string, string> = {
   other: "bg-cat-other",
 };
 
-// A repo whose latest week runs >=50% above its own prior-week average is
-// "heating up" and earns the 竄升中 accent. Tuned to flag a genuine spike, not noise.
-// Lives here (not in server-only data.ts) so both the client TrendingList and the
-// server Dashboard can share the one threshold without a build-poison import.
+// Here, not in server-only data.ts, so client components can import it.
 export const MOMENTUM_HOT = 1.5;
 
-// Loot status → outline tone. Pending wears the accent (it's the call to
-// action), adopted the positive green, deferred and skipped stay neutral —
-// a parked watchlist item is no more a call to action than an archived one.
+// Only pending wears the accent; deferred and skipped stay neutral.
 export const STATUS_TONE: Record<string, Tone> = {
   new: "accent",
   deferred: "muted",
@@ -178,10 +152,7 @@ export const STATUS_TONE: Record<string, Tone> = {
   skipped: "muted",
 };
 
-// Status → left-spine border colour, the loot worklist's structural cue. The
-// board row and the detail header both wear it, so the status hue lives in one
-// place (mirrors STATUS_TONE / STATUS_LABEL). The accent only ever marks 待處理,
-// so a drained queue reads as all-neutral ink.
+// The accent marks only 待處理, so a drained queue reads all-neutral.
 export const STATUS_SPINE: Record<string, string> = {
   new: "border-l-accent",
   deferred: "border-l-border",
@@ -189,34 +160,23 @@ export const STATUS_SPINE: Record<string, string> = {
   skipped: "border-l-border",
 };
 
-// Health-signal badges from the ai-assistant enrichment. Only the EXCEPTION
-// states render — `active` / `none` are the healthy default and stay unbadged, so
-// a clean repo shows nothing and a flag actually means something. Severity rides
-// the label text, not a new colour: the 3-tone palette is deliberate (see Tone
-// above), so these stay `muted` and never spend the scarce accent.
+// Exception states only (`active` / `none` stay unbadged), and always muted,
+// never the accent.
 export const MAINTAINED_BADGE: Record<string, string> = {
   stale: "停更",
   archived: "封存",
 };
 export const RISK_BADGE: Record<string, string> = {
-  // `watch` (30–180d) is the norm for trending repos, not an exception — badging
-  // it on every row reads as wallpaper, so only `high` (archived / <30d flash
-  // risk) earns a flag.
+  // `watch` (30–180d) is the norm for trending repos, so only `high` earns a flag.
   high: "高風險",
 };
 
-// Verdict bucket → badge, same exception-only rule as MAINTAINED_BADGE above:
-// adopt / trial / skip each map 1:1 onto a Status the row already wears, so only
-// `already-have` earns a flag — it's the one verdict `adopted` cannot express.
+// Only `already-have`: every other verdict maps 1:1 onto a Status the row wears.
 export const VERDICT_BADGE: Record<string, string> = {
   "already-have": "早就有",
 };
 
-// License → badge colour, mirroring the Notion SELECT palette onto THIS app's
-// semantic tokens — so license green/red are the SAME green/red the ▲▼ delta uses,
-// keeping the app coherent instead of importing Notion's exact hues. Pattern-
-// matched, not an enum: renders any SPDX id Notion adds over time; an unrecognised
-// one falls back to muted rather than guessing a colour.
+// Pattern-matched, not an enum, so a new SPDX id still renders (muted if unknown).
 export function licenseTone(license: string): string {
   if (/GPL/i.test(license)) return "border-danger text-danger"; // copyleft: GPL/AGPL/LGPL
   if (/CC-BY-SA/i.test(license)) return "border-info text-info"; // share-alike
