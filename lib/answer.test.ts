@@ -15,6 +15,17 @@ import {
   uncitedSources,
 } from "./answer";
 
+// Captured verbatim through radar-rag's own message converters: an absent field
+// arrives as an explicit null. A validator that rejects null fails every answer.
+const CAPTURED_SOURCES =
+  '[{"id":"63eddf42-adc2-3c43-be45-acfbf497bed8","source":"trending","repo":"o/repo-0","title":null,"url":"https://github.com/o/repo-0","week":"2026-09-21","score":1.0},{"id":"271e1078-071d-3e9b-ab5d-2a2253b3580e","source":"blog","repo":null,"title":"A post","url":"https://x.test/p","week":"2026-09-30","score":1.0}]';
+const CAPTURED_BODY =
+  '{"answer":"Try it.","citations":[{"id":"271e1078-071d-3e9b-ab5d-2a2253b3580e","source":"blog","repo":null,"title":"A post","url":"https://x.test/p","week":"2026-09-30","score":1.0,"citedText":["A post"]},{"id":"63eddf42-adc2-3c43-be45-acfbf497bed8","source":"trending","repo":"o/repo-0","title":null,"url":"https://github.com/o/repo-0","week":"2026-09-21","score":1.0,"citedText":["repo-0"]}],' +
+  `"sources":${CAPTURED_SOURCES},` +
+  '"usage":{"model":"claude-opus-5-5","inputTokens":10,"outputTokens":5}}';
+const CAPTURED_DONE =
+  '{"answer":"Grounded answer.","citations":[{"id":"271e1078-071d-3e9b-ab5d-2a2253b3580e","source":"blog","repo":null,"title":"A post","url":"https://x.test/p","week":"2026-09-30","score":1.0,"citedText":["A post"]}],"usage":{"model":"claude-opus-5-5","inputTokens":10,"outputTokens":5}}';
+
 describe("parseInline", () => {
   it("splits bold and code runs out of plain text", () => {
     expect(parseInline("用 **mem0** 或 `letta` 都行")).toEqual([
@@ -136,6 +147,42 @@ describe("isAskResponse", () => {
     expect(isAskResponse({ ...ok, answer: undefined })).toBe(false);
     expect(isAskResponse({ ...ok, sources: [{ source: "blog" }] })).toBe(false);
     expect(isAskResponse(null)).toBe(false);
+  });
+
+  it("rejects mistyped optional row fields and token counts", () => {
+    const row = { id: "i", source: "blog" };
+    expect(isAskResponse({ ...ok, sources: [{ ...row, title: 42 }] })).toBe(false);
+    expect(isAskResponse({ ...ok, sources: [{ ...row, score: "0.9" }] })).toBe(false);
+    expect(isAskResponse({ ...ok, citations: [{ ...row, citedText: "q" }] })).toBe(false);
+    expect(isAskResponse({ ...ok, citations: [{ ...row, citedText: [1] }] })).toBe(false);
+    expect(
+      isAskResponse({ ...ok, usage: { ...ok.usage, inputTokens: { n: 1 } } }),
+    ).toBe(false);
+  });
+
+  it("accepts a body captured from radar-rag", () => {
+    expect(isAskResponse(JSON.parse(CAPTURED_BODY))).toBe(true);
+  });
+
+  it("accepts the nulls radar-rag's records serialize for absent fields", () => {
+    const blogRow = {
+      id: "i",
+      source: "blog",
+      repo: null,
+      title: "t",
+      url: null,
+      week: null,
+      score: null,
+      citedText: null,
+    };
+    expect(
+      isAskResponse({
+        ...ok,
+        citations: [blogRow],
+        sources: [blogRow],
+        usage: { model: "m", inputTokens: null, outputTokens: null },
+      }),
+    ).toBe(true);
   });
 });
 
@@ -275,6 +322,28 @@ describe("readAskStream", () => {
       on: { sources: (r: unknown) => seen.sources.push(r), delta: (t: string) => seen.deltas.push(t) },
     };
   }
+
+  it("accepts a stream captured from radar-rag", async () => {
+    const wire =
+      `event:sources\ndata:${CAPTURED_SOURCES}\n\n` +
+      `event:delta\ndata:{"text":"Grounded "}\n\n` +
+      `event:delta\ndata:{"text":"answer."}\n\n` +
+      `event:done\ndata:${CAPTURED_DONE}\n\n`;
+    const out = await readAskStream(streamOf(wire, 64), collect().on);
+    expect(out.ok && out.data.answer).toBe("Grounded answer.");
+  });
+
+  it("rejects a streamed source row with a mistyped field before rendering it", async () => {
+    const wire =
+      `event:sources\ndata:[{"id":"i","source":"blog","title":42}]\n\n` +
+      `event:done\ndata:${JSON.stringify({ answer: "a", citations: [], usage })}\n\n`;
+    const { seen, on } = collect();
+    expect(await readAskStream(streamOf(wire, 64), on)).toEqual({
+      ok: false,
+      status: null,
+    });
+    expect(seen.sources).toEqual([]);
+  });
 
   it("assembles sources and done into an AskResponse across byte-split chunks", async () => {
     const wire =

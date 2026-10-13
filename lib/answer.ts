@@ -1,36 +1,49 @@
 // radar-rag's POST /ask response, rendered by the /ask page. The shape is a
 // cross-repo contract: radar-rag's AGENTS.md records it on the other side.
+// radar-rag serializes Java records, so an absent field arrives as null.
 export type AskRow = {
   id: string;
   source: string;
-  repo?: string;
-  title?: string;
-  url?: string;
-  week?: string;
-  score?: number;
-  citedText?: string[];
+  repo?: string | null;
+  title?: string | null;
+  url?: string | null;
+  week?: string | null;
+  score?: number | null;
+  citedText?: string[] | null;
 };
 
 export type AskResponse = {
   answer: string;
   citations: AskRow[];
   sources: AskRow[];
-  usage: { model: string; inputTokens: number; outputTokens: number };
+  usage: {
+    model: string;
+    inputTokens: number | null;
+    outputTokens: number | null;
+  };
 };
+
+const optional = (v: unknown, type: "string" | "number") =>
+  v == null || typeof v === type;
 
 // The response crosses a service boundary, so its shape is checked before render:
 // a radar-rag change that breaks it shows an error instead of a blank page.
-function isRows(x: unknown): x is AskRow[] {
+function isRow(row: unknown): row is AskRow {
+  if (typeof row !== "object" || row === null) return false;
+  const r = row as Record<string, unknown>;
   return (
-    Array.isArray(x) &&
-    x.every(
-      (row) =>
-        typeof row === "object" &&
-        row !== null &&
-        typeof (row as AskRow).id === "string" &&
-        typeof (row as AskRow).source === "string",
-    )
+    typeof r.id === "string" &&
+    typeof r.source === "string" &&
+    ["repo", "title", "url", "week"].every((k) => optional(r[k], "string")) &&
+    optional(r.score, "number") &&
+    (r.citedText == null ||
+      (Array.isArray(r.citedText) &&
+        r.citedText.every((t) => typeof t === "string")))
   );
+}
+
+function isRows(x: unknown): x is AskRow[] {
+  return Array.isArray(x) && x.every(isRow);
 }
 
 export function isAskResponse(v: unknown): v is AskResponse {
@@ -43,7 +56,9 @@ export function isAskResponse(v: unknown): v is AskResponse {
     isRows(r.sources) &&
     typeof u === "object" &&
     u !== null &&
-    typeof u.model === "string"
+    typeof u.model === "string" &&
+    optional(u.inputTokens, "number") &&
+    optional(u.outputTokens, "number")
   );
 }
 
