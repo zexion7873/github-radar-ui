@@ -19,11 +19,8 @@ export const dynamic = "force-dynamic";
 
 export default async function Page() {
   const authed = isAuthed((await cookies()).get("gh_radar")?.value);
-  // Trending, blog, and every LOOT_TARGETS table in parallel; loot and blog
-  // failures degrade to "—" / null in their cards rather than failing the page.
-  // Only a trending failure (the page's backbone — the hot lists and the
-  // category bar) shows the error notice. The inner Promise.all still starts every loot
-  // fetch immediately, so nesting costs no round-trip.
+  // Only a trending failure shows the error notice; loot and blog failures
+  // degrade to "—" in their cards.
   const targets = Object.keys(LOOT_TARGETS) as LootTarget[];
   const [trending, blog, lootResults] = await Promise.all([
     fetchTrending(TABLES.trending),
@@ -32,10 +29,7 @@ export default async function Page() {
   ]);
   if (!trending.ok) return <DataError error={trending.error} />;
 
-  // Dedup loot per repo (latest week) BEFORE any count/summary — a repo
-  // shortlisted across multiple weeks must count once, matching the loot board.
-  // Without this Copilot (the table with cross-week repeats) over-counts pending.
-  // Keyed off LOOT_TARGETS so adding a target needs no edit on this page.
+  // Dedup before any count, or a repo shortlisted in several weeks over-counts pending.
   const loot = Object.fromEntries(
     targets.map((t, i) => {
       const r = lootResults[i];
@@ -43,15 +37,12 @@ export default async function Page() {
     }),
   ) as Record<LootTarget, LootRow[] | null>;
 
-  // repos = every repo ever archived (the dedup only grows); onChart = this
-  // week's live chart. Every "本週" surface below MUST rank within onChart —
-  // feeding it `repos` lets a repo that fell off weeks ago keep the headline.
+  // Every 本週 surface ranks within onChart: `repos` still holds repos that fell
+  // off the chart weeks ago.
   const repos = latestPerRepo(trending.rows);
   const { onChart } = currentChart(repos);
 
-  // This week's category mix, sorted heaviest-first — feeds the dashboard's
-  // 本週分類 distribution bar. Built from the on-chart set so it sums to the
-  // on-chart count; a null category buckets to "other" (the bar's neutral hue).
+  // From the on-chart set, so the 本週分類 bar sums to the on-chart count.
   const categoryMix = Object.entries(
     onChart.reduce<Record<string, number>>((acc, r) => {
       const c = r.category ?? "other";
@@ -62,8 +53,7 @@ export default async function Page() {
     .map(([category, count]) => ({ category, count }))
     .sort((a, b) => b.count - a.count);
 
-  // Per-repo relative momentum, shared by the dashboard's 本週竄升 ranking — the
-  // same computation the /trending list uses for its 竄升中 sort and badge.
+  // The same computation as /trending's 竄升中 sort and badge.
   const series = weeklySeriesByRepo(trending.rows);
 
   // Freshest source date across every table — the dashboard's "is the pipeline

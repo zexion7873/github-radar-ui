@@ -1,11 +1,5 @@
-// Blog rows were written with drifting `Source` strings (guest-author orgs like
-// "Photoroom", suffix variants like "Sebastian Raschka (Ahead of AI)", "Meta" vs
-// "Meta AI") — so the post URL's host, not the written Source, is the stable
-// identity. Fold each row to its watch-list name by domain; unknown domains and
-// unparsable URLs keep the written Source so no row ever loses its label.
-//
-// Kept free of `server-only` so vitest can import it; `lib/data.ts` applies it
-// at row-mapping time.
+// The post's domain, not the drifting written Source, names the watch-list entry;
+// unknown domains keep the written Source. Not `server-only`, for vitest.
 const SOURCE_BY_DOMAIN: readonly [string, string][] = [
   ["anthropic.com", "Anthropic"],
   ["claude.com", "Anthropic"],

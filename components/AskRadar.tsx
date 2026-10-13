@@ -374,8 +374,6 @@ function InlineText({ parts, links }: { parts: Inline[]; links: Links }) {
   });
 }
 
-// Section heads follow the site's dialect: an accent tick for a section front, and
-// for a fold the BlogList group head (rotating ›, tick, label, mono count).
 function Tick() {
   return (
     <span aria-hidden="true" className="inline-block h-2.5 w-2.5 shrink-0 self-center bg-accent" />
@@ -477,8 +475,7 @@ function Evidence({ data }: { data: AskResponse }) {
   const others = uncitedSources(data);
   return (
     <>
-      {/* The answer already restates what it cites, so the citations start folded:
-          the evidence is one click away instead of reading as the answer twice. */}
+      {/* Folded: open, the citations read as the answer a second time. */}
       {data.citations.length > 0 && (
         <details className="group/cited">
           <FoldHead group="cited" label="引用 · Cited" count={data.citations.length} size="xl" />

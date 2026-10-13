@@ -1,6 +1,5 @@
-// radar-rag's POST /ask response, rendered by the /ask page. The shape is a
-// cross-repo contract: radar-rag's AGENTS.md records it on the other side.
-// radar-rag serializes Java records, so an absent field arrives as null.
+// radar-rag's POST /ask response, a cross-repo contract its AGENTS.md also
+// records. Its Java records send an absent field as null, never omitted.
 export type AskRow = {
   id: string;
   source: string;
@@ -118,9 +117,8 @@ function holdOpenMarkers(line: string): string {
   return line.replace(/(?<!\*)\*$/, "");
 }
 
-// While an answer streams, the line still being written must not change shape
-// under the reader: a bare bullet marker waits for its text, and a lone bold run
-// stays a paragraph until its newline proves it is a subhead, not a lead-in.
+// The line still streaming must not change shape under the reader: a bare bullet
+// waits for its text, and a lone bold run stays a paragraph until its newline.
 export function previewAnswer(text: string): Block[] {
   const cut = text.lastIndexOf("\n") + 1;
   let tail = holdOpenMarkers(text.slice(cut)).trim();
@@ -173,9 +171,8 @@ function field(v: unknown, key: string): unknown {
   return typeof v === "object" && v !== null ? (v as Record<string, unknown>)[key] : undefined;
 }
 
-// Reads radar-rag's /ask event stream. `done` is the only success: an `error`
-// event returns its status, and a malformed event or a stream that ends without
-// `done` returns status null. Either way the caller retracts what it rendered.
+// `done` is the only success. An `error` event returns its status; a malformed
+// event or an early end returns null. Either way the caller retracts the draft.
 export async function readAskStream(
   body: ReadableStream<BufferSource>,
   on: { sources: (rows: AskRow[]) => void; delta: (text: string) => void },
@@ -249,9 +246,8 @@ export function stripLeadingLabel(quote: string, label: string): string {
   return label && q.startsWith(label) ? q.slice(label.length).trimStart() : quote;
 }
 
-// radar-rag cites sentence by sentence, so one citation can carry several short
-// passages that need not be adjacent in the row. They render as one quote, joined
-// by an ellipsis so it never reads as a continuous excerpt.
+// A citation's passages need not be adjacent in the row; the ellipsis keeps the
+// joined quote from reading as one continuous excerpt.
 export function joinPassages(passages: string[], label: string): string {
   return passages
     .map((q) => stripLeadingLabel(q, label).trim())

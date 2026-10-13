@@ -10,10 +10,7 @@ import {
   FRESH_TONE,
 } from "./ui";
 
-// Blog Archive's Type is a closed enum (official / individual); render each as
-// its own section, newest first (rows already arrive Published-desc). Anything
-// outside the enum (or a blank Type) falls into the catch-all section below so it
-// never silently vanishes from the page.
+// Type outside the enum, or blank, lands in the catch-all section, so no row vanishes.
 const GROUPS: { type: string; label: string }[] = [
   { type: "official", label: "官方" },
   { type: "individual", label: "個人" },
@@ -22,17 +19,13 @@ const KNOWN_TYPES = new Set(GROUPS.map((g) => g.type));
 
 const WEEK_MS = 7 * 24 * 60 * 60 * 1000;
 
-// The archive grows daily and every row ships to the client for search, so
-// rendering all of it put ~300 cards in the DOM to read the newest few. Reveal a
-// batch per section instead; `shown` stays the full match set, so search and the
-// counter still see every row.
+// Every row ships for search, so reveal a batch per section; `shown` stays the
+// full match set for search and the counter.
 const BATCH = 25;
 
 const inputClass =
   "w-full rounded-none border border-border bg-surface px-3 py-1.5 text-sm placeholder:text-muted focus:border-accent focus:ring-2 focus:ring-accent/30 focus:outline-none sm:w-64";
 
-// Chips beyond the top few hide behind a 更多 toggle — the full source list grew
-// into a four-row wall on desktop and an endless scroll strip on mobile.
 const TOP_SOURCES = 8;
 
 export default function BlogList({ rows }: { rows: BlogRow[] }) {
@@ -70,9 +63,7 @@ export default function BlogList({ rows }: { rows: BlogRow[] }) {
     setLimit(BATCH);
   };
 
-  // "New" is relative to the latest archived date in the data, not the wall
-  // clock — keeps the badge derived from row data (not the current time) and
-  // stays stable regardless of the active filter.
+  // Relative to the newest archived date, not the clock, and the same under any filter.
   const latestArchived = useMemo(
     () =>
       rows.reduce((max, r) => {
@@ -117,8 +108,7 @@ export default function BlogList({ rows }: { rows: BlogRow[] }) {
   function card(r: BlogRow) {
     const isNew =
       !!r.archived && latestArchived - Date.parse(r.archived) < WEEK_MS;
-    // List shows the short brief, not the full-paragraph summary (matches the
-    // dashboard). Summary stays a fallback only when a post has no brief.
+    // The brief, as on the dashboard; the summary only when a post has none.
     const body = r.brief || r.summary;
     return (
       <article
@@ -155,9 +145,7 @@ export default function BlogList({ rows }: { rows: BlogRow[] }) {
             </p>
           )}
         </div>
-        {/* The curator's 點評 as a margin annotation pinned beside the entry — the
-            page's signature motif. A hairline gutter on sm+; stacks below with an
-            accent tick on mobile (single column). Sits under the row link overlay. */}
+        {/* Sits under the row link overlay. */}
         {r.comment && (
           <p className="line-clamp-4 border-l-2 border-accent/40 pl-4 font-serif-text text-sm leading-relaxed text-muted italic sm:border-l sm:border-border">
             {r.comment}
@@ -239,9 +227,7 @@ export default function BlogList({ rows }: { rows: BlogRow[] }) {
         <>
           <div className="flex flex-col gap-10">
             {sections.map(({ label, items }) => (
-              // Native <details> over a hand-rolled disclosure: it carries the
-              // expanded state and keyboard behaviour for free. Named group, since
-              // each card below already claims the unnamed one for its hover.
+              // Named group: each card below already claims the unnamed one for its hover.
               <details
                 key={label}
                 open={!folded.has(label)}
@@ -266,9 +252,7 @@ export default function BlogList({ rows }: { rows: BlogRow[] }) {
                     </span>
                   </h2>
                 </summary>
-                {/* Each section head keeps its FULL match count above, so a
-                    truncated or folded section still announces how much sits
-                    behind it — the fold never silently swallows a search match. */}
+                {/* The head keeps the FULL match count, so a fold never hides a search match. */}
                 <div className="divide-y divide-border">
                   {items.slice(0, limit).map(card)}
                 </div>

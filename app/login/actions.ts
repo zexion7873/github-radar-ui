@@ -9,12 +9,8 @@ import {
   SESSION_TTL_S,
 } from "@/lib/auth";
 
-// Best-effort brute-force throttle. The per-IP counter is module state, so on
-// serverless it's per-instance and leaky — a speed bump, not a guarantee; the
-// real defense is a high-entropy APP_PASSWORD. The fixed per-failure delay below
-// applies to every attempt that reaches the credential check regardless of
-// instance, so an online guess always pays a fixed cost; an already-throttled
-// request is rejected without it rather than holding compute it doesn't need.
+// Per-instance on serverless, so a speed bump, not a guarantee: the real defense
+// is a high-entropy APP_PASSWORD.
 const WINDOW_MS = 10 * 60 * 1000;
 const MAX_ATTEMPTS = 10;
 const FAIL_DELAY_MS = 500;
@@ -22,9 +18,7 @@ const attempts = new Map<string, { count: number; resetAt: number }>();
 
 function tooMany(ip: string): boolean {
   const now = Date.now();
-  // Sweep expired windows first: serverless instances die young, but a
-  // long-lived `next start` would otherwise grow the map by one record per IP
-  // ever seen. Doubles as the old per-IP expiry reset.
+  // Without the sweep, a long-lived `next start` keeps one record per IP ever seen.
   for (const [k, rec] of attempts) if (now > rec.resetAt) attempts.delete(k);
   const rec = attempts.get(ip);
   if (!rec) {
@@ -53,9 +47,8 @@ export async function login(formData: FormData) {
     redirect(`/login?error=1&from=${encodeURIComponent(from)}`);
   }
 
-  // A missing env var and a wrong password deliberately produce the identical
-  // response — an unauthenticated client must not learn which. The operator does
-  // need to know, so the difference surfaces in the server log only.
+  // A missing env var and a wrong password answer identically; only the server
+  // log tells them apart.
   if (!expected)
     console.error("[login] APP_PASSWORD is not set — every login will fail");
   if (!secret)
@@ -82,7 +75,6 @@ export async function login(formData: FormData) {
 
 export async function logout() {
   (await cookies()).delete("gh_radar");
-  // Home is public now, so land there after logout rather than bouncing to the
-  // login screen (only /loot/* is gated).
+  // Home is public; only /loot is gated.
   redirect("/");
 }

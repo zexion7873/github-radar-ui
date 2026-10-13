@@ -6,15 +6,8 @@ import { formatWeek } from "./ui";
 const STALE_DAYS = 8;
 const noopSubscribe = () => () => {};
 
-// Dashboard freshness signal. There's no real "synced at" timestamp, so the
-// caller passes the newest source date across the tables. Staleness needs the
-// wall clock, which can't be read during render (purity rule) nor set from an
-// effect (set-state-in-effect rule) — so we read it via useSyncExternalStore,
-// the same escape hatch ThemeToggle uses: getSnapshot reads Date.now() on the
-// client and returns a STABLE boolean (no resnapshot loop), the server snapshot
-// is always false. Past STALE_DAYS the upstream routines have probably stalled;
-// the amber warning stops dead data from masquerading as fresh and the 新上榜
-// badges from vouching for it silently.
+// No real "synced at" exists, so the caller passes the newest source date. The clock
+// goes through useSyncExternalStore: render can't read it and an effect can't set it.
 export default function LastSynced({ iso }: { iso: string }) {
   const stale = useSyncExternalStore(
     noopSubscribe,

@@ -13,10 +13,7 @@ export const dynamic = "force-dynamic";
 export default async function Page() {
   const result = await fetchTrending(TABLES.trending);
   if (!result.ok) return <DataError error={result.error} />;
-  // Collapse the weekly archive to one row per repo (latest week) so the list
-  // shows distinct repos rather than the same repo repeated across weeks. The
-  // full archive also feeds the per-repo series behind each row's sparkline/delta
-  // and the relative-momentum score (computed server-side, passed to the list).
+  // The full archive feeds the series and momentum; the list shows latestPerRepo().
   const series = weeklySeriesByRepo(result.rows);
   return (
     <TrendingList

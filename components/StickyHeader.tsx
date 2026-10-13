@@ -2,12 +2,8 @@
 
 import { useEffect, useRef, type ReactNode } from "react";
 
-// Sticky top bar holding the title + nav, so the user can switch tabs without
-// scrolling back up. It measures its own height into the --header-h CSS variable
-// so each page's sticky filter bar can pin directly BELOW it: two stacked
-// stickies in one scroll container both at top:0 would overlap, so the lower
-// one's `top` must equal this height — and that height changes with viewport /
-// font load, so it's measured, not hard-coded.
+// Measures its height into --header-h so each page's sticky filter bar pins below
+// it; the height varies with viewport and font load, so it can't be hard-coded.
 export default function StickyHeader({ children }: { children: ReactNode }) {
   const ref = useRef<HTMLElement>(null);
 

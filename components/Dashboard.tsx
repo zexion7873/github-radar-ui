@@ -23,9 +23,6 @@ function SectionHeader({
   return (
     <div className="mb-3 flex items-center justify-between">
       <h2 className="flex items-center gap-2.5 font-serif text-xl tracking-tight text-foreground">
-        {/* Accent tick in the emoji's old seat — structural accent (marks a
-            section front), same dingbat family as the legend swatches and the
-            loot unread square. Content itself stays ink. */}
         <span aria-hidden="true" className="inline-block h-2.5 w-2.5 bg-accent" />
         {title}
       </h2>
@@ -81,9 +78,8 @@ export default function Dashboard({
   categoryMix,
   authed,
 }: {
-  // THIS WEEK's live chart only (see currentChart in lib/data.ts), NOT every
-  // repo ever archived. 熱門/竄升 rank within this set, so their "本週" labels
-  // stay honest — a repo that fell off the chart can't headline from the grave.
+  // currentChart(), not every archived repo, or one that fell off the chart
+  // headlines 本週.
   onChart: TrendingRow[];
   loot: Record<LootTarget, LootRow[] | null>;
   blog: BlogRow[] | null;
@@ -102,10 +98,7 @@ export default function Dashboard({
   // Already Published-desc from fetchBlog; just take the freshest few.
   const topBlog = (blog ?? []).slice(0, 5);
 
-  // 本週竄升 — repos genuinely heating up: momentum >= MOMENTUM_HOT, the SAME bar as
-  // the 竄升中 badge, so "shown here" and "hot enough to flag" are one definition. Ranked
-  // by that relative spike, NOT by absolute stars/wk like the 熱門 list, so the front
-  // page shows both lenses: big-and-steady vs small-and-surging. Top five.
+  // The 竄升中 badge's bar (MOMENTUM_HOT), ranked by relative spike, not stars/wk.
   const surging = [...onChart]
     .filter((r) => (momentum[r.repo] ?? 0) >= MOMENTUM_HOT)
     .sort((a, b) => (momentum[b.repo] ?? 0) - (momentum[a.repo] ?? 0))
@@ -113,17 +106,11 @@ export default function Dashboard({
 
   const mixTotal = categoryMix.reduce((sum, m) => sum + m.count, 0);
 
-  // Newcomers this week (first week on chart) — stated on the 分類 kicker line,
-  // the page's single stats line. Same definition as the trending list's 新上榜
-  // badge: weeksOnChart <= 1 within the current chart.
+  // Same definition as the trending list's 新上榜 badge.
   const newThisWeek = onChart.filter((r) => (r.weeksOnChart ?? 1) <= 1).length;
 
-  // An unmapped category falls back to bg-cat-other and would collide with a real
-  // `other` segment. Mirror assertProps' "make silent drift loud" — but warn,
-  // don't throw (a bar colour isn't worth crashing the page), and only in dev, so
-  // the next dev sees it in the server log and adds a --cat-* token. The Notion
-  // Category list lives in the routine, so an unmapped value is only knowable here
-  // at read time, never statically.
+  // An unmapped category collides with a real `other` segment. Warn in dev, never
+  // throw: it needs a new --cat-* token, not a crashed page.
   if (process.env.NODE_ENV !== "production") {
     const unmapped = categoryMix
       .map((m) => m.category)
@@ -137,10 +124,7 @@ export default function Dashboard({
 
   return (
     <div className="flex flex-col gap-10">
-      {/* 本週分類 — the week's headline counts on the kicker line, the category mix
-          as one stacked bar beneath them. The ONE surface that spends category hues
-          (CATEGORY_HUE); a 1px gap reveals the border ink between segments, and a
-          swatch legend names each. */}
+      {/* The one surface that spends category hues (CATEGORY_HUE). */}
       {mixTotal > 0 && (
         <section>
           <div className="mb-2 font-mono text-[11px] tracking-[0.14em] text-muted uppercase">
@@ -179,10 +163,6 @@ export default function Dashboard({
         </section>
       )}
 
-      {/* 熱門 repo — a newspaper section front: the masthead banner, then the
-          week's hottest repo as the hero #01 (display headline + full-ink 點評 deck +
-          full chart), then #02… as briefs. One banner over the whole absolute-★
-          leaderboard; the relative-momentum 本週竄升 list follows below. */}
       <section>
         <SectionHeader
           title="熱門 repo"
@@ -284,10 +264,7 @@ export default function Dashboard({
         )}
       </section>
 
-      {/* 本週竄升 — the relative-momentum lens: who is accelerating fastest vs their
-          own prior-week mean, distinct from the absolute-stars 熱門 list above, so the
-          front page shows both lenses. Membership is momentum >= MOMENTUM_HOT (the same
-          bar as the 竄升中 badge), so every ×N.N here is genuinely hot — always accent. */}
+      {/* Membership is the 竄升中 bar, so every ×N.N here wears the accent. */}
       <section>
         <SectionHeader
           title="本週竄升"
@@ -422,12 +399,8 @@ export default function Dashboard({
       {authed && (
         <section className="border-t-2 border-foreground pt-6">
           <SectionHeader title="待處理 Loot" />
-          {/* Explicit column counts, not flex-wrap or auto-fit: both size columns
-              from the container, so with four targets they land on three-across
-              and strand the last card (grown to a full row under flex-wrap, alone
-              in a short one under auto-fit). 1/2/4 divides four evenly at every
-              width. Revisit the counts when LOOT_TARGETS stops being a power of
-              two. */}
+          {/* 1/2/4 columns divide four targets evenly; flex-wrap or auto-fit strands the
+              last card. Revisit when LOOT_TARGETS stops being a power of two. */}
           <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-4">
             {(Object.keys(LOOT_TARGETS) as LootTarget[]).map((target) => (
               <LootSummaryCard

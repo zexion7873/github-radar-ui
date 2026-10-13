@@ -1,6 +1,4 @@
-// Read-only 1-5 star display of a loot row's recommendation rating: filled (accent)
-// up to `value`, muted beyond. Exposed as a single image to assistive tech rather
-// than a row of controls — the rating is no longer editable from the UI.
+// Read-only, so assistive tech gets one image, not a row of controls.
 export default function LootRating({ value }: { value: number | null }) {
   const display = value ?? 0;
   return (
