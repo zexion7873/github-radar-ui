@@ -50,6 +50,7 @@ flowchart LR
 
     Routines -->|"write rows"| Notion
     Notion -->|"data_sources query"| Server
+    Notion -->|"weekly sync"| Rag
     Server --> Pages
     Ask -->|"question + Turnstile token"| Rag
     Server --> Gate
