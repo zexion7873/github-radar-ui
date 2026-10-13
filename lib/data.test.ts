@@ -168,8 +168,29 @@ describe("repoMomentum", () => {
   it("returns null with fewer than 2 numeric points", () => {
     expect(repoMomentum([])).toBeNull();
     expect(repoMomentum([pt("2026-06-01", 100)])).toBeNull();
-    // second point is null -> only 1 numeric value survives the filter
+    // latest point is null -> no stars to compare
     expect(repoMomentum([pt("2026-06-01", 100), pt("2026-06-08", null)])).toBeNull();
+  });
+
+  it("returns null when the latest week has no stars, never an older week's", () => {
+    expect(
+      repoMomentum([
+        pt("2026-06-01", 100),
+        pt("2026-06-08", 300),
+        pt("2026-06-15", null),
+      ]),
+    ).toBeNull();
+  });
+
+  it("averages only the prior weeks that have stars", () => {
+    // prior non-null = [100], latest = 300 -> 3
+    expect(
+      repoMomentum([
+        pt("2026-06-01", 100),
+        pt("2026-06-08", null),
+        pt("2026-06-15", 300),
+      ]),
+    ).toBe(3);
   });
 
   it("returns latest / mean-of-prior", () => {

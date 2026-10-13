@@ -262,13 +262,16 @@ export function weeklySeriesByRepo(
 // weeks. >1 = accelerating past its own baseline, <1 = cooling. RELATIVE (not the
 // absolute week-over-week ▲ delta the list already shows) so a small repo spiking
 // outranks a big steady one — the ROSS-Index spirit of surfacing newcomers over
-// established champions. Null when there's no prior week to compare (needs >=2
-// weeks) or the baseline is zero.
+// established champions. Null when the latest week has no stars, when no prior
+// week has any, or when the baseline is zero.
 export function repoMomentum(points: WeekPoint[]): number | null {
-  const v = points.map((p) => p.stars).filter((s): s is number => s != null);
-  if (v.length < 2) return null;
-  const latest = v[v.length - 1];
-  const prior = v.slice(0, -1);
+  const latest = points.at(-1)?.stars;
+  if (latest == null) return null;
+  const prior = points
+    .slice(0, -1)
+    .map((p) => p.stars)
+    .filter((s): s is number => s != null);
+  if (prior.length === 0) return null;
   const base = prior.reduce((sum, n) => sum + n, 0) / prior.length;
   return base > 0 ? latest / base : null;
 }

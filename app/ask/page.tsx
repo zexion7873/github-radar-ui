@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import { setTimeout as sleep } from "node:timers/promises";
 import AskRadar from "@/components/AskRadar";
 import { askExamples, fetchBlog, fetchTrending } from "@/lib/data";
 import { TABLES } from "@/lib/config";
@@ -10,22 +11,25 @@ export const metadata: Metadata = {
 
 export const dynamic = "force-dynamic";
 
-// Tops up askExamples() when Notion is down or the archive is too young; /ask
-// must keep working without Notion, since only radar-rag answers the question.
+// Tops up askExamples() when Notion is down or slow, or the archive is too young;
+// /ask must keep working without Notion, since only radar-rag answers the question.
 const FALLBACK_EXAMPLES = [
   "有哪些工具能讓 agent 記住跨對話的事情？",
   "最近有哪些談 prompt injection 的文章？",
   "Which trending repos help coding agents use skills?",
 ];
 
+// A cold read cache waits on Notion, whose fetch has no timeout of its own.
+const EXAMPLES_TIMEOUT_MS = 3000;
+
 export default async function Page() {
-  const [trending, blog] = await Promise.all([
-    fetchTrending(TABLES.trending),
-    fetchBlog(TABLES.blog),
-  ]);
+  const [trending, blog] = (await Promise.race([
+    Promise.all([fetchTrending(TABLES.trending), fetchBlog(TABLES.blog)]),
+    sleep(EXAMPLES_TIMEOUT_MS, null, { ref: false }),
+  ])) ?? [null, null];
   const examples = askExamples(
-    trending.ok ? trending.rows : [],
-    blog.ok ? blog.rows : [],
+    trending?.ok ? trending.rows : [],
+    blog?.ok ? blog.rows : [],
     new Date(),
   );
   for (const ex of FALLBACK_EXAMPLES) {
