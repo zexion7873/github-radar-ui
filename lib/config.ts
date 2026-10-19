@@ -30,6 +30,7 @@ export const TURNSTILE_SITE_KEY =
   process.env.NEXT_PUBLIC_TURNSTILE_SITE_KEY ?? "0x4AAAAAAFTDvuuo53zguas_";
 // radar-rag's CORS and the Turnstile widget allow only this host (plus
 // localhost for dev), so the /ask page stays inert on preview deployments.
+// The site's metadataBase uses it too; radar-rag's radar.ui.host must match.
 export const PRODUCTION_HOST = "whyisthistrending.vercel.app";
 
 // The first LOOT_TARGETS entry: append new targets so the default never moves.

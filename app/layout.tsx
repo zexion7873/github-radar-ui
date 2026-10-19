@@ -11,6 +11,7 @@ import { formatWeek } from "@/components/ui";
 import Link from "next/link";
 import { Analytics } from "@vercel/analytics/next";
 import { SpeedInsights } from "@vercel/speed-insights/next";
+import { PRODUCTION_HOST } from "@/lib/config";
 
 const geistSans = Geist({ variable: "--font-geist-sans", subsets: ["latin"] });
 const geistMono = Geist_Mono({ variable: "--font-geist-mono", subsets: ["latin"] });
@@ -29,7 +30,7 @@ const sourceSerif = Source_Serif_4({
 export const metadata: Metadata = {
   // Without it, Vercel resolves og:image against the SHORTEST production
   // alias, not the domain on the resume.
-  metadataBase: new URL("https://whyisthistrending.vercel.app"),
+  metadataBase: new URL(`https://${PRODUCTION_HOST}`),
   title: "GitHub Radar",
   description:
     "Trending AI repos on GitHub, ranked by stars gained each week, each with a one-line summary and a sharp take.",
