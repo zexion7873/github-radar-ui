@@ -52,7 +52,7 @@ export default async function Page() {
 
       <footer className="border-t border-border pt-4 text-sm text-muted">
         <p>
-          每人每分鐘 5 題、每天 20 題。問題與回答會記錄在追蹤服務中，詳見{" "}
+          每人每分鐘 5 題、每天 20 題。本站不記錄問題與回答；問題會送到 Anthropic 產生回答，詳見{" "}
           <a
             href="https://github.com/zexion7873/radar-rag/blob/main/PRIVACY.md"
             target="_blank"
