@@ -4,6 +4,10 @@ updates:
     directory: "/"
     schedule:
       interval: weekly
+    # Minor/patch auto-merge to production unread, so a release must age a week
+    # first; a hijacked publish is usually pulled within days. Security updates skip it.
+    cooldown:
+      default-days: 7
     # @types/node majors track Node's Current line, but .nvmrc pins 24. Types ahead
     # of the runtime declare APIs it does not have, so a wrong call type-checks and
     # throws in production; types behind it fail loudly at build instead.
@@ -41,3 +45,5 @@ updates:
     directory: "/"
     schedule:
       interval: weekly
+    cooldown:
+      default-days: 7
