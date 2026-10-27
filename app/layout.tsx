@@ -33,7 +33,7 @@ export const metadata: Metadata = {
   metadataBase: new URL(`https://${PRODUCTION_HOST}`),
   title: "GitHub Radar",
   description:
-    "Trending AI repos on GitHub, ranked by stars gained each week, each with a one-line summary and a sharp take.",
+    "Trending GitHub repos, AI first, ranked by stars gained each week, each with a one-line summary and a sharp take.",
 };
 
 // First visit only: once a theme cookie exists, the server renders the class itself.

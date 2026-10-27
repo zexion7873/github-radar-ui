@@ -4,10 +4,10 @@
 
 [![CI](https://github.com/zexion7873/github-radar-ui/actions/workflows/ci.yml/badge.svg)](https://github.com/zexion7873/github-radar-ui/actions/workflows/ci.yml)
 
-<img src="app/opengraph-image.png" width="640" alt="GitHub Radar's social card: the site mark and its one-line description, a weekly radar of trending AI repos on GitHub.">
+<img src="app/opengraph-image.png" width="640" alt="GitHub Radar's social card: the site mark and its one-line description, a weekly radar of trending GitHub repos, AI first.">
 
-**A weekly radar of trending AI repos on GitHub, each with a one-line summary
-and a sharp take.**
+**A weekly radar of trending GitHub repos, AI first, each with a one-line
+summary and a sharp take.**
 
 [![Live site](https://img.shields.io/badge/live-whyisthistrending.vercel.app-black?style=flat)](https://whyisthistrending.vercel.app)
 [![Next.js 16](https://img.shields.io/badge/Next.js-16-black?style=flat)](NEXT16-BREAKING-CHANGES.md)
@@ -25,7 +25,7 @@ routines writes every week. The site never calls GitHub itself.
 | Page | Source table | Shows |
 |---|---|---|
 | `/` | Trending + Blog + Loot | **Dashboard**: the top five hot repos, the latest blog posts, and, for the signed-in owner only, one summary card per loot ledger |
-| `/trending`, `/trending/[id]` | Trending Archive | Weekly trending AI repos, filterable by category, with 新上榜 / 在榜週數 badges; one page per repo |
+| `/trending`, `/trending/[id]` | Trending Archive | Weekly trending repos, AI first, filterable by category, with 新上榜 / 在榜週數 badges; one page per repo |
 | `/blog`, `/blog/[id]` | Blog Archive | AI and agent blog posts grouped 官方 / 個人, each with a summary and a 點評, newest first |
 | `/ask` | none (radar-rag) | **Ask the radar**: questions in Chinese or English, answered from the Trending and Blog archives with citations that link to the detail pages here |
 | `/loot/[target]`, `/loot/[target]/[id]` | Loot Ledger (`claude` / `copilot` / `opencode` / `codex`) | **Owner only.** Config assets worth stealing into each coding agent's setup, grouped by status, with an editable status |

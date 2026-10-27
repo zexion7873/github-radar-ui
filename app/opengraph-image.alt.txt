@@ -1,1 +1,1 @@
-GitHub Radar masthead with the tagline Why is this trending? Weekly radar of AI repos trending on GitHub, at whyisthistrending.vercel.app
+GitHub Radar masthead with the tagline Why is this trending? Weekly radar of trending GitHub repos, AI first, at whyisthistrending.vercel.app
