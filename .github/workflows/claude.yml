@@ -32,9 +32,15 @@ jobs:
 
       - name: Run Claude Code
         id: claude
-        uses: anthropics/claude-code-action@v1
+        # SHA-pinned: this step holds the OAuth token and an OIDC grant, so a moved tag
+        # would run unreviewed code with both.
+        uses: anthropics/claude-code-action@8041f1d17e0e7d2f2cfe35002962e9f26237c0bb # v1
         with:
           claude_code_oauth_token: ${{ secrets.CLAUDE_CODE_OAUTH_TOKEN }}
+
+          # The `if` gate checks only who tagged @claude; without this, other people's
+          # comments on the same thread reach the model as instructions.
+          include_comments_by_actor: ${{ github.repository_owner }}
 
           # This is an optional setting that allows Claude to read CI results on PRs
           additional_permissions: |
