@@ -1,4 +1,10 @@
-import { fetchTrending, latestPerRepo, currentChart } from "@/lib/data";
+import {
+  fetchTrending,
+  latestPerRepo,
+  currentChart,
+  weeklySeriesByRepo,
+  momentumByRepo,
+} from "@/lib/data";
 import { TABLES } from "@/lib/config";
 
 // Read by the zexion7873/zexion7873 profile README Action. Renaming a key or
@@ -13,6 +19,8 @@ export async function GET() {
   const top = [...onChart]
     .sort((a, b) => (b.starsPerWeek ?? 0) - (a.starsPerWeek ?? 0))
     .slice(0, 3);
+  // The full archive, not latestPerRepo: the dashboard's ×N comes from the same call.
+  const momentum = momentumByRepo(weeklySeriesByRepo(result.rows));
 
   return Response.json(
     {
@@ -21,6 +29,7 @@ export async function GET() {
         repo: r.repo,
         link: r.link,
         starsPerWeek: r.starsPerWeek,
+        momentum: momentum[r.repo] ?? null,
         summary: r.description,
         take: r.comment,
       })),

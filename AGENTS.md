@@ -41,9 +41,10 @@ Gotchas that will bite you:
   before deploying; its AGENTS.md records the same contract.
 - **Changing `/api/latest-week`?** A daily Action in the `zexion7873/zexion7873` profile
   repo reads it and rewrites the README block between `radar:start` / `radar:end`.
-  Its keys (`week`, `repos[].repo` / `link` / `starsPerWeek` / `summary` / `take`) are
-  that script's contract, and it is public: add only fields the site already shows,
-  never Notion ids. A non-200 must stay a non-200 — the script fails on it instead of
+  Its keys (`week`, `repos[].repo` / `link` / `starsPerWeek` / `momentum` / `summary` /
+  `take`) are that script's contract, and it is public: add only fields the site already
+  shows, never Notion ids. `momentum` is `repoMomentum`'s ratio (`docs/signals.md`), null
+  when there is nothing to compare; the script draws its meter tick from it. A non-200 must stay a non-200 — the script fails on it instead of
   blanking the README.
 - **CI skips docs-only PRs.** A PR that changes only `.md` files or `docs/` skips
   `build-test` through a job-level `if` (a skipped job reports success). `build-test`
