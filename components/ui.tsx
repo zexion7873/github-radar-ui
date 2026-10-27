@@ -112,69 +112,74 @@ export function ChipScroller({
   );
 }
 
+// Notion select values index the maps below. On a plain object, `__proto__` would
+// read Object.prototype, which React refuses to render, and the page would crash.
+const byNotionValue = <V,>(entries: Record<string, V>): Record<string, V> =>
+  Object.assign(Object.create(null), entries);
+
 // The stored enum stays the state value; translate only at render.
-export const STATUS_LABEL: Record<string, string> = {
+export const STATUS_LABEL = byNotionValue({
   new: "待處理",
   deferred: "觀望",
   adopted: "已採用",
   skipped: "已略過",
-};
+});
 
 // All neutral, so the single accent keeps meaning hot / fresh / pending.
-export const CATEGORY_TONE: Record<string, Tone> = {
+export const CATEGORY_TONE = byNotionValue<Tone>({
   agents: "muted",
   models: "muted",
   infra: "muted",
   tooling: "muted",
   apps: "muted",
   other: "muted",
-};
+});
 
 // Only the dashboard's 本週分類 bar may use these; badges stay muted. An unmapped
 // Category falls back to `other`.
-export const CATEGORY_HUE: Record<string, string> = {
+export const CATEGORY_HUE = byNotionValue({
   agents: "bg-cat-agents",
   models: "bg-cat-models",
   infra: "bg-cat-infra",
   tooling: "bg-cat-tooling",
   apps: "bg-cat-apps",
   other: "bg-cat-other",
-};
+});
 
 // Here, not in server-only data.ts, so client components can import it.
 export const MOMENTUM_HOT = 1.5;
 
 // Only pending wears the accent; deferred and skipped stay neutral.
-export const STATUS_TONE: Record<string, Tone> = {
+export const STATUS_TONE = byNotionValue<Tone>({
   new: "accent",
   deferred: "muted",
   adopted: "pos",
   skipped: "muted",
-};
+});
 
 // The accent marks only 待處理, so a drained queue reads all-neutral.
-export const STATUS_SPINE: Record<string, string> = {
+export const STATUS_SPINE = byNotionValue({
   new: "border-l-accent",
   deferred: "border-l-border",
   adopted: "border-l-pos",
   skipped: "border-l-border",
-};
+});
 
 // Exception states only (`active` / `none` stay unbadged), and always muted,
 // never the accent.
-export const MAINTAINED_BADGE: Record<string, string> = {
+export const MAINTAINED_BADGE = byNotionValue({
   stale: "停更",
   archived: "封存",
-};
-export const RISK_BADGE: Record<string, string> = {
+});
+export const RISK_BADGE = byNotionValue({
   // `watch` (30–180d) is the norm for trending repos, so only `high` earns a flag.
   high: "高風險",
-};
+});
 
 // Only `already-have`: every other verdict maps 1:1 onto a Status the row wears.
-export const VERDICT_BADGE: Record<string, string> = {
+export const VERDICT_BADGE = byNotionValue({
   "already-have": "早就有",
-};
+});
 
 // Pattern-matched, not an enum, so a new SPDX id still renders (muted if unknown).
 export function licenseTone(license: string): string {

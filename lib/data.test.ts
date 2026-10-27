@@ -4,6 +4,7 @@ import {
   assertProps,
   currentChart,
   latestPerRepo,
+  momentumByRepo,
   repoMomentum,
   weeklySeriesByRepo,
   type BlogRow,
@@ -159,6 +160,22 @@ describe("weeklySeriesByRepo", () => {
       "2026-06-15",
     ]);
     expect(series["b/y"].map((p) => p.week)).toEqual(["2026-05-01"]);
+  });
+
+  it("keeps a Repo named after an Object.prototype member as its own entry", () => {
+    const rows = ["constructor", "__proto__", "toString"].flatMap((repo) => [
+      { ...trending(repo, "2026-06-01"), starsPerWeek: 10 },
+      { ...trending(repo, "2026-06-08"), starsPerWeek: 30 },
+    ]);
+    const series = weeklySeriesByRepo(rows);
+    for (const repo of ["constructor", "__proto__", "toString"]) {
+      expect(Object.hasOwn(series, repo)).toBe(true);
+      expect(series[repo].map((p) => p.stars)).toEqual([10, 30]);
+    }
+    const momentum = momentumByRepo(series);
+    expect(Object.hasOwn(momentum, "__proto__")).toBe(true);
+    expect(momentum["__proto__"]).toBe(3);
+    expect(momentum.constructor).toBe(3);
   });
 });
 

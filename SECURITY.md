@@ -34,7 +34,9 @@ Worth knowing before you decide whether something is in scope.
   than letting everyone in.
 - **Redirects.** The post-login redirect accepts same-origin paths only.
 - **Automation.** The repository's `@claude` workflow runs only for comments,
-  reviews and issues written by the repository owner.
+  reviews and issues written by the repository owner, and passes the model only
+  the owner's comments on that thread. The issue or pull request body still
+  reaches it, whoever wrote it.
 
 ### In scope
 

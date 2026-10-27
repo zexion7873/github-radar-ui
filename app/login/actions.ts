@@ -36,6 +36,8 @@ function recordFailure(ip: string) {
 const sleep = (ms: number) => new Promise((r) => setTimeout(r, ms));
 
 export async function login(formData: FormData) {
+  // Vercel overwrites X-Forwarded-For, so its first entry is the client. Behind a
+  // proxy that appends instead, each client could pick a fresh throttle key.
   const ip =
     (await headers()).get("x-forwarded-for")?.split(",")[0]?.trim() || "unknown";
   const password = String(formData.get("password") ?? "");

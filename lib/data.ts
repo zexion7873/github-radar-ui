@@ -219,19 +219,22 @@ export function currentChart(repos: TrendingRow[]): {
 
 export type WeekPoint = { week: string | null; stars: number | null };
 
-// Built from the raw archive, not latestPerRepo (one week per repo). A plain
-// object, not a Map, because it crosses the server→client boundary.
+// Built from the raw archive, not latestPerRepo (one week per repo). Grouped in a
+// Map so a Repo named `constructor` cannot hit an inherited member and throw;
+// returned as a plain object because it crosses the server→client boundary.
 export function weeklySeriesByRepo(
   rows: TrendingRow[],
 ): Record<string, WeekPoint[]> {
-  const byRepo: Record<string, WeekPoint[]> = {};
+  const byRepo = new Map<string, WeekPoint[]>();
   for (const r of rows) {
-    (byRepo[r.repo] ??= []).push({ week: r.week, stars: r.starsPerWeek });
+    const pts = byRepo.get(r.repo) ?? [];
+    pts.push({ week: r.week, stars: r.starsPerWeek });
+    byRepo.set(r.repo, pts);
   }
-  for (const repo in byRepo) {
-    byRepo[repo].sort((a, b) => (a.week ?? "").localeCompare(b.week ?? ""));
+  for (const pts of byRepo.values()) {
+    pts.sort((a, b) => (a.week ?? "").localeCompare(b.week ?? ""));
   }
-  return byRepo;
+  return Object.fromEntries(byRepo);
 }
 
 // Latest stars/wk over the mean of the prior weeks that have one; docs/signals.md
@@ -252,9 +255,10 @@ export function repoMomentum(points: WeekPoint[]): number | null {
 export function momentumByRepo(
   series: Record<string, WeekPoint[]>,
 ): Record<string, number | null> {
-  const m: Record<string, number | null> = {};
-  for (const repo in series) m[repo] = repoMomentum(series[repo]);
-  return m;
+  // fromEntries, not assignment: `m["__proto__"] = x` would hit the prototype setter.
+  return Object.fromEntries(
+    Object.entries(series).map(([repo, pts]) => [repo, repoMomentum(pts)]),
+  );
 }
 
 // Per ledger, not shared: a shared tag makes each Status write expire every
