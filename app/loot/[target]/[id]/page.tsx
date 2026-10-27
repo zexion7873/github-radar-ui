@@ -15,6 +15,7 @@ import {
 } from "@/components/ui";
 import LootRating from "@/components/LootRating";
 import LootStatusControl from "@/components/LootStatusControl";
+import { requireOwner } from "@/lib/session";
 
 export const dynamic = "force-dynamic";
 
@@ -38,7 +39,8 @@ export default async function Page({
   params: Promise<{ target: string; id: string }>;
 }) {
   const { target, id } = await params;
-  if (!(target in LOOT_TARGETS)) notFound();
+  await requireOwner(`/loot/${target}/${id}`);
+  if (!Object.hasOwn(LOOT_TARGETS, target)) notFound();
   const { uuid, label } = LOOT_TARGETS[target as LootTarget];
   const result = await fetchLoot(uuid);
   if (!result.ok) return <DataError error={result.error} />;

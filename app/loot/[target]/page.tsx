@@ -3,6 +3,7 @@ import { fetchLoot, latestPerRepo } from "@/lib/data";
 import { LOOT_TARGETS, type LootTarget } from "@/lib/config";
 import LootBoard from "@/components/LootBoard";
 import { ChipLink, ChipScroller, DataError } from "@/components/ui";
+import { requireOwner } from "@/lib/session";
 
 export const dynamic = "force-dynamic";
 
@@ -12,7 +13,8 @@ export default async function Page({
   params: Promise<{ target: string }>;
 }) {
   const { target } = await params;
-  if (!(target in LOOT_TARGETS)) notFound();
+  await requireOwner(`/loot/${target}`);
+  if (!Object.hasOwn(LOOT_TARGETS, target)) notFound();
   const { uuid } = LOOT_TARGETS[target as LootTarget];
   const result = await fetchLoot(uuid);
   if (!result.ok) return <DataError error={result.error} />;
