@@ -87,6 +87,41 @@ describe("queryAll (notionFetch behavior)", () => {
     expect(fetchMock).toHaveBeenCalledTimes(4); // initial call + 3 retries
   });
 
+  it("caps a long Retry-After at 5 s instead of holding the render", async () => {
+    vi.useFakeTimers();
+    try {
+      vi.stubEnv("NOTION_TOKEN", "ntn_test");
+      vi.stubGlobal(
+        "fetch",
+        vi
+          .fn()
+          .mockResolvedValueOnce(
+            new Response("{}", { status: 429, headers: { "Retry-After": "3600" } }),
+          )
+          .mockResolvedValueOnce(page([{ id: "r1", properties: {} }])),
+      );
+      let settled = false;
+      const p = queryAll("ds-1", {}).finally(() => (settled = true));
+      await vi.advanceTimersByTimeAsync(5_000);
+      expect(settled).toBe(true);
+      expect((await p).map((r) => r.id)).toEqual(["r1"]);
+    } finally {
+      vi.useRealTimers();
+    }
+  });
+
+  it("aborts each call on a timeout and reports it as a NotionError", async () => {
+    vi.stubEnv("NOTION_TOKEN", "ntn_test");
+    const fetchMock = vi
+      .fn()
+      .mockRejectedValue(new DOMException("timed out", "TimeoutError"));
+    vi.stubGlobal("fetch", fetchMock);
+    const p = queryAll("ds-1", {});
+    await expect(p).rejects.toBeInstanceOf(NotionError);
+    await expect(p).rejects.toThrow("Notion did not answer within 10 s");
+    expect(fetchMock.mock.calls[0][1].signal).toBeInstanceOf(AbortSignal);
+  });
+
   it("follows pagination cursors until has_more is false", async () => {
     vi.stubEnv("NOTION_TOKEN", "ntn_test");
     const fetchMock = vi
