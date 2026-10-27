@@ -5,6 +5,11 @@ on:
     branches: [main]
   pull_request:
 
+# build-test runs third-party package code; without this it gets the repo-default
+# token scope, which may include contents: write.
+permissions:
+  contents: read
+
 # A newer push to the same branch/PR cancels the in-flight run.
 concurrency:
   group: ci-${{ github.ref }}
