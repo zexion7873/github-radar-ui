@@ -85,7 +85,8 @@ single-password gate, because the Vercel free tier cannot password-protect a
 production deployment, so the gate lives in the app:
 
 - [`proxy.ts`](proxy.ts) redirects any `/loot/*` request without a valid session
-  to `/login`.
+  to `/login`. The loot pages check the session again before reading a ledger,
+  so a request the proxy matcher misses still gets no data.
 - A successful login sets a 30-day, HTTP-only session cookie holding an
   HMAC-signed expiry. The signing secret never leaves the server.
 - The status-write Server Action checks the session again, because Server
