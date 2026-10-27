@@ -39,6 +39,12 @@ Gotchas that will bite you:
   and `/trending/[id]` must keep resolving ANY week's row id to the repo's full history.
   Renaming, re-keying or gating either route breaks those links. Coordinate with radar-rag
   before deploying; its AGENTS.md records the same contract.
+- **Changing `/api/latest-week`?** A daily Action in the `zexion7873/zexion7873` profile
+  repo reads it and rewrites the README block between `radar:start` / `radar:end`.
+  Its keys (`week`, `repos[].repo` / `link` / `starsPerWeek` / `summary` / `take`) are
+  that script's contract, and it is public: add only fields the site already shows,
+  never Notion ids. A non-200 must stay a non-200 — the script fails on it instead of
+  blanking the README.
 - **CI skips docs-only PRs.** A PR that changes only `.md` files or `docs/` skips
   `build-test` through a job-level `if` (a skipped job reports success). `build-test`
   is a required check in the `main` ruleset, so never move this to a workflow-level
