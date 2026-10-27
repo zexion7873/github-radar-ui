@@ -25,15 +25,19 @@ export default async function Page() {
   const [trending, blog, lootResults] = await Promise.all([
     fetchTrending(TABLES.trending),
     fetchBlog(TABLES.blog),
-    Promise.all(targets.map((t) => fetchLoot(LOOT_TARGETS[t].uuid))),
+    // Anonymous requests never read the private ledgers; even latestSync below
+    // would leak their newest week.
+    authed
+      ? Promise.all(targets.map((t) => fetchLoot(LOOT_TARGETS[t].uuid)))
+      : null,
   ]);
   if (!trending.ok) return <DataError error={trending.error} />;
 
   // Dedup before any count, or a repo shortlisted in several weeks over-counts pending.
   const loot = Object.fromEntries(
     targets.map((t, i) => {
-      const r = lootResults[i];
-      return [t, r.ok ? latestPerRepo(r.rows) : null];
+      const r = lootResults?.[i];
+      return [t, r?.ok ? latestPerRepo(r.rows) : null];
     }),
   ) as Record<LootTarget, LootRow[] | null>;
 
