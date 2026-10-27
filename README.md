@@ -28,7 +28,7 @@ routines writes every week. The site never calls GitHub itself.
 | `/trending`, `/trending/[id]` | Trending Archive | Weekly trending repos, AI first, filterable by category, with 新上榜 / 在榜週數 badges; one page per repo |
 | `/blog`, `/blog/[id]` | Blog Archive | AI and agent blog posts grouped 官方 / 個人, each with a summary and a 點評, newest first |
 | `/ask` | none (radar-rag) | **Ask the radar**: questions in Chinese or English, answered from the Trending and Blog archives with citations that link to the detail pages here |
-| `/api/latest-week` | Trending Archive | JSON: the latest week's top three repos (repo, link, stars/week, summary, take), ranked like the dashboard; feeds the owner's GitHub profile README |
+| `/api/latest-week` | Trending Archive | JSON: the latest week's top three repos (repo, link, stars/week, momentum, summary, take), ranked like the dashboard; feeds the owner's GitHub profile README |
 | `/loot/[target]`, `/loot/[target]/[id]` | Loot Ledger (`claude` / `copilot` / `opencode` / `codex`) | **Owner only.** Config assets worth stealing into each coding agent's setup, grouped by status, with an editable status |
 
 The site is in Traditional Chinese. Every per-repo signal it shows, and the rule
