@@ -2,6 +2,10 @@ import "server-only";
 import { NOTION_VERSION } from "./config";
 
 const BASE = "https://api.notion.com/v1";
+// Without these, a stalled or throttling Notion holds every page render open
+// until the platform kills the function.
+const TIMEOUT_MS = 10_000;
+const MAX_RETRY_AFTER_S = 5;
 
 // `status` tells a wrong kind of id (404) from a dead token (401); absent on
 // errors raised here rather than by Notion.
@@ -37,19 +41,28 @@ async function notionFetch<T>(
   init?: RequestInit,
   attempt = 0,
 ): Promise<T> {
-  const res = await fetch(`${BASE}${path}`, {
-    ...init,
-    headers: {
-      Authorization: `Bearer ${token()}`,
-      "Notion-Version": NOTION_VERSION,
-      "Content-Type": "application/json",
-      ...init?.headers,
-    },
-    cache: "no-store",
-  });
+  let res: Response;
+  try {
+    res = await fetch(`${BASE}${path}`, {
+      ...init,
+      headers: {
+        Authorization: `Bearer ${token()}`,
+        "Notion-Version": NOTION_VERSION,
+        "Content-Type": "application/json",
+        ...init?.headers,
+      },
+      cache: "no-store",
+      signal: AbortSignal.timeout(TIMEOUT_MS),
+    });
+  } catch (error) {
+    if (error instanceof DOMException && error.name === "TimeoutError")
+      throw new NotionError(`Notion did not answer within ${TIMEOUT_MS / 1000} s`);
+    throw error;
+  }
 
   if (res.status === 429 && attempt < 3) {
-    const retry = Number(res.headers.get("Retry-After") ?? 1);
+    const hinted = Number(res.headers.get("Retry-After") ?? 1);
+    const retry = Math.min(Number.isFinite(hinted) ? hinted : 1, MAX_RETRY_AFTER_S);
     await new Promise((r) => setTimeout(r, retry * 1000));
     return notionFetch<T>(path, init, attempt + 1);
   }
