@@ -33,10 +33,6 @@ Worth knowing before you decide whether something is in scope.
   stays on the server. With the secret unset, the gate refuses everyone rather
   than letting everyone in.
 - **Redirects.** The post-login redirect accepts same-origin paths only.
-- **Automation.** The repository's `@claude` workflow runs only for comments,
-  reviews and issues written by the repository owner, and passes the model only
-  the owner's comments on that thread. The issue or pull request body still
-  reaches it, whoever wrote it.
 
 ### In scope
 
@@ -46,7 +42,6 @@ Worth knowing before you decide whether something is in scope.
 - An open redirect through the login flow.
 - Anything that sends the Notion token, `AUTH_SECRET` or `APP_PASSWORD` to a
   browser or a log a visitor can read.
-- Making the `@claude` workflow run for someone other than the owner.
 
 ### Out of scope
 
