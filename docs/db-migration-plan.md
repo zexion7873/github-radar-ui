@@ -175,7 +175,7 @@ CREATE UNIQUE INDEX blog_url ON blog (url);
 - `scripts/backfill-from-notion.ts`：用 page id 當主鍵做 upsert，**冪等**，重跑也安全
 - ✅ owner 建 Neon project `radar-archive`（AWS ap-southeast-1，D1／D7；建好之後 region 不能改）：2026-10-29 已建好
 - 這個階段 function 還在 `iad1`，ingest API 寫 Singapore 會跨海；但這段期間只有 backfill 和 QA 在寫，慢一點無所謂
-- 開 Neon `preview` branch，Vercel Preview scope 設 `DATABASE_URL` 指向它（§8 第 4 條）
+- 開 Neon `preview` branch，Vercel Preview scope 設 `DATABASE_URL` 指向它；`INGEST_TOKEN_*` 正式值只設 Production scope，Preview scope 另設一組測試值（§8 第 4 條）
 - QA 跑在 Neon 的 `preview` branch 上（真實介面，不是測試）：
   - 沒帶 token → 401
   - token 範圍不對 → 403
@@ -225,6 +225,7 @@ CREATE UNIQUE INDEX blog_url ON blog (url);
 2. **Neon Free 的 CU-hours 用完 → compute 停機到下個月**，網站和寫入一起掛掉。D6 估每月約 15 CU-h，但爬蟲流量沒算進去。要開 Neon 的用量通知，Phase 5 觀察期內每週看一次實際用量。
 3. **冷啟動**：閒置 5 分鐘後 compute 會休眠（Free plan 關不掉），第一次讀取多大約 1 s。被 `unstable_cache` 吸收，但 cache 剛過期的那一次 render 會比較慢。
 4. **Preview 不能寫到 prod 的 DB**：每個 PR 都有自己的 Preview deployment，裡面一樣有 ingest API 和 Status 寫入；指到 prod，QA 的測試資料就會混進正式資料，沒驗證過的 migration 也會直接打在 prod 上。**已決定（2026-10-29）：Preview 的 `DATABASE_URL` 指向 Neon `preview` branch**，只設在 Vercel 的 Preview scope；branch 資料變舊時從 parent reset。migration 一律先在這個 branch 上跑過，再套到 prod。
+   **`INGEST_TOKEN_*` 只設在 Vercel 的 Production scope**，Preview scope 用另一組測試值。Preview 會跑還沒 merge 的程式碼（包括升級進來的第三方套件）；它要是拿得到正式 token，就能繞過 `preview` branch，直接打 prod 的 ingest API 寫正式資料。Preview 上的 QA 只打 `preview` branch，用測試值就夠了。
 5. **Notion connector 還會留在 routine 裡**（archive-memory 需要它）。靠 Phase 5 撤銷分享來強制擋住，而不是靠 prompt。
 
 ## 9. 會變成過時、要一起更新的文件
