@@ -224,7 +224,7 @@ CREATE UNIQUE INDEX blog_url ON blog (url);
    **token 放在 environment 的 Network secrets，不放 env var**：env var 在 session 裡任何指令都讀得到；network secret 則是 Anthropic 的 agent proxy 在請求離開 VM 之後，才替指定 host（`whyisthistrending.vercel.app`）的請求加上 `Authorization: Bearer …`。token 從頭到尾不進 sandbox，被 prompt injection 也偷不走；最多只能拿它去打那個 host，而那把 token 的權限只限自己那張表。routine 打 API 時不用帶 token。
 2. **Neon Free 的 CU-hours 用完 → compute 停機到下個月**，網站和寫入一起掛掉。D6 估每月約 15 CU-h，但爬蟲流量沒算進去。要開 Neon 的用量通知，Phase 5 觀察期內每週看一次實際用量。
 3. **冷啟動**：閒置 5 分鐘後 compute 會休眠（Free plan 關不掉），第一次讀取多大約 1 s。被 `unstable_cache` 吸收，但 cache 剛過期的那一次 render 會比較慢。
-4. **Preview deployment 共用 prod secrets**（這是先前已接受的風險）。有了 DB 以後，Preview 上的 ingest API 可以寫 prod。**已決定（2026-10-29）：Preview 的 `DATABASE_URL` 指向 Neon `preview` branch**，只設在 Vercel 的 Preview scope；branch 資料變舊時從 parent reset。migration 一律先在這個 branch 上跑過，再套到 prod。
+4. **Preview 不能寫到 prod 的 DB**：每個 PR 都有自己的 Preview deployment，裡面一樣有 ingest API 和 Status 寫入；指到 prod，QA 的測試資料就會混進正式資料，沒驗證過的 migration 也會直接打在 prod 上。**已決定（2026-10-29）：Preview 的 `DATABASE_URL` 指向 Neon `preview` branch**，只設在 Vercel 的 Preview scope；branch 資料變舊時從 parent reset。migration 一律先在這個 branch 上跑過，再套到 prod。
 5. **Notion connector 還會留在 routine 裡**（archive-memory 需要它）。靠 Phase 5 撤銷分享來強制擋住，而不是靠 prompt。
 
 ## 9. 會變成過時、要一起更新的文件
