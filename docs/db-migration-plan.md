@@ -175,7 +175,7 @@ CREATE UNIQUE INDEX blog_url ON blog (url);
 - `scripts/backfill-from-notion.ts`：用 page id 當主鍵做 upsert，**冪等**，重跑也安全
 - ✅ owner 建 Neon project `radar-archive`（AWS ap-southeast-1，D1／D7；建好之後 region 不能改）：2026-10-29 已建好
 - 這個階段 function 還在 `iad1`，ingest API 寫 Singapore 會跨海；但這段期間只有 backfill 和 QA 在寫，慢一點無所謂
-- 開 Neon `preview` branch，Vercel Preview scope 設 `DATABASE_URL` 指向它；`INGEST_TOKEN_*` 正式值只設 Production scope，Preview scope 另設一組測試值（§8 第 4 條）
+- ✅ 開 Neon `preview` branch（2026-10-29 已建，Auto-delete = Never；Postgres 18，直連不經 pooler，本機 `.env.local` 已經連得上），Vercel Preview scope 設 `DATABASE_URL` 指向它；`INGEST_TOKEN_*` 正式值只設 Production scope，Preview scope 另設一組測試值（§8 第 4 條）
 - QA 跑在 Neon 的 `preview` branch 上（真實介面，不是測試）：
   - 沒帶 token → 401
   - token 範圍不對 → 403
