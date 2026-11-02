@@ -21,16 +21,19 @@ async function assertAuthed() {
 
 // Both arguments come from the client: without this, an authed user could PATCH
 // any page the token reaches. hasOwn, not `in`, which accepts "constructor".
-async function assertLootPage(target: string, pageId: string): Promise<string> {
+// Returns Notion's own row id so the PATCH URL never carries client input (CodeQL #1).
+async function assertLootPage(
+  target: string,
+  pageId: string,
+): Promise<{ uuid: string; rowId: string }> {
   if (!Object.hasOwn(LOOT_TARGETS, target)) {
     throw new Error("unknown loot target");
   }
   const { uuid } = LOOT_TARGETS[target as keyof typeof LOOT_TARGETS];
   const result = await fetchLoot(uuid);
-  if (!result.ok || !result.rows.some((row) => row.id === pageId)) {
-    throw new Error("unknown loot page");
-  }
-  return uuid;
+  const row = result.ok && result.rows.find((r) => r.id === pageId);
+  if (!row) throw new Error("unknown loot page");
+  return { uuid, rowId: row.id };
 }
 
 export async function setLootStatus(
@@ -40,9 +43,9 @@ export async function setLootStatus(
 ) {
   await assertAuthed();
   if (!STATUSES.has(status)) throw new Error(`invalid status: ${status}`);
-  const uuid = await assertLootPage(target, pageId);
+  const { uuid, rowId } = await assertLootPage(target, pageId);
 
-  await updateSelect(pageId, LOOT_PROPS.status, status);
+  await updateSelect(rowId, LOOT_PROPS.status, status);
   // updateTag (not revalidateTag) gives read-your-writes: the next read waits for
   // fresh data instead of serving the stale cache, so a reload shows the new Status.
   updateTag(lootCacheTag(uuid));
