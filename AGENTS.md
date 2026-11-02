@@ -52,5 +52,10 @@ Gotchas that will bite you:
   `paths`/`paths-ignore` filter: the check would never report and the PR would wait
   forever. If the app ever imports or renders a `.md` file, take it out of the skip
   pattern.
+- **CodeQL gates `main` too.** The ruleset's `code_scanning` rule blocks a PR that
+  adds a CodeQL alert at security `high` or above (or an `error`), and blocks while
+  the PR has no CodeQL analysis. Default setup analyzes every PR, docs-only included;
+  switching to advanced setup with a `paths` filter would strand docs-only PRs the
+  same way. A false positive must be dismissed with a reason before the PR merges.
 - Next 16 specifics (incl. `middleware.ts` → `proxy.ts`) are distilled in
   [`NEXT16-BREAKING-CHANGES.md`](NEXT16-BREAKING-CHANGES.md).
