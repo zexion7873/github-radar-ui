@@ -30,8 +30,10 @@ Worth knowing before you decide whether something is in scope.
   constant time, delays every failure by a fixed amount, and counts failures
   per IP. The session cookie is HTTP-only, `SameSite=Lax`, `Secure` in
   production, and holds an expiry signed with HMAC-SHA256. The signing secret
-  stays on the server. With the secret unset, the gate refuses everyone rather
-  than letting everyone in.
+  stays on the server. Logout clears the browser's cookie only; changing
+  `SESSION_VERSION` (or rotating `AUTH_SECRET`) revokes every session at once,
+  which is the way to kill a copied cookie before its expiry. With the secret
+  unset, the gate refuses everyone rather than letting everyone in.
 - **Redirects.** The post-login redirect accepts same-origin paths only.
 
 ### In scope

@@ -126,6 +126,8 @@ Loot tab, so anonymous visitors never receive loot data.
    **All three are required.** With `AUTH_SECRET` unset the gate fails *safe*:
    every `/loot/*` route redirects to `/login` and no login can succeed. An
    unset secret must never mean "open". The public pages keep working.
+   A fourth, `SESSION_VERSION`, is optional: any string, and changing it logs
+   every session out at once (logout only clears the browser's own cookie).
 4. **Run it** on the Node version in [`.nvmrc`](.nvmrc), which CI reads too:
    ```bash
    npm run dev
