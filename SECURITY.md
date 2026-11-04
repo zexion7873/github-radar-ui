@@ -35,6 +35,13 @@ Worth knowing before you decide whether something is in scope.
   which is the way to kill a copied cookie before its expiry. With the secret
   unset, the gate refuses everyone rather than letting everyone in.
 - **Redirects.** The post-login redirect accepts same-origin paths only.
+- **Headers.** Every response carries `X-Frame-Options: DENY`,
+  `X-Content-Type-Options: nosniff`, a `Referrer-Policy` and a
+  `Permissions-Policy` (`next.config.ts`). A Content Security Policy with a
+  per-request nonce (`lib/csp.ts`, sent from `proxy.ts`) is still
+  `Content-Security-Policy-Report-Only`: the browser console shows what an
+  enforced policy would block, and it is enforced once a round on the live
+  site reports nothing of ours. Until then it stops nothing.
 
 ### In scope
 
