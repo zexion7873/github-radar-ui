@@ -5,7 +5,7 @@ import Nav from "@/components/Nav";
 import StickyHeader from "@/components/StickyHeader";
 import ThemeToggle from "@/components/ThemeToggle";
 import { logout } from "@/app/login/actions";
-import { cookies } from "next/headers";
+import { cookies, headers } from "next/headers";
 import { isAuthed } from "@/lib/auth";
 import { formatWeek } from "@/components/ui";
 import Link from "next/link";
@@ -44,6 +44,9 @@ export default async function RootLayout({
 }: Readonly<{ children: React.ReactNode }>) {
   const cookieStore = await cookies();
   const theme = cookieStore.get("theme")?.value;
+  // proxy.ts's per-request nonce: the theme script below is the one inline
+  // script Next does not tag itself.
+  const nonce = (await headers()).get("x-nonce") ?? undefined;
   // Toggles 登出 / 登入 and the Loot tab; the rest of the chrome shows either way.
   const authed = isAuthed(cookieStore.get("gh_radar")?.value);
   // Not toISOString(): UTC prints yesterday's date until 08:00 in Taipei. en-CA
@@ -60,7 +63,7 @@ export default async function RootLayout({
       className={`${geistSans.variable} ${geistMono.variable} ${dmSerif.variable} ${sourceSerif.variable} h-full antialiased${theme === "dark" ? " dark" : ""}`}
     >
       <head>
-        <script dangerouslySetInnerHTML={{ __html: themeScript }} />
+        <script nonce={nonce} dangerouslySetInnerHTML={{ __html: themeScript }} />
       </head>
       <body className="min-h-full bg-background text-foreground">
         <a
