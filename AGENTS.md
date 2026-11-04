@@ -16,7 +16,11 @@ radar-rag's AGENTS.md also records. So is the stream: the page sends
 `Accept: text/event-stream, application/json` (JSON second, or the pre-stream
 400/403/429 lose their JSON body) and reads `sources` → `delta` {text} → `done`
 {answer, citations, usage} or `error` {status}. `done` is the only success: an
-`error`, or a stream that ends without `done`, retracts every word already shown. `/ask`'s example questions are built server-side
+`error`, or a stream that ends without `done`, retracts every word already shown. The contract's
+test is `lib/contract.test.ts` over `lib/__fixtures__/contract/`, verbatim copies of the bodies
+radar-rag's `AskFlowIT` records and compares its own responses to: never edit them here; a
+contract change arrives as radar-rag's new recording, copied over in the PR that adapts
+`lib/answer.ts`. `/ask`'s example questions are built server-side
 from Notion rows at least one radar-rag sync old (`askExamples`), so they assume
 radar-rag re-indexes at least weekly. Its one write is the loot `Status` select (a password-gated Server Action), which
 must `updateTag` that ledger's cache tag or the next read serves the old status for up
