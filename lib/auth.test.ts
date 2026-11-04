@@ -23,9 +23,12 @@ describe("safeEqual", () => {
 
 describe("session tokens", () => {
   const original = process.env.AUTH_SECRET;
+  const originalVersion = process.env.SESSION_VERSION;
   afterEach(() => {
     if (original === undefined) delete process.env.AUTH_SECRET;
     else process.env.AUTH_SECRET = original;
+    if (originalVersion === undefined) delete process.env.SESSION_VERSION;
+    else process.env.SESSION_VERSION = originalVersion;
   });
 
   it("fails safe (false) when AUTH_SECRET is unset", () => {
@@ -67,6 +70,24 @@ describe("session tokens", () => {
     process.env.AUTH_SECRET = "old-secret";
     const token = createSessionToken();
     process.env.AUTH_SECRET = "new-secret"; // rotation revokes every session
+    expect(isAuthed(token)).toBe(false);
+  });
+
+  it("rejects a token minted under a different SESSION_VERSION", () => {
+    process.env.AUTH_SECRET = "the-secret";
+    process.env.SESSION_VERSION = "1";
+    const token = createSessionToken();
+    process.env.SESSION_VERSION = "2"; // bumping it revokes every session
+    expect(isAuthed(token)).toBe(false);
+  });
+
+  it("treats an unset SESSION_VERSION as the empty string, not as a different one", () => {
+    process.env.AUTH_SECRET = "the-secret";
+    delete process.env.SESSION_VERSION;
+    const token = createSessionToken();
+    process.env.SESSION_VERSION = "";
+    expect(isAuthed(token)).toBe(true);
+    process.env.SESSION_VERSION = "1";
     expect(isAuthed(token)).toBe(false);
   });
 
