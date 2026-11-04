@@ -52,8 +52,8 @@ describe("buildCsp", () => {
     expect(directive(prod, "form-action")).toBe("'self'");
   });
 
-  it("starts in report-only mode", () => {
-    expect(CSP_HEADER).toBe("Content-Security-Policy-Report-Only");
+  it("is enforced, not report-only", () => {
+    expect(CSP_HEADER).toBe("Content-Security-Policy");
   });
 });
 

@@ -1,9 +1,10 @@
 // Not `server-only`: proxy.ts and next.config.ts import it outside the RSC graph.
 
-// Report-Only first: the browser logs what an enforced policy would block and
-// blocks nothing. proxy.ts switches the name to Content-Security-Policy once a
-// round on the live site reports no violation that is ours.
-export const CSP_HEADER = "Content-Security-Policy-Report-Only";
+// Enforced. It shipped as Content-Security-Policy-Report-Only first; a round over
+// every page of the live site (a question asked on /ask, so Turnstile and the
+// stream ran) reported nothing of ours, only Turnstile's own iframe policy. To
+// loosen it again, change the name back here and nothing else.
+export const CSP_HEADER = "Content-Security-Policy";
 
 // Sent on every response from next.config.ts, enforced from day one: none of
 // them can break a page that works today.

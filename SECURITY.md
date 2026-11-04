@@ -38,10 +38,10 @@ Worth knowing before you decide whether something is in scope.
 - **Headers.** Every response carries `X-Frame-Options: DENY`,
   `X-Content-Type-Options: nosniff`, a `Referrer-Policy` and a
   `Permissions-Policy` (`next.config.ts`). A Content Security Policy with a
-  per-request nonce (`lib/csp.ts`, sent from `proxy.ts`) is still
-  `Content-Security-Policy-Report-Only`: the browser console shows what an
-  enforced policy would block, and it is enforced once a round on the live
-  site reports nothing of ours. Until then it stops nothing.
+  per-request nonce (`lib/csp.ts`, sent from `proxy.ts`) allows scripts the
+  server tagged and what they load, styles likewise, connections to this site
+  and radar-rag, and Turnstile's frame; it blocks everything else, inline
+  event handlers and `javascript:` URLs included.
 
 ### In scope
 

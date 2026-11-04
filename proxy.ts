@@ -19,8 +19,8 @@ export function proxy(request: NextRequest) {
   }
 
   // A fresh nonce per page render. Next reads it from the request's CSP header
-  // (the report-only name included) and puts it on its own scripts and inline
-  // styles; app/layout.tsx reads x-nonce for the one inline script that is ours.
+  // (either name) and puts it on its own scripts and inline styles;
+  // app/layout.tsx reads x-nonce for the one inline script that is ours.
   const nonce = Buffer.from(crypto.randomUUID()).toString("base64");
   const csp = buildCsp({
     nonce,
